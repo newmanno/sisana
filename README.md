@@ -1,2 +1,2 @@
-# sisana
+# SiSaNA
 Single Sample Network Analysis
