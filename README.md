@@ -20,3 +20,21 @@ python filter_exp_min_samps.py -e <expression_file.tsv> -m <motif_file.txt> -p <
 
 #### Outputs
 Three files, one for each of the three filtered input files. 
+
+
+### Run PANDA
+This step creates a Panda network from the filtered files. See documentation for netZooPy (https://github.com/netZoo/netZooPy/tree/master). An example command is given below.
+
+#### Usage
+```
+python run_panda.py -e <expression_data_filtered>.txt -m <motif_data_filtered>.txt -p <ppi_data_filtered>.txt -r True -o <output_file>.txt
+```
+
+### Run LIONESS
+Similar to the PANDA step, this step creates Lioness networks from the filtered files. See documentation for netZooPy (https://github.com/netZoo/netZooPy/tree/master). An example command is given below.
+
+#### Usage
+```
+python run_lioness.py -e <expression_data_filtered>.txt -m <motif_data_filtered>.txt -p <ppi_data_filtered>.txt -g cpu -r single -c 4 -o ./output/ -f mat
+```
+
