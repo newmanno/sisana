@@ -11,7 +11,7 @@ import pickle
 if __name__ == '__main__':
     """
     Description:
-        This code converts the output of the .txt lioness file to a pickle format
+        This code converts the output of the lioness file to a pickle format
     """
 
     def files_to_dfs(fname_panda, fname_lion, ftype):
