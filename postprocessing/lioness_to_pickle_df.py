@@ -15,7 +15,13 @@ if __name__ == '__main__':
     """
 
     def files_to_dfs(fname_panda, fname_lion, ftype):
-        
+        '''
+        Creates data frames from the input panda and lioness files         
+        Arguments:
+            - fname_panda: str, the panda file supplied by the user
+            - fname_lioness: str, the lioness file supplied by the user
+            - ftype: str, file type of lioness file, either npy or txt
+        '''        
         try: 
             pandaFile = pd.read_csv(fname_panda, sep = " ", engine = "pyarrow", header = None)
             
@@ -26,7 +32,7 @@ if __name__ == '__main__':
                 lionFile = pd.DataFrame(lionnpy)
                 print(lionFile)
         except:
-            print("There was an error reading in the data. Please make sure the file paths are correct and the data is in the correct format you specified.")
+            raise Exception("There was an error reading in the data. Please make sure the file paths are correct and the lioness data is in the correct format you specified.")
             sys.exit()
             
         return([pandaFile,lionFile])
@@ -43,24 +49,22 @@ if __name__ == '__main__':
     print("Reading in data...")
 
     dfs_from_files = files_to_dfs(args.pandaFile, args.lionessFile, args.loinessFileType)
-    
+
+    # Create data frames from input files
     pan = dfs_from_files[0]
     lion = dfs_from_files[1]
 
     pan.columns = ['TF', 'Target', 'Interaction', 'Score']
-    
     pan["TF-target"] = "TF_" + pan["TF"] + "<==>" + pan["Target"]
-        
+
+    # Lioness file does not have any header or column names, needs them for t-test later
     samps = ["samp" + str(i) for i in range(1, len(lion.columns)+1)]
-    print(samps)
+
     lion.columns = samps
     lion.index = pan["TF-target"]  
-    print(lion)
     
     savefile = args.outfile
-    
     lion.to_pickle(savefile)   
-    
     print(f"File saved: {savefile}")
  
     
