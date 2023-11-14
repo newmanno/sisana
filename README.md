@@ -1,3 +1,7 @@
+Requires:
+ - python v3.12.0
+ - cloned repo of netZooPy (https://github.com/netZoo/netZooPy/tree/master)
+
 # SiSaNA
 Single Sample Network Analysis
 
@@ -5,7 +9,6 @@ SiSaNA is used after creating both Panda and Lioness networks from the package n
 
 ### Pre-processing of data
 This step is actually performed prior to running Panda/Lioness, and it filters the expression matrix, PPI file, and prior motif to contain the same genes/TFs, which is necessary for running Panda/Lioness.
-
 
 #### Usage
 ```
@@ -43,7 +46,7 @@ Once the lioness networks are made, a simple analysis to do is to calculate the 
 
 #### Usage
 ```
-python lioness_df_indeg_outdeg_calculator.py -p <pickle file> -o <output directory>
+python lioness_df_indeg_outdeg_calculator.py -p <file>.pickle -o <output directory>
 ```
 
 ### Comparing the in-degrees and out-degrees between treatment groups
@@ -51,5 +54,5 @@ Then, one can compare the in- and out-degrees between two treatment groups, usin
 
 #### Usage
 ```
-python compare_degrees.py -m <mapping_file.csv> -p <indegree/outdegree file> -c high low -t mw -o <output directory>
+python compare_degrees.py -m <mapping_file>.csv -p <indegree/outdegree file>.csv -c high low -t mw -o <output directory>
 ```
