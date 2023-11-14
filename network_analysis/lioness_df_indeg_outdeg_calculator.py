@@ -5,6 +5,7 @@ import pickle
 import numpy as np
 from pathlib import Path
 import time
+from analyze import indeg_calculator, outdeg_calculator
 
 __author__ = 'Nolan Newman'
 __contact__ = 'nolankn@uio.no'
@@ -37,8 +38,8 @@ if __name__ == '__main__':
     nwdf_target = nwdf.drop(columns=['TF'])
 
     # Perform calculation
-    outdeg = nwdf_tf.groupby(by="TF").sum()
-    indeg = nwdf_target.groupby(by="Target").sum()
+    outdeg = outdeg_calculator(nwdf_tf)
+    indeg = indeg_calculator(nwdf_target)
     
     base_file_name = Path(args.picklefile).stem
     outdeg_filename =  f"{base_file_name}_outdegree.csv"

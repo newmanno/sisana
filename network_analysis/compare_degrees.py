@@ -8,6 +8,7 @@ import time
 import csv
 import re
 from scipy import stats
+from analyze import assign_node_type, calc_tt
 
 __author__ = 'Nolan Newman'
 __contact__ = 'nolankn@uio.no'
@@ -31,45 +32,6 @@ if __name__ == '__main__':
     liondf = pd.read_csv(args.degfile, index_col = 0)
     groups = args.compgroups
     
-    def assign_node_type(node_list_file, type1, type2):
-        '''
-        Function that assigns samples to groups for statistical analysis
-        
-            Arguments:
-                - node_list_file: input file from user
-                - type1: the type of nodes in group 1
-                - type2: the type of nodes in group 2
-        '''    
-
-        samp_type_dict = {}
-
-        type1_list = []
-        type2_list = []            
-
-        init_dict = {}
-        samp_type_dict = {}
-
-        # Add all node-type pairs from the input file into the node_type_dict
-        with open(node_list_file) as node_file:
-            node_file = csv.reader(node_file, delimiter = ',')
-            
-            for row in node_file:
-                init_dict[row[0]] = row[1]
-                        
-        for key,value in init_dict.items():
-            try:
-                if re.search(type1, value):
-                    type1_list.append(key)
-                elif re.match(type2, value):
-                    type2_list.append(key)
-            except:
-                print("Unexpected value in the 'type' column of node_type input file.")    
-                   
-        samp_type_dict[type1] = type1_list
-        samp_type_dict[type2] = type2_list
-
-        return (samp_type_dict)        
-        
     sampdict = assign_node_type(args.mapfile, groups[0], groups[1])
     
     for k,v in sampdict.items():
@@ -88,14 +50,6 @@ if __name__ == '__main__':
         
     print(compdf)
     
-    def calc_tt(group1, group2, ttype):
-        if ttype == 'tt':
-            p = stats.ttest_ind(group1, group2)
-        elif ttype == 'mw':
-            p = stats.mannwhitneyu(group1, group2)
-
-        return(p[1])
-        
     print("Original DataFrame:\n", compdf)
     print(sampdict)
     compdf['pval'] = compdf.apply(lambda row : calc_tt(row[sampdict['high']], row[sampdict['low']], args.testtype), axis = 1)
