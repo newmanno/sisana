@@ -38,3 +38,18 @@ Similar to the PANDA step, this step creates Lioness networks from the filtered 
 python run_lioness.py -e <expression_data_filtered>.txt -m <motif_data_filtered>.txt -p <ppi_data_filtered>.txt -g cpu -r single -c 4 -o ./output/ -f mat
 ```
 
+### Calculating in-degree and out-degree of genes and TFs in lioness networks
+Once the lioness networks are made, a simple analysis to do is to calculate the in- and out-degrees of the nodes in the network, which is done in this step.
+
+#### Usage
+```
+python lioness_df_indeg_outdeg_calculator.py -p <pickle file> -o <output directory>
+```
+
+### Comparing the in-degrees and out-degrees between treatment groups
+Then, one can compare the in- and out-degrees between two treatment groups, using either a Student's t-test or a Mann-Whitney test.
+
+#### Usage
+```
+python compare_degrees.py -m <mapping_file.csv> -p <indegree/outdegree file> -c high low -t mw -o <output directory>
+```
