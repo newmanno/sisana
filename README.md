@@ -25,6 +25,7 @@ python filter_exp_min_samps.py -e <expression_file.tsv> -m <motif_file.txt> -p <
 Three files, one for each of the three filtered input files. 
 
 
+
 ### Run PANDA
 This step creates a Panda network from the filtered files. See documentation for netZooPy (https://github.com/netZoo/netZooPy/tree/master). An example command is given below.
 
