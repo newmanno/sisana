@@ -11,6 +11,8 @@ import numpy as np
 import pandas as pd
 import argparse
 import sys
+import os
+from pathlib import Path
 
 if __name__ == '__main__':
     """
@@ -18,25 +20,24 @@ if __name__ == '__main__':
         Filters expression data for parameters (e.g. genes) that are only present in at least m samples.
     """
 
-    parser = argparse.ArgumentParser(description="Example command: python initial_analysis_exp.py -e <expression_file.tsv>")
+    parser = argparse.ArgumentParser(description="Example command: python filter_exp_min_samps.py -e <expression_file.tsv> -m <motif_file.txt> -p <ppi_file.txt> -n 10")
     requiredArgGroup = parser.add_argument_group('Required arguments')        
     requiredArgGroup.add_argument("-e", "--exp", type=str, help="Path to file containing the gene expression data. Row names must be genes, the expression file does not have a header, and the cells are separated by a tab", required=True)
     requiredArgGroup.add_argument("-m", "--motif", type=str, help="Path to motif file, which gets filtered to only contain genes that pass the minimum number of samples threshold", required=True)
     requiredArgGroup.add_argument("-p", "--ppi", type=str, help="Path to ppi file, which gets filtered to only contain genes that pass the minimum number of samples threshold", required=True)   
     requiredArgGroup.add_argument("-n", "--number", type=int, help="Minimum number of samples a gene must be expressed in; expression data will be filtered for only genes that pass", required=True)
-    #requiredArgGroup.add_argument("-o", "--out-file", type=str, dest = "outfile", help="prefix to output file (i.e. '/path/to/prefix', which gives /path/to/prefix.txt)", required=True)    
+    requiredArgGroup.add_argument("-o", "--outdir", type=str, help="Path to output directory", required=True)    
     
     args = parser.parse_args()
     
     exp_file = args.exp
     motif_file = args.motif
     ppi_file = args.ppi
-    #outfile = args.outfile
     
     # Create output file prefixes by removing the .txt suffixes
-    expoutfile = exp_file[:-4]
-    motoutfile = motif_file[:-4]
-    ppioutfile = ppi_file[:-4]
+    expoutfile = Path(exp_file).stem
+    motoutfile = Path(motif_file).stem
+    ppioutfile = Path(ppi_file).stem
     
     
     print("Now filtering, please wait as this can take some time depending on the size of the input dataset...\n")
@@ -97,8 +98,10 @@ if __name__ == '__main__':
     n_motif_target_kept = len(np.unique(mot_filtered_TFs_targets["target"]))
             
     uniq_remain_genes_motif = np.unique(list(mot_filtered_TFs_targets["target"]) + list(mot_filtered_TFs_targets["TF"]))
-    
-    mot_filtered_TFs_targets.to_csv(motoutfile + "_filtered.txt", sep = "\t", header = None, index = False)    
+
+    save_file_path_motif = os.path.join(args.outdir, motoutfile + "_filtered.txt")
+
+    mot_filtered_TFs_targets.to_csv(save_file_path_motif, sep = "\t", header = None, index = False)    
     
     
     
@@ -124,7 +127,9 @@ if __name__ == '__main__':
 
     uniq_remain_genes_ppi = np.unique(list(ppi_filtered_source_TFs["targetTF"]) + list(ppi_filtered_source_TFs["source"]))
 
-    ppi_filtered_source_TFs.to_csv(ppioutfile + "_filtered.txt", sep = "\t", header = None, index = False)    
+    save_file_path_ppi = os.path.join(args.outdir, ppioutfile + "_filtered.txt")
+
+    ppi_filtered_source_TFs.to_csv(save_file_path_ppi, sep = "\t", header = None, index = False)    
 
 
 
@@ -145,11 +150,14 @@ if __name__ == '__main__':
     #print(cutdf_filtered_on_filtered_motif)
     cutdf_filtered_on_filtered_motif += 1 # add pseudocount of 1
     #print(cutdf_filtered_on_filtered_motif)    
-    cutdf_filtered_on_filtered_motif.to_csv(expoutfile + "_filtered.txt", sep = "\t", columns = header_samps, header = None)
+    save_file_path_exp = os.path.join(args.outdir, expoutfile + "_filtered.txt")
+
+    cutdf_filtered_on_filtered_motif.to_csv(save_file_path_exp, sep = "\t", columns = header_samps, header = None)
 
     
     
     
+    print(f"Files saved:\n{save_file_path_motif}\n{save_file_path_ppi}\n{save_file_path_exp}")
     
     
     
@@ -174,8 +182,9 @@ if __name__ == '__main__':
     print("Exp file filtering info based on only genes remaining in the motif file after filtering out TFs and genes for low abundance genes:")
     print(str(n_genes_removed_from_exp_based_on_motif) + " genes were filtered in this step. " + str(len(cutdf_filtered_on_filtered_motif)) + " genes remain in the filtered exp file.\n")
 
-       
-    with open(expoutfile + "_filtering_statistics.txt", 'w') as sys.stdout:
+    save_file_path_filter_stats = os.path.join(args.outdir, expoutfile + "_filtering_statistics.txt")
+
+    with open(save_file_path_filter_stats, 'w') as sys.stdout:
         print("\n\nNumber of samples with expression | Number of instances")
         print(dist)    
         
