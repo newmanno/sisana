@@ -47,11 +47,11 @@ if __name__ == '__main__':
         compdf = liondf
         
     del liondf
-        
-    print(compdf)
-    
-    print("Original DataFrame:\n", compdf)
-    print(sampdict)
-    compdf['pval'] = compdf.apply(lambda row : calc_tt(row[sampdict['high']], row[sampdict['low']], args.testtype), axis = 1)
+            
+    compdf['pval'] = compdf.apply(lambda row : calc_tt(row[sampdict[groups[0]]], row[sampdict[groups[1]]], args.testtype), axis = 1)
     compdf['FDR'] = stats.false_discovery_control(compdf['pval'])
-    print(compdf)
+    
+    save_file_path = os.path.join(args.outdir, f"comparison_{args.testtype}_between_{args.compgroups[0]}_{args.compgroups[1]}.txt")
+    compdf.to_csv(save_file_path, sep = "\t")
+
+    print(f"\nFile saved: {save_file_path}\n")
