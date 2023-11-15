@@ -51,12 +51,12 @@ python run_lioness.py -e <expression_data_filtered>.txt -m <motif_data_filtered>
 ```
 
 
-## Calculating in-degree and out-degree of genes and TFs in lioness networks
-Once the lioness networks are made, a simple analysis to do is to calculate the in- and out-degrees of the nodes in the network, which is done in this step.
+## Serialize the LIONESS output
+We now save the lioness output as a pickle file
 
 #### Usage
 ```
-python lioness_df_indeg_outdeg_calculator.py -p <file>.pickle -o <output directory>
+python lioness_to_pickle_df.py -p <file>.pickle -o <output directory>
 ```
 
 #### Inputs
@@ -65,6 +65,25 @@ python lioness_df_indeg_outdeg_calculator.py -p <file>.pickle -o <output directo
 
 #### Outputs
 Two files, lioness?indegree.csv and lioness?outdegree.csv, which contain the calculated in+ and out-degree of each lioness network 
+
+
+## Calculating in-degree and out-degree of genes and TFs in lioness networks
+Once the lioness networks are made, a simple analysis to do is to calculate the in- and out-degrees of the nodes in the network, which is done in this step.
+
+#### Usage
+```
+python lioness_df_indeg_outdeg_calculator.py -p <panda_output>.txt -q <lioness_output>.txt -t <choice> -o <output directory>
+```
+
+#### Inputs
+ - `-p`: Path to panda file created by run_panda.py
+ - `-q`: Path to lioness file created by run_lioness.py
+ - `-t`: File type of lioness input file (-q)
+ - `-o`: Path to pickle file to output
+
+   
+#### Outputs
+A single pickled lioness data frame
 
 
 ## Comparing the in-degrees and out-degrees between treatment groups
