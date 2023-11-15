@@ -70,7 +70,7 @@ python lioness_to_pickle_df.py -p <file>.pickle -o <output directory>
  - `-o`: Path to directory to output file to
 
 #### Outputs
-Two files, lioness?indegree.csv and lioness?outdegree.csv, which contain the calculated in+ and out-degree of each lioness network 
+A single file of the lioness data frame in .pickle format
 
 
 ## Calculating in-degree and out-degree of genes and TFs in lioness networks
