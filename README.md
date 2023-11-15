@@ -9,7 +9,13 @@ SiSaNA is used after creating both Panda and Lioness networks from the package n
    
 ## Installation
 1. Create a conda virtual environment with python 3.12.0
+```
+conda create --prefix /path/to/env-name python=3.12.0
+```
 2. Clone this repo
+```
+git clone https://github.com/newmanno/sisana.git
+```
 3. Run the following command to install the required modules
 ```
 pip3 install -r requirements.txt
