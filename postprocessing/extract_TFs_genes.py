@@ -19,7 +19,6 @@ if __name__ == '__main__':
     requiredArgGroup.add_argument("-o", "--outdir", type=str, help="Path to output directory", required=True)    
     
     args = parser.parse_args()
-    
     lion = pd.read_pickle(args.picklefile) 
     
     base_file_name = Path(args.picklefile).stem
@@ -43,12 +42,12 @@ if __name__ == '__main__':
             fp.write('\n'.join(uniq_TFs))
         raise Exception(f"\n\nError: Not all specified TFs were found in the data frame. Please check that the names of the TFs were spelled correctly. A list of available TFs to filter for has been saved in {save_file_path_TFs}\n")
     
+    # move the "Target" column to be the second column in the df
     col = lion.pop("Target")
     lion.insert(1, col.name, col)
+    
+    # Subset and save results
     lion_subset = lion.loc[lion['TF'].isin(args.tfs)]
-    
-    
-
     lion_subset.to_csv(save_file_path, index = False)
 
     print(f"\nFile saved: {save_file_path}\n")  
