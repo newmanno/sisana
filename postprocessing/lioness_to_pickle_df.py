@@ -17,7 +17,7 @@ if __name__ == '__main__':
     requiredArgGroup.add_argument("-p", "--pandaFile", type=str, help="Path to panda output produced by the run_panda.py script", required=True) 
     requiredArgGroup.add_argument("-q", "--lionessFile", type=str, help="Path to file produced by the run_lioness.py script", required=True)
     requiredArgGroup.add_argument("-t", "--loinessFileType", type=str, choices = ['txt', 'npy'], help="File type of lioness input (the -q file)", required=True)
-    #requiredArgGroup.add_argument("-n", "--sampnames", type=str, help="File with list of sample names (one per line) in the same order that were supplied to run_lioness.py", required=True)    
+    requiredArgGroup.add_argument("-n", "--sampnames", type=str, help="File with list of sample names (one per line) in the same order that were supplied to run_lioness.py", required=True)    
     requiredArgGroup.add_argument("-o", "--outfile", default = "./lioness_output.pickle", type=str, help="Path to output file in pickle format (e.g. lioness.pickle)", required=True)    
     
     args = parser.parse_args()
@@ -34,9 +34,14 @@ if __name__ == '__main__':
     pan["TF-target"] = "TF_" + pan["TF"] + "<==>" + pan["Target"]
 
     # Lioness file does not have any header or column names, needs them for t-test later
-    samps = ["samp" + str(i) for i in range(1, len(lion.columns)+1)]
+    sampsfile = open(args.sampnames, "r")
+    fileread = sampsfile.read()
+    namelist = fileread.split("\n") 
+    namelist = list(filter(None, namelist))
 
-    lion.columns = samps
+    print(namelist)
+        
+    lion.columns = namelist
     lion.index = pan["TF-target"]  
     
     savefile = args.outfile
