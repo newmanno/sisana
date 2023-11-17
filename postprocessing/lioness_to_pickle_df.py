@@ -38,8 +38,6 @@ if __name__ == '__main__':
     fileread = sampsfile.read()
     namelist = fileread.split("\n") 
     namelist = list(filter(None, namelist))
-
-    print(namelist)
         
     lion.columns = namelist
     lion.index = pan["TF-target"]  
