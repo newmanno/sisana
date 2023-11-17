@@ -31,7 +31,7 @@ if __name__ == '__main__':
     lion = dfs_from_files[1]
 
     pan.columns = ['TF', 'Target', 'Interaction', 'Score']
-    pan["TF-target"] = "TF_" + pan["TF"] + "<==>" + pan["Target"]
+    pan["TF-target"] = f"TF_{pan["TF"]}<==>{pan["Target"]}
 
     # Lioness file does not have any header or column names, needs them for t-test later
     sampsfile = open(args.sampnames, "r")
