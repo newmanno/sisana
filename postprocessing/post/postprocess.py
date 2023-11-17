@@ -24,7 +24,6 @@ def files_to_dfs(fname_panda, fname_lion, ftype):
         elif ftype == "npy":    
             lionnpy = np.load(fname_lion)
             lionFile = pd.DataFrame(lionnpy)
-            print(lionFile)
     except:
         raise Exception("There was an error reading in the data. Please make sure the file paths are correct and the lioness data is in the correct format you specified.")
         sys.exit()
