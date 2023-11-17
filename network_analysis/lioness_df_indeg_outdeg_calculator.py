@@ -40,7 +40,8 @@ if __name__ == '__main__':
     # Perform calculation
     outdeg = outdeg_calculator(nwdf_tf)
     indeg = indeg_calculator(nwdf_target)
-    
+
+    # format file names and output
     base_file_name = Path(args.picklefile).stem
     outdeg_filename =  f"{base_file_name}_outdegree.csv"
     indeg_filename =  f"{base_file_name}_indegree.csv"
