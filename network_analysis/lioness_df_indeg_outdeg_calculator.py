@@ -57,4 +57,4 @@ if __name__ == '__main__':
 
     end = time.time()
     timetaken = end - start
-    print(f"\nTime required for script: {timetaken} seconds")
+    print(f"\nTime required for script: {timetaken:2.2f} seconds")
