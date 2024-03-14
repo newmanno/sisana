@@ -1,7 +1,9 @@
+import scipy 
 from scipy import stats
 import csv
 import re
 import pandas 
+import math
 
 def assign_node_type(node_list_file, type1, type2):
     '''
@@ -56,5 +58,23 @@ def calc_tt(group1, group2, ttype):
         p = stats.ttest_ind(group1, group2)
     elif ttype == 'mw':
         p = stats.mannwhitneyu(group1, group2)
+    print("\n")
+    print(scipy.mean(group1))
+    print(scipy.mean(group2))
 
-    return(p[1])
+    if scipy.mean(group1) == 0 and scipy.mean(group2) == 0:
+        log2FC = 0
+    elif scipy.mean(group1) != 0:
+
+    elif scipy.mean(group2) != 0:
+        log2FC = math.log2(scipy.mean(group1)/scipy.mean(group2))
+    elif scipy.mean(group2) == 0:
+        print(group2)
+        # Take the smallest non-zero value, divide by 10, and use that as the average value for the denominator
+        no_zeros = [i for i in group1 if i != 0]
+        denom = min(no_zeros)/10
+        log2FC = math.log2(scipy.mean(group1)/denom)        
+    else:
+        log2FC = "NA"
+
+    return([p[1], log2FC])
