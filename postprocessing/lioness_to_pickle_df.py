@@ -30,8 +30,13 @@ if __name__ == '__main__':
     pan = dfs_from_files[0]
     lion = dfs_from_files[1]
 
+    print("Imported lionness file structure:")
+    print(lion)
+
     pan.columns = ['TF', 'Target', 'Interaction', 'Score']
-    pan["TF-target"] = f'TF_{pan["TF"]}<==>{pan["Target"]}'
+    pan["TF-target"] = "TF_" + pan["TF"] + "<==>" + pan["Target"]
+
+    # pan["TF-target"] = f'TF_{pan["TF"]}<==>{pan["Target"]}'
 
     # Lioness file does not have any header or column names, needs them for t-test later
     sampsfile = open(args.sampnames, "r")
@@ -41,6 +46,9 @@ if __name__ == '__main__':
         
     lion.columns = namelist
     lion.index = pan["TF-target"]  
+
+    print("Resulting data frame structure that is stored in the pickle file:")
+    print(lion)
     
     savefile = args.outfile
     lion.to_pickle(savefile)   

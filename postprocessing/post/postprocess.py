@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import pyarrow.csv as arrcsv
+import os
+import pickle
 
 def files_to_dfs(fname_panda, fname_lion, ftype):
     '''
@@ -85,3 +87,31 @@ def add_weights(nw, df, edgelist, name):
             i += 1        
     
     return(nw)
+
+def save_results(nw, format, base_name_begin, base_name_end, outdir):
+    '''
+    Saves file based on the specified user format
+    
+    Parameters
+    ----------
+        - nw: df containing the networks
+        - format: format to save the file in, supplied by user. Either "csv" or "pickle"
+        - base_name_begin: the beginning of the base name (pre-period) of the file to be output (example: lioness_nw)
+        - base_name_end: the end of the base name (pre-period) of the file to be output (example: filtered)
+        - outdir: path to the output directory
+        
+    Returns
+    -------
+        - a single pickle or csv file that is written out  
+    ''' 
+    
+    if format == "csv":
+        outfile = f"{base_name_begin}_{base_name_end}.csv"
+        outfile_path = os.path.join(outdir, outfile)
+        nw.to_csv(outfile_path)
+    elif format == "pickle":
+        outfile = f"{base_name_begin}_{base_name_end}.pickle"
+        outfile_path = os.path.join(outdir, outfile)
+        nw.to_pickle(outfile_path)   
+    
+    print(f"File saved: {outfile_path}")  

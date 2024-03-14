@@ -15,7 +15,7 @@ if __name__ == '__main__':
     ArgGroup = parser.add_argument_group('Required arguments')  
     ArgGroup.add_argument("-p", "--picklefile", type=str, help="Path to pickle file created by lioness_to_pickle_df.py script", required=True) 
     ArgGroup.add_argument("-s", "--sampnames", type=str, help="Path to a .txt file containing a list of sample names to extract, one name per line", required=True) 
-    ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to pickle file to be output, which contains the input df, subset for just the specified samples", required=True) 
+    ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to directory where file will be output, which contains the input df, subset for just the specified samples", required=True) 
     
     args = parser.parse_args()
     
