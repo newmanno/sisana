@@ -8,7 +8,7 @@ import time
 import csv
 import re
 from scipy import stats
-from analyze import assign_node_type, calc_tt
+from analyze import map_samples, calc_tt
 
 __author__ = 'Nolan Newman'
 __contact__ = 'nolankn@uio.no'
@@ -32,13 +32,15 @@ if __name__ == '__main__':
     liondf = pd.read_csv(args.degfile, index_col = 0)
     groups = args.compgroups
     
-    sampdict = assign_node_type(args.mapfile, groups[0], groups[1])
+    # Assign samples from mapping file to groups
+    sampdict = map_samples(args.mapfile, groups[0], groups[1])
     
     for k,v in sampdict.items():
         print(f"{k} samples: {v}")                     
         
     total_samps = len(sampdict[groups[0]]) + len(sampdict[groups[1]])
     
+    # remove unnecessary samples to save on memory
     if len(liondf.columns) > total_samps:
         allsamps = []
         allsamps = sampdict[groups[0]] + sampdict[groups[1]]
