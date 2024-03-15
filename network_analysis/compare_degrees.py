@@ -16,7 +16,7 @@ __contact__ = 'nolankn@uio.no'
 if __name__ == '__main__':
     """
     Description:
-        This code calculates the in-degree and out-degree of lioness networks in a pickled df object
+        This code compares the in-degrees/out-degrees from the output of lioness_df_indeg_outdeg_calculator.py. Comparisons are done between two sample groups.
     """
     start = time.time()    
 
