@@ -5,14 +5,14 @@ import re
 import pandas 
 import math
 
-def assign_node_type(node_list_file, type1, type2):
+def map_samples(mapfile, type1, type2):
     '''
     Function that assigns samples to groups for statistical analysis
 
         Arguments:
-            - node_list_file: input file from user
-            - type1: the type of nodes in group 1
-            - type2: the type of nodes in group 2
+            - mapfile: input file from user
+            - type1: the name of the group in the first set of samples, must be present in the mapfile
+            - type2: the name of the group in the second set of samples, must be present in the mapfile
     '''
 
     samp_type_dict = {}
@@ -24,10 +24,10 @@ def assign_node_type(node_list_file, type1, type2):
     samp_type_dict = {}
 
     # Add all node-type pairs from the input file into the node_type_dict
-    with open(node_list_file) as node_file:
-        node_file = csv.reader(node_file, delimiter = ',')
+    with open(mapfile) as samp_file:
+        samp_file = csv.reader(samp_file, delimiter = ',')
 
-        for row in node_file:
+        for row in samp_file:
             init_dict[row[0]] = row[1]
 
     for key,value in init_dict.items():
@@ -37,7 +37,7 @@ def assign_node_type(node_list_file, type1, type2):
             elif re.match(type2, value):
                 type2_list.append(key)
         except:
-            print("Unexpected value in the 'type' column of node_type input file.")
+            print("Unexpected value found for the sample group name.")
 
     samp_type_dict[type1] = type1_list
     samp_type_dict[type2] = type2_list
