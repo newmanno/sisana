@@ -11,14 +11,15 @@ __contact__ = 'nolankn@uio.no'
 if __name__ == '__main__':
     """
     Description:
-        This code performs a survival analysis between two user-defined groups
+        This code performs a survival analysis between two user-defined groups and outputs
+        both the survival plot and the statistics for the comparison(s)
     """
 
-    parser = argparse.ArgumentParser(description="Example command: python compare_degrees.py -m map.csv -p lioness.pickle -c high low -o ./output")
+    parser = argparse.ArgumentParser(description="Example command: python survival_analysis.py -m map.csv -t txt -c subtypes -g group1 group2 -o ./output")
     ArgGroup = parser.add_argument_group('Required arguments') 
     ArgGroup.add_argument("-m", "--metadata", type=str, help="Path to mapping file (csv) that maps samples to groups", required=True) 
     ArgGroup.add_argument("-t", "--filetype", choices = ["csv", "txt"], help="Type of delimiter used for --datafile", required=True)    
-    ArgGroup.add_argument("-c", "--colnmae", type=str, help="Name of column containing sample group names", required=True) 
+    ArgGroup.add_argument("-c", "--colname", type=str, help="Name of column containing sample group names", required=True) 
     ArgGroup.add_argument("-g", "--compgroups", type=str, nargs=2, help="Name of groups in mapping file to compare", required=True) 
     ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to directory to output file to", required=True) 
     
