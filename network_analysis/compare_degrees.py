@@ -8,7 +8,7 @@ import time
 import csv
 import re
 from scipy import stats
-from analyze import map_samples, calc_tt
+from analyze import file_to_list, map_samples, calc_tt
 
 __author__ = 'Nolan Newman'
 __contact__ = 'nolankn@uio.no'
@@ -34,12 +34,12 @@ if __name__ == '__main__':
     
     # Assign samples from mapping file to groups
     sampdict = map_samples(args.mapfile, groups[0], groups[1])
-    
-    for k,v in sampdict.items():
-        print(f"{k} samples: {v}")                     
+        
+    # for k,v in sampdict.items():
+    #     print(f"{k} samples: {v}")                     
         
     total_samps = len(sampdict[groups[0]]) + len(sampdict[groups[1]])
-    
+        
     # remove unnecessary samples to save on memory
     if len(liondf.columns) > total_samps:
         allsamps = []
@@ -50,14 +50,36 @@ if __name__ == '__main__':
         
     del liondf
     
-    # Calculate p-value/FDR and log2 fold change      
-    pval_log2FC = compdf.apply(lambda row : calc_tt(row[sampdict[groups[0]]], row[sampdict[groups[1]]], args.testtype), axis = 1)
-    compdf['pval'] = pval_log2FC[0]
-    #compdf['log2FC'] = pval_log2FC[1]
-    compdf['FDR'] = stats.false_discovery_control(compdf['pval'])
-    compdf['log2FC'] = pval_log2FC[1]
+    # Add pseudocount of 1
+    # print("\nhead")
+    # print(compdf)
+    # print("done")
+    # compdf += 1
     
-    save_file_path = os.path.join(args.outdir, f"comparison_{args.testtype}_between_{args.compgroups[0]}_{args.compgroups[1]}.txt")
-    compdf.to_csv(save_file_path, sep = "\t")
+    # Calculate p-value/FDR
+    pval = compdf.apply(lambda row : calc_tt(row[sampdict[groups[0]]], row[sampdict[groups[1]]], args.testtype), axis = 1)
+    print("Comparisons finished...")
+    # print(pval)
+    
+    pvaldf = pd.DataFrame({'Target':pval.index, 'pval':pval.values})
+    newpvaldf = pd.DataFrame(pvaldf['pval'].to_list(), columns=['test_statistic','pval'])
+    newpvaldf['Target'] = pvaldf['Target']
+    newpvaldf = newpvaldf.set_index('Target')
+    newpvaldf = newpvaldf.dropna()
+    
+    # Perform multiple test correction
+    newpvaldf['FDR'] = stats.false_discovery_control(newpvaldf['pval'])
+    
+    # Create new df without pval, ranked on test statistic
+    ranked = newpvaldf.sort_values('test_statistic', ascending = False)
+    ranked.drop(['pval', 'FDR'], inplace=True, axis=1)
+    # print(ranked)
 
-    print(f"\nFile saved: {save_file_path}\n")
+    save_file_path = os.path.join(args.outdir, f"comparison_{args.testtype}_between_{args.compgroups[0]}_{args.compgroups[1]}.txt")
+    save_file_path_ranked = os.path.join(args.outdir, f"comparison_{args.testtype}_between_{args.compgroups[0]}_{args.compgroups[1]}_ranked_test_stat.rnk")
+
+    newpvaldf.to_csv(save_file_path, sep = "\t")
+    ranked.to_csv(save_file_path_ranked, sep = "\t", header = False)
+
+    print(f"\nFile saved: {save_file_path}\nThis file contains all the statistics results and is just for your reference.\n")
+    print(f"File saved: {save_file_path_ranked}\nThis file contains only the calculated test statistic for each gene and is used for input to the GSEA analysis step.\n")
