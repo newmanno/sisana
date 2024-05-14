@@ -13,11 +13,10 @@ __contact__ = 'nolankn@uio.no'
 if __name__ == '__main__':
     """
     Description:
-        This code performs a survival analysis between two user-defined groups and outputs
-        both the survival plot and the statistics for the comparison(s)
+        This code performs gene set enrichment analysis on a set of pre-ranked genes 
     """
 
-    parser = argparse.ArgumentParser(description="Example command: python survival_analysis.py -m map.csv -t txt -c subtypes -g group1 group2 -o ./output")
+    parser = argparse.ArgumentParser(description="Example command: python gsea.py -f file.rnk -g genesets.gmt -s Hallmarks -o ./output")
     ArgGroup = parser.add_argument_group('Required arguments') 
     ArgGroup.add_argument("-f", "--genefile", type=str, help="Path to file (.rnk format) containing the genes and test statistics to do enrichment on", required=True) 
     ArgGroup.add_argument("-g", "--gmtdir", type=str, help="Path to the directory containing the gene set files in gmt format", required=True)     
