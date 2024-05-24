@@ -5,6 +5,9 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from adjustText import adjust_text
+import os
+from analyze import file_to_list
+
 
 if __name__ == '__main__':
     """
@@ -76,6 +79,8 @@ if __name__ == '__main__':
     plt.axhline(-np.log10(args.adjpvalthreshold), color="grey", linestyle="--")
     #plt.legend()
     
-    plt.savefig(args.outdir + "volcano_plot.png")
+    outname = os.path.join(args.outdir, f"volcano_plot_FC_{args.fcthreshold}_adjp_{args.adjpvalthreshold}_top_{args.topvalstoplot}.pdf")
+    plt.savefig(outname)
+        
+    print(f"File saved: {outname}")     
     
-    print(f"File saved: {args.outdir}volcano_plot.png")     
