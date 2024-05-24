@@ -30,6 +30,7 @@ if __name__ == '__main__':
     ArgGroup.add_argument("-g", "--genelist", type=str, help=".txt file containing a list of genes to plot", required=True)   
     ArgGroup.add_argument("-c", "--hierarchicalcluster", action='store_true', help="Flag for if you wish to perform hierarchical clustering on the genes", required = False)    
     ArgGroup.add_argument("-n", "--groupnames", type=str, nargs = "+", help="The names of the groups to plot (from the --metadata file). Groups will be plotted as column groups in the order they are written in this argument", required=True)   
+    ArgGroup.add_argument("-p", "--prefix", type=str, help="Prefix to use for the output file; note that the output file will automatically be generated with the suffix '_heatmap.png'", required=True)   
     ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to directory to output file to", required=True) 
     
     args = parser.parse_args()
@@ -93,7 +94,7 @@ if __name__ == '__main__':
     # Subset the data df for just the genes in the input gene list
     genes_to_plot = file_to_list(args.genelist)
     dat = dat.filter(items = genes_to_plot, axis=0)
-    out_filtered_dat_path = os.path.join(args.outdir, "filtered_data_file_for_heatmap_genes.csv")
+    out_filtered_dat_path = os.path.join(args.outdir, f"{args.prefix}_filtered_data_file_for_heatmap_genes.csv")
     dat.to_csv(out_filtered_dat_path)
     
     # Calculate z-score. Normally this could just be done in the call to the heatmap
@@ -102,7 +103,7 @@ if __name__ == '__main__':
     from scipy.stats import zscore
     dat_z = dat.apply(zscore, axis=1)
     
-    out_filtered_dat_z_path = os.path.join(args.outdir, "filtered_data_file_for_heatmap_genes_zscore.csv")
+    out_filtered_dat_z_path = os.path.join(args.outdir, f"{args.prefix}_filtered_data_file_for_heatmap_genes_zscore.csv")
     dat_z.to_csv(out_filtered_dat_z_path)    
 
     # Split the z-score data frame per sample group
@@ -113,7 +114,7 @@ if __name__ == '__main__':
         zdfs[i] = dat_z[sampdict[i]]
     
     # fig, axs =plt.subplots(nrows = 1, ncols = len(groups), constrained_layout = True)
-    fig, axs = plt.subplots(nrows = 1, ncols = len(groups), figsize=(len(groups) * 2, 2))#, width_ratios=[len(df.columns) for df in zdfs.values()])
+    fig, axs = plt.subplots(nrows = 1, ncols = len(groups), figsize=(len(groups) * 2, 2), width_ratios=[len(df.columns) for df in zdfs.values()])
         
     print("\nCreating heatmap(s), please wait...")
     
@@ -130,6 +131,7 @@ if __name__ == '__main__':
     cmap_col = "RdBu_r"
     square_choice = False
     xticklabels_choice = False
+    yticklabels_choice = True
     center_choice = 0
     
     i = 0 # Counter to keep track of position in axs array
@@ -140,8 +142,8 @@ if __name__ == '__main__':
 
         # Need to create each heatmap separately depending on its position in the 1D array of heatmaps (axs)
         if i == 0:
-            sns_plot = sns.heatmap(v, ax=axs[i], xticklabels= xticklabels_choice, square = square_choice, cmap = cmap_col, cbar = False, vmin = min_val, vmax = max_val, center = center_choice)
-            sns_plot.set_yticklabels(sns_plot.get_yticklabels(), rotation = 0, fontsize = 12)
+            sns_plot = sns.heatmap(v, ax=axs[i], xticklabels = xticklabels_choice, yticklabels = yticklabels_choice, square = square_choice, cmap = cmap_col, cbar = False, vmin = min_val, vmax = max_val, center = center_choice)
+            sns_plot.set_yticklabels(sns_plot.get_yticklabels(), rotation = 0, fontsize = 4)
             ax.yaxis.set_tick_params(labelsize = 8)
 
         # for any middle position (not first or last) in the axs array
@@ -158,7 +160,7 @@ if __name__ == '__main__':
     
     plt.yticks(rotation=0)  
    
-    outname = os.path.join(args.outdir, f"heatmap.png")
+    outname = os.path.join(args.outdir, f"{args.prefix}_heatmap.png")
     plt.savefig(outname)
     
     print(f"\nFile created: {outname}")
