@@ -6,6 +6,8 @@ import pickle
 from pathlib import Path
 import matplotlib.pyplot as plt
 import warnings
+from analyze import file_to_list
+import os
 
 if __name__ == '__main__':
     """
@@ -24,7 +26,8 @@ if __name__ == '__main__':
     ArgGroup.add_argument("-s", "--sampleorder", type=str, help=".txt file containing the order of the samples in the data file", required=False)   
     ArgGroup.add_argument("-p", "--plottype", type=str, choices = ["boxplot","violin"], help="The type of plot to create", required=True)   
     ArgGroup.add_argument("-n", "--groupnames", type=str, nargs = "+", help="The names of the groups to plot, should ideally be a list of 5 names or less. Groups will be plotted in the order they are written in this argument", required=True)   
-    ArgGroup.add_argument("-c", "--colors", type=str, nargs = "+", help="The colors for each group, in the same order the groups appear in --groupnames", required=False)       
+    ArgGroup.add_argument("-c", "--colors", type=str, nargs = "+", help="The colors for each group, in the same order the groups appear in --groupnames", required=False) 
+    ArgGroup.add_argument("-x", "--prefix", type=str, help="Prefix to use for the output figures", required=True)         
     ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to directory to output file to", required=True) 
     
     args = parser.parse_args()
@@ -32,25 +35,6 @@ if __name__ == '__main__':
     # Check that there are no more than 5 group names, otherwise warn user
     if len(args.groupnames) > 5:
         warnings.warn("Warning: Supplying more than 5 groups at once may cause the created graphs to be unreadable. Consider reducing the number of groups.")
-    
-    def file_to_list(fname):
-        """
-        This function takes as input a text file with one object per line and returns the contents of that file as a list
-
-        Args:
-            fname: the name of the file to convert to a list
-
-        Returns:
-            returnlist: list of objects from the text file
-        """
-        with open(fname, 'r') as file:
-            returnlist = []
-
-            for line in file:
-                line = line.strip()
-                returnlist.append(line)    
-                
-            return returnlist   
     
     # Get data and metadata
     if args.filetype == "csv":
@@ -76,7 +60,7 @@ if __name__ == '__main__':
     
     if not set(user_gene_list).issubset(set(data_genes)):
         genes_missing = list(set(user_gene_list).difference(data_genes)) # Find genes not in the data provided
-        
+        print(genes_missing)
         print("\nError: The following genes in the supplied gene list are not present in the data provided:")
         [print(i) for i in genes_missing]
         print("\n")
@@ -125,13 +109,11 @@ if __name__ == '__main__':
     
     if args.plottype == "violin":
         sns.violinplot(data = subdata_melt, x = "gene", y = "value", hue = "group")
-        plt.savefig(args.outdir + user_gene_list[0] + "-" + user_gene_list[-1] + "_violin_plot.png")
-        print("File saved: " + args.outdir + user_gene_list[0] + "-" + user_gene_list[-1] + "_violin_plot.png")
+        outname = os.path.join(args.outdir, f"{args.prefix}_violin_plot.png")
+        plt.savefig(outname)
+        print(f"File saved: {outname}")
     elif args.plottype == "boxplot":
         sns.boxplot(data = subdata_melt, x = "gene", y = "value", hue = "group", fliersize = 2)
-        plt.savefig(args.outdir + user_gene_list[0] + "-" + user_gene_list[-1] + "_box_plot.png")
-        print("File saved: " + args.outdir + user_gene_list[0] + "-" + user_gene_list[-1] + "_box_plot.png")     
-    elif args.plottype == "heatmap":
-        sns.heatmap(data = indata.T)
-        plt.savefig(args.outdir + "heatmap.png")
-        print("File saved: " + args.outdir + "heatmap.png")     
+        outname = os.path.join(args.outdir, f"{args.prefix}_box_plot.png")
+        plt.savefig(outname)
+        print(f"File saved: {outname}")
