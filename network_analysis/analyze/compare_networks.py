@@ -5,6 +5,25 @@ import re
 import pandas 
 import math
 
+def file_to_list(fname):
+    """
+    This function takes as input a text file with one object per line and returns the contents of that file as a list
+
+    Args:
+        fname: the name of the file to convert to a list
+
+    Returns:
+        returnlist: list of objects from the text file
+    """
+    with open(fname, 'r') as file:
+        returnlist = []
+
+        for line in file:
+            line = line.strip()
+            returnlist.append(line)    
+            
+        return (returnlist)   
+
 def map_samples(mapfile, type1, type2):
     '''
     Function that assigns samples to groups for statistical analysis
@@ -28,6 +47,7 @@ def map_samples(mapfile, type1, type2):
         samp_file = csv.reader(samp_file, delimiter = ',')
 
         for row in samp_file:
+            print(row)
             init_dict[row[0]] = row[1]
 
     for key,value in init_dict.items():
@@ -58,23 +78,27 @@ def calc_tt(group1, group2, ttype):
         p = stats.ttest_ind(group1, group2)
     elif ttype == 'mw':
         p = stats.mannwhitneyu(group1, group2)
-    print("\n")
-    print(scipy.mean(group1))
-    print(scipy.mean(group2))
+        #print(p)
+            
+    # # Calculating means (Note: Removed on 26/4/24 due to issues with having negative in-degrees)
+    # print("\n")
+    # print(f"Mean of group 1: {scipy.mean(group1)}")
+    # print(f"Mean of group 2: {scipy.mean(group2)}")
+    # print("Finished calculating comparisons between groups.")
 
-    if scipy.mean(group1) == 0 and scipy.mean(group2) == 0:
-        log2FC = 0
-    elif scipy.mean(group1) != 0:
+    # if scipy.mean(group1) == 0 and scipy.mean(group2) == 0:
+    #     log2FC = 0
+    # elif scipy.mean(group1) ==0:
+        
+    # elif scipy.mean(group2) != 0:
+    #     log2FC = math.log2(scipy.mean(group1)/scipy.mean(group2))
+    # elif scipy.mean(group2) == 0:
+    #     # print(group2)
+    #     # Take the smallest non-zero value, divide by 10, and use that as the average value for the denominator
+    #     no_zeros = [i for i in group1 if i != 0]
+    #     denom = min(no_zeros)/10
+    #     log2FC = math.log2(scipy.mean(group1)/denom)        
+    # else:
+    #     log2FC = "NA"
 
-    elif scipy.mean(group2) != 0:
-        log2FC = math.log2(scipy.mean(group1)/scipy.mean(group2))
-    elif scipy.mean(group2) == 0:
-        print(group2)
-        # Take the smallest non-zero value, divide by 10, and use that as the average value for the denominator
-        no_zeros = [i for i in group1 if i != 0]
-        denom = min(no_zeros)/10
-        log2FC = math.log2(scipy.mean(group1)/denom)        
-    else:
-        log2FC = "NA"
-
-    return([p[1], log2FC])
+    return([p[0], p[1]])
