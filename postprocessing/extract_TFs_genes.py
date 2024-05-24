@@ -40,8 +40,6 @@ if __name__ == '__main__':
         out_filename =  f"{base_file_name}_filtered_for_TFs.csv"
     elif args.type == "gene":    
         out_filename =  f"{base_file_name}_filtered_for_genes.csv"
-    else:
-        raise Exception('Error: Please provide either "tf" or "gene" as your desired node type to subset for')
 
     save_file_path = os.path.join(args.outdir, out_filename)   
     
@@ -89,5 +87,5 @@ if __name__ == '__main__':
         lion_subset = lion.loc[lion['Target'].isin(names_to_find)]
         lion_subset.to_csv(save_file_path, index = False)
 
-    print(f"\nFile saved: {save_file_path}\n")  
+    print(f"\nFile  saved: {save_file_path}\n")  
 
