@@ -22,7 +22,7 @@ if __name__ == '__main__':
     ArgGroup.add_argument("-m", "--metadata", type=str, help="Path to mapping file (csv) that maps samples to groups", required=True) 
     ArgGroup.add_argument("-t", "--filetype", choices = ["csv", "txt"], help="Type of delimiter used for --datafile", required=True)    
     ArgGroup.add_argument("-c", "--colname", type=str, help="Name of column containing sample group names", required=True) 
-    ArgGroup.add_argument("-a", "--alivestatus", type=str, help="Name of column that contains the status of the individual. Must contain True/False values only, where True = alive and False = dead.", required=True) 
+    ArgGroup.add_argument("-a", "--alivestatus", type=str, help="Name of column that contains the status of the individual. Must contain True/False values only, where True = dead (even occurred) and False = alive.", required=True) 
     ArgGroup.add_argument("-d", "--days", type=str, help="Name of column containing either the number of days an individual survived or the number of days to the last follow up.", required=True) 
     ArgGroup.add_argument("-g", "--compgroups", type=str, nargs=2, help="Name of groups in mapping file to compare", required=True) 
     ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to directory to output file to", required=True) 
