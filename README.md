@@ -85,6 +85,7 @@ python lioness_to_pickle_df.py -p <file>.pickle -o <output directory>
 A single file of the lioness data frame in .pickle format
 
 
+
 ## Calculating in-degree and out-degree of genes and TFs in lioness networks
 Once the lioness networks are made, a simple analysis to do is to calculate the in- and out-degrees of the nodes in the network, which is done in this step.
 
@@ -102,6 +103,28 @@ python lioness_df_indeg_outdeg_calculator.py -p <panda_output>.txt -q <lioness_o
    
 #### Outputs
 A single pickled lioness data frame
+
+
+
+
+## Reduce the number of decimal points 
+Now, we reduce the number of decimal places in the output file to save on storage space.
+
+#### Usage
+```
+python reduce_number_decimal_places.py -n lioness_df_indegree.csv -i <input file type> -o <output directory> -f <output file type> -d <number of decimal points>
+```
+
+#### Inputs
+ - `-n`: Path to either the indegree/outdegree file from lioness_df_indeg_outdeg_calculator.py or the lioness output file
+ - `-i`: File type of the input file (either pickle or csv)
+ - `-o`: Path to directory to output file to
+ - `-f`: File type of output file
+ - `-d`: Number of decimal points to truncate the degrees to
+
+#### Outputs
+A single file with truncated indegree/outdegree measurements
+
 
 
 ## Comparing the in-degrees and out-degrees between treatment groups
