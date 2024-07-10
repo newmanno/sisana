@@ -86,33 +86,12 @@ A single file of the lioness data frame in .pickle format
 
 
 
-## Calculating in-degree and out-degree of genes and TFs in lioness networks
-Once the lioness networks are made, a simple analysis to do is to calculate the in- and out-degrees of the nodes in the network, which is done in this step.
-
-#### Usage
-```
-python lioness_df_indeg_outdeg_calculator.py -p <panda_output>.txt -q <lioness_output>.txt -t <choice> -o <output directory>
-```
-
-#### Inputs
- - `-p`: Path to panda file created by run_panda.py
- - `-q`: Path to lioness file created by run_lioness.py
- - `-t`: File type of lioness input file (-q)
- - `-o`: Path to pickle file to output
-
-   
-#### Outputs
-A single pickled lioness data frame
-
-
-
-
 ## Reduce the number of decimal points (OPTIONAL)
 Now, we reduce the number of decimal places in the output file to save on storage space.
 
 #### Usage
 ```
-python reduce_number_decimal_places.py -n lioness_df_indegree.csv -i <input file type> -o <output directory> -f <output file type> -d <number of decimal points>
+python reduce_number_decimal_places.py -n <file>.csv -i <input file type> -o <output directory> -f <output file type> -d <number of decimal points>
 ```
 
 #### Inputs
@@ -124,6 +103,25 @@ python reduce_number_decimal_places.py -n lioness_df_indegree.csv -i <input file
 
 #### Outputs
 A single file with truncated indegree/outdegree measurements
+
+
+
+## Calculating in-degree and out-degree of genes and TFs in lioness networks
+Once the lioness networks are made, a simple analysis to do is to calculate the in- and out-degrees of the nodes in the network, which is done in this step.
+
+#### Usage
+```
+python lioness_df_indeg_outdeg_calculator.py -p <panda_output>.txt -q <lioness_output>.txt -t <choice> -o <output directory>
+```
+
+#### Inputs
+ - `-p`: Path to panda file created by run_panda.py
+ - `-q`: Path to lioness file created by run_lioness.py OR the file with reduced number of decimal places from the last step
+ - `-t`: File type of lioness input file (-q)
+ - `-o`: Path to pickle file to output
+   
+#### Outputs
+A single pickled lioness data frame
 
 
 
