@@ -79,7 +79,7 @@ python lioness_to_pickle_df.py -p <file>.pickle -o <output directory>
 
 #### Inputs
  - `-p`: Path to pickle file created by lioness_to_pickle_df.py script
- - `-o`: Path to directory to output file to
+ - `-o`: Path to directory to save output file to
 
 #### Outputs
 A single file of the lioness data frame in .pickle format
