@@ -1,7 +1,7 @@
 # SiSaNA
 Single Sample Network Analysis
 
-SiSaNA is used after creating both Panda and Lioness networks from the package netZooPy. SiSaNA takes the Lioness output, processes it to be analyzed downstream, and then calculates in- and out-degree for each of the reconstructed networks.
+SiSaNA is used both before and after creating both Panda and Lioness networks from the package netZooPy. SiSaNA first needs to pre-process the data to be ran in PANDA/LIONESS. SiSaNA takes the Lioness output, processes it to be analyzed downstream, and then calculates in- and out-degree for each of the reconstructed networks. Additionally, it can compare the expression/degree between groups of interest, including performing statistical tests and visualizing the results with volcano plots, boxplots, and violin plots.
 
 **Note: The steps below are for the basic use of SiSaNA. There are other functionalities across different scripts that are not covered in this file.**
 
