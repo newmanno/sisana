@@ -1,7 +1,7 @@
 # SiSaNA
 Single Sample Network Analysis
 
-SiSaNA is used after creating both Panda and Lioness networks from the package netZooPy. SiSaNA takes the Lioness output, processes it to be analyzed downstream, and then calculates in- and out-degree for each of the reconstructed networks.
+SiSaNA is used both before and after creating both Panda and Lioness networks from the package netZooPy. SiSaNA first needs to pre-process the data to be ran in PANDA/LIONESS. SiSaNA takes the Lioness output, processes it to be analyzed downstream, and then calculates in- and out-degree for each of the reconstructed networks. Additionally, it can compare the expression/degree between groups of interest, including performing statistical tests, visualizing the results (volcano plots, boxplots, and violin plots), and compare the survival between groups.
 
 **Note: The steps below are for the basic use of SiSaNA. There are other functionalities across different scripts that are not covered in this file.**
 
@@ -79,10 +79,31 @@ python lioness_to_pickle_df.py -p <file>.pickle -o <output directory>
 
 #### Inputs
  - `-p`: Path to pickle file created by lioness_to_pickle_df.py script
- - `-o`: Path to directory to output file to
+ - `-o`: Path to directory to save output file to
 
 #### Outputs
 A single file of the lioness data frame in .pickle format
+
+
+
+## Reduce the number of decimal points (OPTIONAL)
+Now, we reduce the number of decimal places in the output file to save on storage space.
+
+#### Usage
+```
+python reduce_number_decimal_places.py -n <file>.csv -i <input file type> -o <output directory> -f <output file type> -d <number of decimal points>
+```
+
+#### Inputs
+ - `-n`: Path to either the indegree/outdegree file from lioness_df_indeg_outdeg_calculator.py or the lioness output file
+ - `-i`: File type of the input file (either pickle or csv)
+ - `-o`: Path to directory to output file to
+ - `-f`: File type of output file
+ - `-d`: Number of decimal points to truncate the degrees to
+
+#### Outputs
+A single file with truncated indegree/outdegree measurements
+
 
 
 ## Calculating in-degree and out-degree of genes and TFs in lioness networks
@@ -95,13 +116,13 @@ python lioness_df_indeg_outdeg_calculator.py -p <panda_output>.txt -q <lioness_o
 
 #### Inputs
  - `-p`: Path to panda file created by run_panda.py
- - `-q`: Path to lioness file created by run_lioness.py
+ - `-q`: Path to lioness file created by run_lioness.py OR the file with reduced number of decimal places from the last step
  - `-t`: File type of lioness input file (-q)
  - `-o`: Path to pickle file to output
-
    
 #### Outputs
 A single pickled lioness data frame
+
 
 
 ## Comparing the in-degrees and out-degrees between treatment groups
