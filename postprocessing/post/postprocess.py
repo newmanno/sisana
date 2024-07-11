@@ -108,7 +108,7 @@ def save_results(nw, format, base_name_begin, base_name_end, outdir):
     if format == "csv":
         outfile = f"{base_name_begin}_{base_name_end}.csv"
         outfile_path = os.path.join(outdir, outfile)
-        nw.to_csv(outfile_path)
+        nw.to_csv(outfile_path, index = False)
     elif format == "pickle":
         outfile = f"{base_name_begin}_{base_name_end}.pickle"
         outfile_path = os.path.join(outdir, outfile)
