@@ -134,10 +134,10 @@ python compare_degrees.py -m <mapping_file>.csv -p <indegree/outdegree file>.csv
 ```
 
 #### Inputs
- - `-m`: Path to mapping file (csv) that maps samples (first column, no header) to groups (second column, no header)
+ - `-m`: Path to mapping file (csv). If doing an unpaired test (--testtype = mw or tt) then this file maps samples (first column, no header) to groups (second column, no header). Otherwise, if doing a paired analysis (--testtype = paired_tt or wilcoxon) then the samples for one group will go in column 1 (no header) while their paired samples will go in column 2.
  - `-p`: Path to csv file containing the degrees (in/out) of each node
- - `-c`: A list (two strings) of the groups in the mapping file to perform comparisons between
- - `-t`: Type of comparison to perform, either Student's t-test or Mann-Whitney U 
+ - `-c`: A list (two strings) of the groups in the mapping file to perform comparisons between. Required if not performing a paired analysis.
+ - `-t`: Type of comparison to perform, either Student's t-test, Mann-Whitney U, paired t-test, or Wilcoxon
  - `-o`: Path to directory to output file to
 
 #### Outputs
