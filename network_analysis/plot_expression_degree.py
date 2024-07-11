@@ -76,7 +76,7 @@ if __name__ == '__main__':
     # Remove samples that are not part of the user supplied groups to be plotted
     filtered_indata_genelist['dupename'] = list(filtered_indata_genelist.index)
     meta['dupename'] = list(meta.index)    
-    
+        
     filtered_indata_genelist['group'] = filtered_indata_genelist['dupename'].map(meta.set_index('dupename')['group'])
     subdata = filtered_indata_genelist[filtered_indata_genelist['group'].notnull()] 
     subdata = subdata.drop(['dupename','group'], axis=1) # Remove columns for the melt    
@@ -96,6 +96,8 @@ if __name__ == '__main__':
     
     subdata_melt['gene'] = pd.Categorical(subdata_melt.gene, ordered=True, categories=user_gene_list)
     subdata_melt = subdata_melt.sort_values(['group','gene'])
+    
+    print(subdata_melt)
 
     # Set colors for plotting if the user has specified colors      
     if args.colors is not None:
