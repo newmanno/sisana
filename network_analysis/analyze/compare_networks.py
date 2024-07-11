@@ -78,8 +78,10 @@ def calc_tt(group1, group2, ttype):
         p = stats.ttest_ind(group1, group2)
     elif ttype == 'mw':
         p = stats.mannwhitneyu(group1, group2)
-    elif ttype == 'paired':
+    elif ttype == 'paired_tt':
         p = stats.ttest_rel(group1, group2)
+    elif ttype == 'wilcoxon':
+        p = stats.wilcoxon(group1, group2)
             
     # # Calculating means (Note: Removed on 26/4/24 due to issues with having negative in-degrees)
     # print("\n")

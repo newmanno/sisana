@@ -22,10 +22,10 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="Example command: python compare_degrees.py -m map.csv -p lioness.pickle -c high low -o ./output")
     ArgGroup = parser.add_argument_group('Required arguments')  
-    ArgGroup.add_argument("-m", "--mapfile", type=str, help="Path to mapping file (csv). If donig an unpaired test (--testtype = mw or tt) then this file maps samples (first column, no header) to groups (second column, no header). Otherwise, if doing a paired analysis (--testtype = paired) then the samples for one group will go in column 1 (no header) while their paired samples will go in column 2.", required=True) 
+    ArgGroup.add_argument("-m", "--mapfile", type=str, help="Path to mapping file (csv). If donig an unpaired test (--testtype = mw or tt) then this file maps samples (first column, no header) to groups (second column, no header). Otherwise, if doing a paired analysis (--testtype = paired_tt or wilcoxon) then the samples for one group will go in column 1 (no header) while their paired samples will go in column 2.", required=True) 
     ArgGroup.add_argument("-p", "--degfile", type=str, help="Path to csv file containing the degrees (in/out) of each node", required=True) 
     ArgGroup.add_argument("-c", "--compgroups", type=str, nargs=2, help="Name of groups in mapping file to compare, required if not performing a paired analysis", required=False) 
-    ArgGroup.add_argument("-t", "--testtype", type=str, choices = ["tt", "mw", "paired"], help="Type of comparison to perform, either Student's t-test, Mann-Whitney U, or a test for paired samples", required=True)     
+    ArgGroup.add_argument("-t", "--testtype", type=str, choices = ["tt", "mw", "paired_tt", "wilcoxon"], help="Type of comparison to perform, either Student's t-test, Mann-Whitney U, or a test for paired samples", required=True)     
     ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to directory to output file to", required=True) 
     
     args = parser.parse_args()
@@ -38,7 +38,7 @@ if __name__ == '__main__':
         sampdict = map_samples(args.mapfile, groups[0], groups[1])
         total_samps = len(sampdict[groups[0]]) + len(sampdict[groups[1]])
     
-    elif args.testtype == "paired":
+    elif args.testtype == "paired_tt" or args.testtype == "wilcoxon":
         map = pd.read_csv(args.mapfile, header = None)
 
         groups = {}
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     # Calculate p-value/FDR
     if args.testtype == "tt" or args.testtype == "mw":
         pval = compdf.apply(lambda row : calc_tt(row[sampdict[groups[0]]], row[sampdict[groups[1]]], args.testtype), axis = 1)
-    elif args.testtype == "paired":
+    elif args.testtype == "paired_tt" or args.testtype == "wilcoxon":
         print("Comparing the following samples with a paired t-test:\n")
         print(f"Samnples in group 1:\n{groups["group1"]})")
         print(f"\nSamples in group 2:\n{groups["group2"]})")
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     if args.testtype == "tt" or args.testtype == "mw":
         save_file_path = os.path.join(args.outdir, f"comparison_{args.testtype}_between_{args.compgroups[0]}_{args.compgroups[1]}.txt")
         save_file_path_ranked = os.path.join(args.outdir, f"comparison_{args.testtype}_between_{args.compgroups[0]}_{args.compgroups[1]}_ranked_test_stat.rnk")
-    if args.testtype == "paired":
+    if args.testtype == "paired_tt" or args.testtype == "wilcoxon":
         save_file_path = os.path.join(args.outdir, f"comparison_{args.testtype}.txt")
         save_file_path_ranked = os.path.join(args.outdir, f"comparison_{args.testtype}_ranked_test_stat.rnk")
     
