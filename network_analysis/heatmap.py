@@ -79,9 +79,12 @@ if __name__ == '__main__':
         
     if len(diffsamps) > 0:  
         warnings.warn("Warning: Your samples in your metadata file are not a perfect match to the samples in the data file. The heatmaps will only be made on the overlapping samples of the two.") 
-        print(f"\nThe following samples are different between the metadata and data table: {diffsamps}\n")
+        print(f"\nSamples in metadata: {samp_meta_list}")
+        print(f"\nSamples in data file: {samp_data_list}")
+        print(f"\nThe following samples are DIFFERENT between the metadata and data table: {diffsamps}\n")
     
         samp_overlaps = list(set(samp_data_list) & set(samp_meta_list)) # Get the overlapping samples between metadata and data df        
+        print(f"The following samples are THE SAME between the metadata and data table and will be plotted: {samp_overlaps}\n")
         dat = dat[dat.columns.intersection(samp_overlaps)] # remove non-overlap samples from data df
         samp_meta_file = samp_meta_file[samp_meta_file.iloc[:,0].isin(samp_overlaps)] # remove non-overlap samples from metadata df
     
@@ -94,6 +97,7 @@ if __name__ == '__main__':
     # Subset the data df for just the genes in the input gene list
     genes_to_plot = file_to_list(args.genelist)
     dat = dat.filter(items = genes_to_plot, axis=0)
+
     out_filtered_dat_path = os.path.join(args.outdir, f"{args.prefix}_filtered_data_file_for_heatmap_genes.csv")
     dat.to_csv(out_filtered_dat_path)
     
@@ -121,7 +125,7 @@ if __name__ == '__main__':
     # Manually set the min and max values of the heatmaps so the same scale applies to all heatmaps,
     # otherwise the color bar only applies to the last heatmap that gets plotted
     arr = dat_z.to_numpy().flatten() # an array of all values in the dat_z df
-    
+
     min_val = np.percentile(arr, 1) # vals will be the 1st and 99th percentile, so extreme (outlier) values will not influence the scale
     max_val = np.percentile(arr, 99)
         
@@ -131,7 +135,7 @@ if __name__ == '__main__':
     cmap_col = "RdBu_r"
     square_choice = False
     xticklabels_choice = False
-    yticklabels_choice = True
+    yticklabels_choice = False
     center_choice = 0
     
     i = 0 # Counter to keep track of position in axs array
@@ -161,7 +165,7 @@ if __name__ == '__main__':
     plt.yticks(rotation=0)  
    
     outname = os.path.join(args.outdir, f"{args.prefix}_heatmap.png")
-    plt.savefig(outname)
+    plt.savefig(outname, dpi = 600)
     
     print(f"\nFile created: {outname}")
     print(f"File created: {out_filtered_dat_path}")
