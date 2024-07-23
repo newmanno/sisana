@@ -16,12 +16,17 @@ SiSaNA is used both before and after creating both PANDA and LIONESS networks fr
 conda create --prefix /path/to/env-name python=3.12.0
 ```
 
-2. Clone this repo
+2. Enter the conda environment
+```
+conda activate /path/to/env-name
+```
+
+4. Clone this repo
 ```
 git clone https://github.com/newmanno/sisana.git
 ```
 
-3. Run the following command to install the required modules
+4. From the repo directory, run the following command to install the required modules
 ```
 pip3 install -r requirements.txt
 ```
