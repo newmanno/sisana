@@ -9,9 +9,8 @@ SiSaNA is used both before and after creating both Panda and Lioness networks fr
  - python v3.12.0
  - cloned repo of netZooPy (https://github.com/netZoo/netZooPy/tree/master)
    
-## Installation can be performed one of two ways...
+## Installation can be performed by running the following steps
 
-### Using the "requirements.txt" file
 1. Create a conda virtual environment with python 3.12.0
 ```
 conda create --prefix /path/to/env-name python=3.12.0
