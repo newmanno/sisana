@@ -34,7 +34,7 @@ This step is actually performed prior to running PANDA/LIONESS, and it filters t
 
 #### Usage
 ```
-python filter_exp_min_samps.py -e <expression_file.tsv> -m <motif_file.txt> -p <ppi_file.txt> -n 10
+python preprocess.py -e <expression_file.tsv> -m <motif_file.txt> -p <ppi_file.txt> -n 10
 ```
 
 #### Inputs
@@ -52,7 +52,7 @@ This step creates a PANDA network from the filtered files. See documentation for
 
 #### Usage
 ```
-python run_PANDA.py -e <expression_data_filtered>.txt -m <motif_data_filtered>.txt -p <ppi_data_filtered>.txt -r True -o <output_file>.txt
+python run_panda.py -e <expression_data_filtered>.txt -m <motif_data_filtered>.txt -p <ppi_data_filtered>.txt -r True -o <output_file>.txt
 ```
 
 
@@ -61,7 +61,7 @@ Similar to the PANDA step, this step creates LIONESS networks from the filtered 
 
 #### Usage
 ```
-python run_LIONESS.py -e <expression_data_filtered>.txt -m <motif_data_filtered>.txt -p <ppi_data_filtered>.txt -g cpu -r single -c 4 -o ./output/ -f mat
+python run_lioness.py -e <expression_data_filtered>.txt -m <motif_data_filtered>.txt -p <ppi_data_filtered>.txt -g cpu -r single -c 4 -o ./output/ -f mat
 ```
 
 
@@ -70,7 +70,7 @@ We now save the LIONESS output as a pickle file
 
 #### Usage
 ```
-python LIONESS_to_pickle_df.py -p <file>.pickle -o <output directory>
+python lioness_to_pickle_df.py -p <file>.pickle -o <output directory>
 ```
 
 #### Inputs
@@ -107,7 +107,7 @@ Once the LIONESS networks are made, a simple analysis to do is to calculate the 
 
 #### Usage
 ```
-python LIONESS_df_indeg_outdeg_calculator.py -p <PANDA_output>.txt -q <LIONESS_output>.txt -t <choice> -o <output directory>
+python lioness_df_indeg_outdeg_calculator.py -p <panda_output>.txt -q <lioness_output>.txt -t <choice> -o <output directory>
 ```
 
 #### Inputs
