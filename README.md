@@ -21,7 +21,7 @@ conda create --prefix /path/to/env-name python=3.12.0
 conda activate /path/to/env-name
 ```
 
-4. Clone this repo
+3. Clone this repo
 ```
 git clone https://github.com/newmanno/sisana.git
 ```
