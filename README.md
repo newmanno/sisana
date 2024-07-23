@@ -6,8 +6,8 @@ SiSaNA is used both before and after creating both PANDA and LIONESS networks fr
 **Note: The steps below are for the basic use of SiSaNA. There are other functionalities across different scripts that are not covered in this file.**
 
 ## Requirements
- - python v3.12.0
- - cloned repo of netZooPy (https://github.com/netZoo/netZooPy/tree/master)
+ - python v3.12.0 (see installation steps for creating a conda environment with this specific Python version)
+ - A cloned repo of netZooPy (https://github.com/netZoo/netZooPy/tree/master)
    
 ## Installation can be performed by running the following steps
 
