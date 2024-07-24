@@ -32,7 +32,7 @@ pip3 install -r requirements.txt
 ```
 
 ## Pipeline overview
-![Pipeline overview](docs/Pipeline_steps_fig.png)
+![Pipeline overview](docs/pipeline.png)
 
 ## Pre-processing of data
 This step is actually performed prior to running PANDA/LIONESS, and it filters the expression matrix, PPI file, and prior motif to contain the same genes/TFs, which is necessary for running PANDA/LIONESS.
