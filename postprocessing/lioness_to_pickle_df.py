@@ -12,7 +12,7 @@ if __name__ == '__main__':
         This code converts the output of the lioness file to a pickle format and adds names of the samples to the df
     """
         
-    parser = argparse.ArgumentParser(description="Example command: python lioness_to_pickle_df.py -p panda_output.txt -q lioness_output.npy -t npy -o ./output/lioness_df.pickle")
+    parser = argparse.ArgumentParser(description="Example command: python lioness_to_pickle_df.py -p panda_output.txt -q lioness_output.npy -t npy -n sampnames.txt -o ./output/lioness_df.pickle")
     requiredArgGroup = parser.add_argument_group('Required arguments')  
     requiredArgGroup.add_argument("-p", "--pandaFile", type=str, help="Path to panda output produced by the run_panda.py script", required=True) 
     requiredArgGroup.add_argument("-q", "--lionessFile", type=str, help="Path to file produced by the run_lioness.py script", required=True)
