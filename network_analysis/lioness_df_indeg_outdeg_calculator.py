@@ -17,7 +17,7 @@ if __name__ == '__main__':
     """
     start = time.time()    
 
-    parser = argparse.ArgumentParser(description="Example command: python lioness_df_indeg_outdeg_calculator.py -i <file.pickle> -o ./output")
+    parser = argparse.ArgumentParser(description="Example command: python lioness_df_indeg_outdeg_calculator.py -i lioness_df.pickle -t pickle -o ./output")
     ArgGroup = parser.add_argument_group('Required arguments')  
     ArgGroup.add_argument("-i", "--inputfile", type=str, help="Path to lioness file, either in .csv format or the .pickle file created by lioness_to_pickle_df.py script", required=True) 
     ArgGroup.add_argument("-t", "--inputtype", choices= ['csv', 'pickle'], type=str, help="File type of the lioness file", required=True) 
