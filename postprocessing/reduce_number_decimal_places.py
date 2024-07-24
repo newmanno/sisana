@@ -17,7 +17,7 @@ if __name__ == '__main__':
         The previous lioness file will then need to be deleted manually if the user wishes to clear up space.
     """
     
-    parser = argparse.ArgumentParser(description="Example command: python reduce_number_decimal_places.py -n <file.pickle> -i <input_format> -o <output_directory> -f <output_format>")
+    parser = argparse.ArgumentParser(description="Example command: python reduce_number_decimal_places.py -n lioness_df.pickle> -i pickle -o ./output/ -f csv -d 3")
     ArgGroup = parser.add_argument_group('Required arguments')  
     
     ArgGroup.add_argument("-n", "--filename", type=str, help="Path to file in csv or pickle format", required=True)
