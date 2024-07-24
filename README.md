@@ -99,7 +99,7 @@ Now, we reduce the number of decimal places in the output file to save on storag
 
 #### Example command
 ```
-python reduce_number_decimal_places.py -n lioness_df.csv -i pickle -o ./output/ -f csv -d 3
+python reduce_number_decimal_places.py -n lioness_df.pickle -i pickle -o ./output/ -f csv -d 3
 ```
 
 #### Inputs
@@ -110,7 +110,7 @@ python reduce_number_decimal_places.py -n lioness_df.csv -i pickle -o ./output/ 
  - `-d`: Number of decimal points to truncate the degrees to
 
 #### Outputs
-A single file with truncated indegree/outdegree measurements
+A single file with indegree/outdegree measurements truncated to the desired number of decimal points
 
 
 
@@ -128,8 +128,7 @@ python lioness_df_indeg_outdeg_calculator.py -i lioness_df.pickle -t pickle -o .
  - `-o`: Path to pickle file to output
    
 #### Outputs
-A single pickled LIONESS data frame
-
+CSV files for both indegree (also known as gene targeting score) and outdegree
 
 
 ## Comparing the in-degrees and out-degrees between treatment groups
