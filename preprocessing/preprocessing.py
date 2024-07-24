@@ -20,7 +20,7 @@ if __name__ == '__main__':
         Filters expression data for parameters (e.g. genes) that are only present in at least m samples.
     """
 
-    parser = argparse.ArgumentParser(description="Example command: python filter_exp_min_samps.py -e <expression_file.tsv> -m <motif_file.txt> -p <ppi_file.txt> -n 10")
+    parser = argparse.ArgumentParser(description="Example command: python preprocess.py -e <expression_file.tsv> -m <motif_file.txt> -p <ppi_file.txt> -n 10 -o ./output/")
     requiredArgGroup = parser.add_argument_group('Required arguments')        
     requiredArgGroup.add_argument("-e", "--exp", type=str, help="Path to file containing the gene expression data. Row names must be genes, the expression file does not have a header, and the cells are separated by a tab", required=True)
     requiredArgGroup.add_argument("-m", "--motif", type=str, help="Path to motif file, which gets filtered to only contain genes that pass the minimum number of samples threshold", required=True)
