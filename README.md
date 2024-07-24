@@ -53,6 +53,7 @@ python preprocess.py -e expression_file.tsv -m motif_file.txt -p ppi_file.txt -n
 Three files, one for each of the three filtered input files. 
 
 
+
 ## Run PANDA
 This step creates a PANDA network from the filtered files. See documentation for netZooPy (https://github.com/netZoo/netZooPy/tree/master). An example command is given below.
 
@@ -62,6 +63,7 @@ python run_panda.py -e expression_data_filtered.txt -m motif_data_filtered.txt -
 ```
 
 
+
 ## Run LIONESS
 Similar to the PANDA step, this step creates LIONESS networks from the filtered files. See documentation for netZooPy (https://github.com/netZoo/netZooPy/tree/master). An example command is given below.
 
@@ -69,6 +71,7 @@ Similar to the PANDA step, this step creates LIONESS networks from the filtered 
 ```
 python run_lioness.py -e expression_data_filtered.txt -m motif_data_filtered.txt -p ppi_data_filtered.txt -g cpu -r single -c 4 -o ./output/ -f mat
 ```
+
 
 
 ## Serialize the LIONESS output
@@ -116,7 +119,7 @@ Once the LIONESS networks are made, a simple analysis to do is to calculate the 
 
 #### Example command
 ```
-python lioness_df_indeg_outdeg_calculator.py -p panda_output.txt -q lioness_df.pickle -t pickle -o ./output/
+python lioness_df_indeg_outdeg_calculator.py -i lioness_df.pickle -t pickle -o ./output/
 ```
 
 #### Inputs
