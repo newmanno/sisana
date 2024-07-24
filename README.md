@@ -37,9 +37,9 @@ pip3 install -r requirements.txt
 ## Pre-processing of data
 This step is actually performed prior to running PANDA/LIONESS, and it filters the expression matrix, PPI file, and prior motif to contain the same genes/TFs, which is necessary for running PANDA/LIONESS.
 
-#### Usage
+#### Example command
 ```
-python preprocess.py -e <expression_file.tsv> -m <motif_file.txt> -p <ppi_file.txt> -n 10
+python preprocess.py -e expression_file.tsv -m motif_file.txt -p ppi_file.txt -n 10 -o ./output/
 ```
 
 #### Inputs
@@ -47,6 +47,7 @@ python preprocess.py -e <expression_file.tsv> -m <motif_file.txt> -p <ppi_file.t
  - `-m`: Path to motif file, which gets filtered to only contain genes that pass the minimum number of samples threshold
  - `-p`: Path to ppi file, which gets filtered to only contain genes that pass the minimum number of samples threshold
  - `-n`: Minimum number of samples a gene must be expressed in; expression data will be filtered for only genes that pass
+ - `-o`: Path to output directory
 
 #### Outputs
 Three files, one for each of the three filtered input files. 
@@ -55,31 +56,34 @@ Three files, one for each of the three filtered input files.
 ## Run PANDA
 This step creates a PANDA network from the filtered files. See documentation for netZooPy (https://github.com/netZoo/netZooPy/tree/master). An example command is given below.
 
-#### Usage
+#### Example command
 ```
-python run_panda.py -e <expression_data_filtered>.txt -m <motif_data_filtered>.txt -p <ppi_data_filtered>.txt -r True -o <output_file>.txt
+python run_panda.py -e expression_data_filtered.txt -m motif_data_filtered.txt -p ppi_data_filtered.txt -r True -o output_file.txt
 ```
 
 
 ## Run LIONESS
 Similar to the PANDA step, this step creates LIONESS networks from the filtered files. See documentation for netZooPy (https://github.com/netZoo/netZooPy/tree/master). An example command is given below.
 
-#### Usage
+#### Example command
 ```
-python run_lioness.py -e <expression_data_filtered>.txt -m <motif_data_filtered>.txt -p <ppi_data_filtered>.txt -g cpu -r single -c 4 -o ./output/ -f mat
+python run_lioness.py -e expression_data_filtered.txt -m motif_data_filtered.txt -p ppi_data_filtered.txt -g cpu -r single -c 4 -o ./output/ -f mat
 ```
 
 
 ## Serialize the LIONESS output
 We now save the LIONESS output as a pickle file
 
-#### Usage
+#### Example command
 ```
-python lioness_to_pickle_df.py -p <file>.pickle -o <output directory>
+python lioness_to_pickle_df.py -p panda_output.txt -q lioness_output.npy -t npy -n sampnames.txt -o ./output/lioness_df.pickle
 ```
 
 #### Inputs
- - `-p`: Path to pickle file created by LIONESS_to_pickle_df.py script
+ - `-p`: Path to pickle file created by lioness_to_pickle_df.py script
+ - `-q`: Path to file produced by the run_lioness.py script
+ - `-t`: File type of lioness input (the -q file)
+ - `-n`: File with list of sample names (one per line) in the same order that were supplied to run_lioness.py
  - `-o`: Path to directory to save output file to
 
 #### Outputs
@@ -90,13 +94,13 @@ A single file of the LIONESS data frame in .pickle format
 ## Reduce the number of decimal points (OPTIONAL)
 Now, we reduce the number of decimal places in the output file to save on storage space.
 
-#### Usage
+#### Example command
 ```
-python reduce_number_decimal_places.py -n <file>.csv -i <input file type> -o <output directory> -f <output file type> -d <number of decimal points>
+python reduce_number_decimal_places.py -n lioness_df.csv -i pickle -o ./output/ -f csv -d 3
 ```
 
 #### Inputs
- - `-n`: Path to either the indegree/outdegree file from LIONESS_df_indeg_outdeg_calculator.py or the LIONESS output file
+ - `-n`: Path to either the indegree/outdegree file from lioness_df_indeg_outdeg_calculator.py or the LIONESS output file
  - `-i`: File type of the input file (either pickle or csv)
  - `-o`: Path to directory to output file to
  - `-f`: File type of output file
@@ -110,14 +114,13 @@ A single file with truncated indegree/outdegree measurements
 ## Calculating in-degree and out-degree of genes and TFs in LIONESS networks
 Once the LIONESS networks are made, a simple analysis to do is to calculate the in- and out-degrees of the nodes in the network, which is done in this step.
 
-#### Usage
+#### Example command
 ```
-python lioness_df_indeg_outdeg_calculator.py -p <panda_output>.txt -q <lioness_output>.txt -t <choice> -o <output directory>
+python lioness_df_indeg_outdeg_calculator.py -p panda_output.txt -q lioness_df.pickle -t pickle -o ./output/
 ```
 
 #### Inputs
- - `-p`: Path to PANDA file created by run_PANDA.py
- - `-q`: Path to LIONESS file created by run_LIONESS.py OR the file with reduced number of decimal places from the last step
+ - `-i`: Path to lioness file, either in .csv format or the .pickle file created by lioness_to_pickle_df.py script
  - `-t`: File type of LIONESS input file (-q)
  - `-o`: Path to pickle file to output
    
@@ -127,11 +130,11 @@ A single pickled LIONESS data frame
 
 
 ## Comparing the in-degrees and out-degrees between treatment groups
-Then, one can compare the in- and out-degrees between two treatment groups, using either a Student's t-test or a Mann-Whitney test.
+Then, one can compare the in- and out-degrees between two treatment groups, using either a Student's t-test or a Mann-Whitney test (or for paired samples, one can use either a paired t-test or Wilcoxon signed-rank test).
 
-#### Usage
+#### Example command
 ```
-python compare_degrees.py -m <mapping_file>.csv -p <indegree/outdegree file>.csv -c high low -t mw -o <output directory>
+python compare_degrees.py -m mapping_file.csv -p indegree/outdegree file.csv -c high low -t mw -o ./output/
 ```
 
 #### Inputs
