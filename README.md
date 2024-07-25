@@ -52,6 +52,7 @@ python preprocess.py -e expression_file.tsv -m motif_file.txt -p ppi_file.txt -n
 
 #### Outputs
 Three files, one for each of the three filtered input files. 
+<br />
 
 
 
@@ -62,6 +63,7 @@ This step creates a PANDA network from the filtered files. See documentation for
 ```
 python run_panda.py -e expression_data_filtered.txt -m motif_data_filtered.txt -p ppi_data_filtered.txt -r True -o output_file.txt
 ```
+<br />
 
 
 
@@ -92,8 +94,7 @@ python lioness_to_pickle_df.py -p panda_output.txt -q lioness_output.npy -t npy 
 
 #### Outputs
 A single file of the LIONESS data frame in .pickle format
-
-
+<br />
 
 
 
@@ -112,6 +113,7 @@ python filter_edges_for_prior.py -p lioness_df.pickle -m motif.tsv -o ./output -
    
 #### Outputs
 A single output file in either csv or pickle format, filtered for only the edges that were known prior interactions
+<br />
 
 
 
@@ -132,6 +134,7 @@ python reduce_number_decimal_places.py -n lioness_df.pickle -i pickle -o ./outpu
 
 #### Outputs
 A single file with indegree/outdegree measurements truncated to the desired number of decimal points
+<br />
 
 
 
@@ -150,6 +153,8 @@ python lioness_df_indeg_outdeg_calculator.py -i lioness_df.pickle -t pickle -o .
    
 #### Outputs
 CSV files for both indegree (also known as gene targeting score) and outdegree
+<br />
+
 
 
 ## Comparing the in-degrees and out-degrees between treatment groups
