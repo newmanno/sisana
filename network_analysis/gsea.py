@@ -18,7 +18,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="Example command: python gsea.py -f file.rnk -g genesets.gmt -s Hallmarks -o ./output")
     ArgGroup = parser.add_argument_group('Required arguments') 
-    ArgGroup.add_argument("-f", "--genefile", type=str, help="Path to file (.rnk format) containing the genes and test statistics to do enrichment on", required=True) 
+    ArgGroup.add_argument("-f", "--genefile", type=str, help="Path to file (.rnk format, which is two column, tab delimited, no header) containing the genes and test statistics to do enrichment on", required=True) 
     ArgGroup.add_argument("-g", "--gmtdir", type=str, help="Path to the directory containing the gene set files in gmt format", required=True)     
     ArgGroup.add_argument("-s", "--geneset", type=str, choices = ["KEGG", "Hallmarks", "Reactome"], help="The gene set type to use", required=True)         
     ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to directory to output file to", required=True) 
