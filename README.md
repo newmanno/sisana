@@ -138,6 +138,7 @@ python reduce_number_decimal_places.py -n lioness_df.pickle -i pickle -o ./outpu
 #### Outputs
 A single file with indegree/outdegree measurements truncated to the desired number of decimal points
 <br />
+<br />
 
 
 
@@ -156,6 +157,7 @@ python lioness_df_indeg_outdeg_calculator.py -i lioness_df.pickle -t pickle -o .
    
 #### Outputs
 CSV files for both indegree (also known as gene targeting score) and outdegree
+<br />
 <br />
 
 
