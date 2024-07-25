@@ -15,7 +15,7 @@ if __name__ == '__main__':
         This code takes the edges that were output by Lioness and filters them for just the edges that were in the prior motif
     """
     
-    parser = argparse.ArgumentParser(description="Example command: python filter_edges_for_prior.py -p <file.pickle> -m <motif.tsv> -o ./output")
+    parser = argparse.ArgumentParser(description="Example command: python filter_edges_for_prior.py -p lioness_df.pickle -m motif.tsv -o ./output -f pickle")
     ArgGroup = parser.add_argument_group('Required arguments')  
     
     ArgGroup.add_argument("-p", "--picklefile", type=str, help="Path to pickle file created by lioness_to_pickle_df.py script", required=True)
