@@ -26,8 +26,9 @@ conda activate /path/to/env-name
 git clone https://github.com/newmanno/sisana.git
 ```
 
-4. From the repo directory, run the following command to install the required modules
+4. Move into the repo directory, then run the following command to install the required modules
 ```
+cd sisana
 pip3 install -r requirements.txt
 ```
 
