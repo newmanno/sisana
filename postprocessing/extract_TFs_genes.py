@@ -23,7 +23,7 @@ if __name__ == '__main__':
     
     os.chdir(userdir)
     
-    parser = argparse.ArgumentParser(description="Example command: python extract_TFs_genes.py -q lioness_output.pickle -o ./output/lioness_df.pickle")
+    parser = argparse.ArgumentParser(description="Example command: python extract_TFs_genes.py -p lioness_output.pickle -t gene -n genes.txt -o ./output/")
     requiredArgGroup = parser.add_argument_group('Required arguments')  
     requiredArgGroup.add_argument("-p", "--picklefile", type=str, help="Path to lioness output in pickle format", required=True) 
     requiredArgGroup.add_argument("-t", "--type", type=str, choices = ["tf", "gene"], help="Do you want to subset for TFs (tf) or genes (target)?", required=True)     
