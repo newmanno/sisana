@@ -95,6 +95,26 @@ A single file of the LIONESS data frame in .pickle format
 
 
 
+
+
+## Filter LIONESS output for only known interactions in the prior motif
+
+#### Example command
+```
+python filter_edges_for_prior.py -p lioness_df.pickle -m motif.tsv -o ./output -f pickle
+```
+
+#### Inputs
+ - `-p`: Path to pickle file created by lioness_to_pickle_df.py script
+ - `-m`: Path to the prior motif file used in the original PANDA/LIONESS script
+ - `-o`: Path to directory to output file to
+ - `-f`: Format of file to output the filtered network to (either csv or pickle)
+   
+#### Outputs
+A single output file in either csv or pickle format, filtered for only the edges that were known prior interactions
+
+
+
 ## Reduce the number of decimal points (OPTIONAL)
 Now, we reduce the number of decimal places in the output file to save on storage space.
 
