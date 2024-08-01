@@ -63,7 +63,9 @@ if __name__ == '__main__':
     
     # Print summary statistics for the filtering of exp files
     dist = expdf["num_samps_expressed"].value_counts()
-    dist.index.name = None
+    dist = dist.rename_axis('Number of samples with expression').reset_index(name='Number of instances')
+    dist = dist.sort_values(by='Number of samples with expression', ascending=False)
+    #dist.index.name = None
 
     
     
@@ -163,7 +165,6 @@ if __name__ == '__main__':
     
     
     # Print summary of run
-    print("\n\nNumber of samples with expression | Number of instances")
     print(dist)    
     
     print("\nExp file filtering info based on low abundance genes:")
