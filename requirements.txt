@@ -16,6 +16,7 @@ kiwisolver==1.4.5
 matplotlib==3.9.1
 matplotlib-inline==0.1.7
 networkx==3.3
+netZooPy==0.8.1
 numexpr==2.10.1
 numpy==2.0.1
 osqp==0.6.7.post1
