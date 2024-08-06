@@ -18,10 +18,12 @@ def files_to_dfs(fname_panda, fname_lion, ftype):
     -----------
         - data frames of the panda and lioness files
     '''        
-    pandaFile = pd.read_csv(fname_panda, sep = " ", engine = "pyarrow", header = None)
+    # pandaFile = pd.read_csv(fname_panda, sep = " ", engine = "pyarrow", header = None)
+    pandaFile = pd.read_csv(fname_panda, sep = " ", engine = "python", header = None)
     
     if ftype == "txt": 
-        lionFile = pd.read_csv(fname_lion, sep = "\t", engine = "pyarrow", header = None)
+        # lionFile = pd.read_csv(fname_lion, sep = "\t", engine = "pyarrow", header = None)
+        lionFile = pd.read_csv(fname_lion, sep = "\t", engine = "python", header = None)
     elif ftype == "npy":    
         lionnpy = np.load(fname_lion)
         lionFile = pd.DataFrame(lionnpy)
