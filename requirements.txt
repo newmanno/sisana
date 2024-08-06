@@ -23,7 +23,6 @@ packaging==24.1
 pandas==2.2.2
 pickleshare==0.7.5
 pillow==10.4.0
-pyarrow==17.0.0
 pyparsing==3.1.2
 python-dateutil==2.9.0.post0
 pytz==2024.1
