@@ -29,7 +29,7 @@ qdldl==0.1.7.post4
 requests==2.32.3
 scikit-learn==1.5.1
 scikit-survival==0.23.0
-scipy==1.14.0
+scipy==1.13.1
 seaborn==0.13.2
 setuptools==71.0.4
 six==1.16.0
