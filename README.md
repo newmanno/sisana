@@ -11,9 +11,9 @@ SiSaNA is used both before and after creating both PANDA and LIONESS networks fr
    
 ## Installation can be performed by running the following steps
 
-1. Create a conda virtual environment with python 3.12.0
+1. Create a conda virtual environment with python 3.9.19. SiSaNA may work with other versions of Python as well, but has been written and tested on this version.
 ```
-conda create --prefix /path/to/env-name python=3.12.0
+conda create --prefix /path/to/env-name python=3.9.19
 ```
 
 2. Enter the conda environment
@@ -30,6 +30,11 @@ git clone https://github.com/newmanno/sisana.git
 ```
 cd sisana
 pip3 install -r requirements.txt
+```
+
+5. Install the newest netZooPy module
+```
+conda install -c netzoo -c conda-forge netzoopy
 ```
 
 ## Pipeline overview
