@@ -1,8 +1,10 @@
 import scipy 
 from scipy import stats
+import scipy.stats
 import csv
 import re
 import pandas 
+from statistics import mean
 import math
 
 def file_to_list(fname):
@@ -129,7 +131,7 @@ def calc_log2_fc(group1, group2):
     
     # Only run if all values are positive, otherwise the user likely entered degree as their data file accidentally
     if all(i > 0 for i in group1) and all(i > 0 for i in group2):
-        log2FC = math.log2(scipy.mean(group2)/scipy.mean(group1))
+        log2FC = math.log2(mean(group2)/mean(group1))
     else:
         print(group1, group2)
         raise Exception("\n\nError: Negative values found in data. The log2 fold change can only be calculated on expression data. Negative values indicate that degree was likely used as an input type instead.\n")
