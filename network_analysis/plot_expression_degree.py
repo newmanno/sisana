@@ -38,11 +38,14 @@ if __name__ == '__main__':
     
     # Get data and metadata
     if args.filetype == "csv":
-        indata = pd.read_csv(args.datafile, engine = "pyarrow", index_col=[0])
+        # indata = pd.read_csv(args.datafile, engine = "pyarrow", index_col=[0])
+        indata = pd.read_csv(args.datafile, engine = "python", index_col=[0])
     elif args.filetype == "txt":
-        indata = pd.read_csv(args.datafile, sep='\t', engine = "pyarrow", header=None, index_col=[0])
+        # indata = pd.read_csv(args.datafile, sep='\t', engine = "pyarrow", header=None, index_col=[0])
+        indata = pd.read_csv(args.datafile, sep='\t', engine = "python", header=None, index_col=[0])
         
-    meta = pd.read_csv(args.metadata, engine = "pyarrow", index_col=[0])
+    # meta = pd.read_csv(args.metadata, engine = "pyarrow", index_col=[0])
+    meta = pd.read_csv(args.metadata, engine = "python", index_col=[0])
 
     # Create list of genes
     user_gene_list = file_to_list(args.genelist)
