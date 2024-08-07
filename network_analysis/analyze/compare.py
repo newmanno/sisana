@@ -129,7 +129,9 @@ def calc_log2_fc(group1, group2):
     # elif scipy.mean(group2) != 0:
     
     # Only run if all values are positive, otherwise the user likely entered degree as their data file accidentally
-    if all(i > 0 for i in group1) and all(i > 0 for i in group2):
+    if mean(group1) == 0 or mean(group2) == 0:
+        log2FC = "NA"
+    elif all(i >= 0 for i in group1) and all(i >= 0 for i in group2):
         log2FC = math.log2(mean(group2)/mean(group1))
     else:
         print(group1, group2)

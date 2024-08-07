@@ -24,14 +24,30 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Example command: python compare_groups.py -m map.csv -p lioness.pickle -d degree -c high low -t mw -o ./output/")
     ArgGroup = parser.add_argument_group('Required arguments')  
     ArgGroup.add_argument("-m", "--mapfile", type=str, help="Path to mapping file (csv). If doing an unpaired test (--testtype = mw or tt) then this file maps samples (first column, no header) to groups (second column, no header). Otherwise, if doing a paired analysis (--testtype = paired_tt or wilcoxon) then the samples for one group will go in column 1 (no header) while their paired samples will go in column 2.", required=True) 
-    ArgGroup.add_argument("-p", "--degfile", type=str, help="Path to csv file containing the degrees (in/out) of each node", required=True)
+    ArgGroup.add_argument("-p", "--datafile", type=str, help="Path to csv file containing the degrees (in/out) of each node", required=True)
+    ArgGroup.add_argument("-s", "--sampnames", type=str, help="Path to txt file containing the order of samples. Only required if using expression data, since degree data will already have the correct header", required=True)
+    ArgGroup.add_argument("-f", "--filetype", choices = ["csv", "txt"], type=str, help="File type, either csv or txt (for tab separated files)", required=True)
     ArgGroup.add_argument("-d", "--datatype", choices = ["degree", "expression"], type=str, help="Type of input data, either degree or expression", required=True)
     ArgGroup.add_argument("-c", "--compgroups", type=str, nargs=2, help="Name of groups in mapping file to compare, required if not performing a paired analysis. Please note that if comparing expression, the second group listed will be used as the numerator in calculating the log2 fold change (e.g. log2(group2/group1))", required=False) 
     ArgGroup.add_argument("-t", "--testtype", type=str, choices = ["tt", "mw", "paired_tt", "wilcoxon"], help="Type of comparison to perform, either Student's t-test, Mann-Whitney U, or a test for paired samples", required=True)     
     ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to directory to output file to", required=True) 
     
     args = parser.parse_args()
-    liondf = pd.read_csv(args.degfile, index_col = 0)
+    
+    if args.filetype == "csv":
+        datadf = pd.read_csv(args.datafile, index_col = 0)
+    else:
+        datadf = pd.read_csv(args.datafile, index_col = 0, sep = "\t")
+        
+    if args.datatype == "expression":        
+        sampsfile = open(args.sampnames, "r")
+        fileread = sampsfile.read()
+        namelist = fileread.split("\n") 
+        namelist = list(filter(None, namelist))
+        
+        datadf.columns = namelist 
+    
+    print(datadf.head())
     
     print("Performing calculations, please wait...")
     
@@ -51,14 +67,14 @@ if __name__ == '__main__':
         total_samps = len(groups["group1"]) + len(groups["group2"])
                
     # remove unnecessary samples to save on memory
-    if len(liondf.columns) > total_samps:
+    if len(datadf.columns) > total_samps:
         allsamps = []
         allsamps = sampdict[groups[0]] + sampdict[groups[1]]
-        compdf = liondf.loc[:, allsamps]
+        compdf = datadf.loc[:, allsamps]
     else:
-        compdf = liondf
+        compdf = datadf
         
-    del liondf
+    del datadf
 
     # Calculate p-value/FDR
     if args.testtype == "tt" or args.testtype == "mw":
