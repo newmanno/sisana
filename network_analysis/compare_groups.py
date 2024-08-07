@@ -33,6 +33,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     liondf = pd.read_csv(args.degfile, index_col = 0)
     
+    print("Performing calculations, please wait...")
+    
     if args.testtype == "tt" or args.testtype == "mw":
         groups = args.compgroups
           

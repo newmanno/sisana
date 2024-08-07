@@ -49,7 +49,6 @@ def map_samples(mapfile, type1, type2):
         samp_file = csv.reader(samp_file, delimiter = ',')
 
         for row in samp_file:
-            print(row)
             init_dict[row[0]] = row[1]
 
     for key,value in init_dict.items():
