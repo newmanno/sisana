@@ -1,11 +1,11 @@
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 import argparse
-from analyze import file_to_list, scale_data, pca_fit_transform, km
+from analyze import file_to_list, scale_data, pca_fit_transform, km, assign_to_cluster
 import pandas as pd
 import os 
+import matplotlib.pyplot as plt
 
-# Load in data
 if __name__ == '__main__':
     """
     Description:
@@ -28,8 +28,8 @@ if __name__ == '__main__':
     elif args.filetype == "txt":
         data = pd.read_csv(args.datafile, index_col = 0, sep = "\t")
 
+    # If user is using expression data, add the sample names
     if args.sampnames is not None:
-        # Lioness file does not have any header or column names, needs them for t-test later
         sampsfile = open(args.sampnames, "r")
         fileread = sampsfile.read()
         namelist = fileread.split("\n") 
@@ -37,12 +37,13 @@ if __name__ == '__main__':
             
         data.columns = namelist
 
+    # kmeans code cannot be run if user inputs too small of value for the maximum components
     if args.compnum > len(data.columns):
-        raise Exception("Error: Please ensure the kmax value supplied is larger than the number of samples in your dataset.")
+        raise Exception("Error: Please ensure the --compnum value supplied is larger than the number of samples in your dataset.")
 
+    # Compute PCA
     data_t = data.T
     data_scaled = scale_data(data_t)
-
     PCA_out = pca_fit_transform(data_scaled, args.compnum, data_t.index) 
     PCA_df = PCA_out["df"] 
     PCA_pcs = PCA_out["pcs"] 
@@ -55,11 +56,32 @@ if __name__ == '__main__':
     else:
         kmax = 10
         
-    print(f"calculated kmax value to use in kmeans calculation: {kmax}")
-    print(PCA_pcs)
+    # Perform kmeans clustering
+    print(f"Calculated kmax value to use in kmeans calculation: {kmax}")
     sil_scores = km(PCA_pcs, kmax, len(data.columns))
+            
+    # Report results to user
+    print(f"\nNumber of clusters : Silhouette score")
+    
+    for i in range(2, len(sil_scores)+2):
+        print(f"{i}: {sil_scores[i-2]:.2f}")
+    
+    largest_score = max(sil_scores)
+    num_clusters = sil_scores.index(largest_score) + 2
+    
+    if largest_score > 0.4:
+        print(f"\nThe largest silhouette score of {largest_score:.2f} was found for {num_clusters} clusters.")
+    else:
+        print(f"\nThe largest silhouette score of {largest_score:.2f} was found for {num_clusters} clusters... Considering this value is smaller than 0.4, you may want to try alternative clustering methods.")
+    
+    # Assign samples to clusters based on the k value with highest silhouette score
+    assigned_samps = assign_to_cluster(PCA_pcs, data_t, num_clusters)
+
+    assigned_samps_fname = os.path.join(args.outdir, f"kmeans_sample_cluster_assignment_{num_clusters}_clusters.txt")
+    assigned_samps.to_csv(assigned_samps_fname, sep = "\t", index = False)   
+    print(f"\nFile saved: {assigned_samps_fname}")     
         
-    import matplotlib.pyplot as plt
+    # Plot resulting silhouette scores
     plt.style.use("fivethirtyeight")
     plt.plot(range(2, kmax), sil_scores)
     plt.xticks(range(2, kmax))
@@ -70,4 +92,4 @@ if __name__ == '__main__':
     outname = os.path.join(args.outdir, f"kmeans_silhouette_scores.png")
     plt.savefig(outname, bbox_inches='tight')
 
-    print(f"File saved: {outname}")     
+    print(f"\nFile saved: {outname}")     
