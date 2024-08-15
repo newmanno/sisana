@@ -4,6 +4,9 @@ import pandas as pd
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
+import matplotlib as plt
+import seaborn as sns
+import os 
 
 def scale_data(df):
     '''
@@ -45,6 +48,37 @@ def pca_fit_transform(scaled, nc, df_index):
     pca_dict["pcs"] = pca_table
     return(pca_dict)
 
+def plot_pca(df, catcol, output_path):
+    '''
+    Function that visualizes the resulting PCA plot on the first two PCs
+
+    Parameters 
+    ----------
+        df : panda data frame
+            A data frame including the metadata (sample categories) and PCs for each sample
+        catcol : str
+            Choice of column to use for assigning categories in plot
+        output_path : str
+            Path to file name to save the figure as
+    '''
+    # plt.figure(figsize=(5,5))
+    # print(df)
+    # contin_vals = df[continuous_col]
+    # print(contin_vals)
+    
+    # cmap = sns.cubehelix_palette(rot=-.2, as_cmap=True)
+    
+    plot = sns.scatterplot(x="PC1", y="PC2",
+                           hue = catcol,
+                           palette=sns.color_palette(),
+                           data=df,
+                           legend="full",
+                           alpha=0.5) 
+    
+    fig = plot.get_figure()
+    
+    fig.savefig(output_path, bbox_inches='tight')
+   
 
 def km(pca_df, kmax, numsamps, clusttype):
     '''
@@ -57,7 +91,7 @@ def km(pca_df, kmax, numsamps, clusttype):
         pca_df : panda data frame
             A df of PCA values output by pca_fit_transform
         kmax : int
-            The maximum value of k
+            The maximum value of k, where k is the number of clusters
         numsamps : int
             The number of samples in the data frame
         clusttype : str [choices are kmeans or hkmeans]
@@ -110,7 +144,7 @@ def assign_to_cluster(pca_df, data_t, k, clusttype):
         data_t : panda data frame
             A transposed data frame, where samples are rows and variables (e.g. genes) are columns.
         k : int
-            The value of k that corresponds to the maximum silhouette score
+            The number of clusters 
         clusttype : str [choices are kmeans or hkmeans]
             The type of clustering to perform. kmeans performs standard kmeans clustering while hkmeans uses the Hartigan method 
     '''     

@@ -1,7 +1,7 @@
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 import argparse
-from analyze import file_to_list, scale_data, pca_fit_transform, km, assign_to_cluster
+from analyze import file_to_list, scale_data, pca_fit_transform, km, assign_to_cluster, plot_pca
 import pandas as pd
 import os 
 import matplotlib.pyplot as plt
@@ -19,7 +19,10 @@ if __name__ == '__main__':
     ArgGroup.add_argument("-f", "--filetype", choices = ["csv", "txt"], type=str, help="File type of the input data file", required=True)
     ArgGroup.add_argument("-c", "--compnum", type=int, help="Maximum value of components to use in PCA. Must be less than or equal to number of samples", required=True)
     ArgGroup.add_argument("-k", "--clusterchoice", choices = ["kmeans", "hkmeans"], type=str, help="Type of clustering to perform, either basic kmeans or kmeans using Hartigan's method (hkmeans)", required=True)
+    ArgGroup.add_argument("-n", "--numclus", type=int, help="Number of clusters to attempt to separate samples into", required=False)
     ArgGroup.add_argument("-s", "--sampnames", type=str, help="Path to file containing the order of samples in the expression data", required=False)
+    ArgGroup.add_argument("-p", "--plotpca", action='store_true', help="Flag; Do you want to create a PCA plot of the first two primary components?", required=False)
+    ArgGroup.add_argument("-m", "--metadata", type=str, help="Metadata file with a header in the format 'name,group', where name is the sample name and group is the category of the sample (e.g. Control, Disease, etc.). Required if --plotpca is given as an argument.", required=False)
     ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to directory to output results to", required=True) 
     
     args = parser.parse_args()
@@ -49,63 +52,98 @@ if __name__ == '__main__':
     PCA_df = PCA_out["df"] 
     PCA_pcs = PCA_out["pcs"] 
     
-    # Plot first two components
-    pca_df = pd.DataFrame()
-    pca_df["PC1"] = [x[0] for x in PCA_pcs]
-    pca_df["PC2"] = [x[1] for x in PCA_pcs]
+    if args.plotpca:
+        # Plot first two components
+        pca_df = pd.DataFrame()
+        pca_df["PC1"] = [x[0] for x in PCA_pcs]
+        pca_df["PC2"] = [x[1] for x in PCA_pcs]
+        pca_df.index = data_t.index
+        print(pca_df)
 
-    pca_outname = os.path.join(args.outdir, f"pca.png")
+        # Add metadata for plotting
+        meta = pd.read_csv(args.metadata, index_col = 0)
+        meta_pc = pd.concat([PCA_df, meta], axis = 1) # merge all three tables based on their indeces
+        print(meta_pc)
 
-    plt.scatter(pca_df["PC1"], pca_df["PC2"])
-    plt.savefig(pca_outname, bbox_inches='tight')
+        # plt.scatter(pca_df["PC1"], pca_df["PC2"])
+        # plt.xlabel("PC1")
+        # plt.ylabel("PC2")
+        
+        outpath = os.path.join(args.outdir, f"pca.png")
 
-    # Choose a value for kmax. Normally we will use 11, but if user has 11 samples or less, this will not work so we need to adjust kmax to be one less than the number of samples
-    if len(data.columns) <= 5:
-        raise Exception("Error: Must have at least 6 samples for finding clusters")
-    elif len(data.columns) <= 10:
-        kmax = len(data.columns) - 1
+        plot_pca(meta_pc, "group", outpath)
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # if user did not specify the number of clusters, find the optimal number based on silhouette score and perform clustering using the resulting k value
+    if args.numclus is None:
+        # Choose a value for kmax. Normally we will use 11, but if user has 11 samples or less, this will not work so we need to adjust kmax to be one less than the number of samples
+        if len(data.columns) <= 5:
+            raise Exception("Error: Must have at least 6 samples for finding clusters")
+        elif len(data.columns) <= 10:
+            kmax = len(data.columns) - 1
+        else:
+            kmax = 11
+        
+        # Calculate silhouette scores to find optimal number of clusters
+        print(f"Calculated kmax value to use in kmeans calculation: {kmax}")
+        sil_scores = km(PCA_pcs, kmax, len(data.columns), args.clusterchoice)
+
+        # Report results to user
+        print(f"\nNumber of clusters : Silhouette score")
+        for i in range(2, len(sil_scores)+2):
+            print(f"{i}: {sil_scores[i-2]:.2f}")
+        
+        largest_score = max(sil_scores)
+        num_clusters = sil_scores.index(largest_score) + 2
+
+        if largest_score > 0.4:
+            print(f"\nThe largest silhouette score of {largest_score:.2f} was found for {num_clusters} clusters. Thus, cluster assignment will be performed for {num_clusters} clusters.")
+        else:
+            import warnings
+            warnings.warn("\nWARNING: Silhouette score is small!", RuntimeWarning)
+            print(f"The largest silhouette score of {largest_score:.2f} was found for {num_clusters} clusters... Considering this value is smaller than 0.4, you may want to try alternative clustering methods. Regardless, cluster assignment will be performed for {num_clusters} clusters.")
+        
+        # Assign samples to clusters based on the k value with highest silhouette score
+        assigned_samps = assign_to_cluster(PCA_pcs, data_t, num_clusters, args.clusterchoice)
+        assigned_samps_fname = os.path.join(args.outdir, f"kmeans_sample_cluster_assignment_{num_clusters}_clusters.txt")
+        
+                
+        # Plot resulting silhouette scores
+        plt.style.use("fivethirtyeight")
+        plt.plot(range(2, kmax), sil_scores)
+        plt.xticks(range(2, kmax))
+        plt.xlabel("Number of Clusters")
+        plt.ylabel("Silhouette Coefficient")
+        plt.show() 
+        
+        outname = os.path.join(args.outdir, f"kmeans_silhouette_scores.png")
+        plt.savefig(outname, bbox_inches='tight')
+        
+        print(f"Calculated silhouette scores for each number of clusters saved here: {outname}")     
+
+        
     else:
-        kmax = 11
-    
-    # Calculate silhouette scores to find optimal number of clusters
-    print(f"Calculated kmax value to use in kmeans calculation: {kmax}")
-    sil_scores = km(PCA_pcs, kmax, len(data.columns), args.clusterchoice)
-
-    # Report results to user
-    print(f"\nNumber of clusters : Silhouette score")
-    for i in range(2, len(sil_scores)+2):
-        print(f"{i}: {sil_scores[i-2]:.2f}")
-    
-    largest_score = max(sil_scores)
-    num_clusters = sil_scores.index(largest_score) + 2
-
-    if largest_score > 0.4:
-        print(f"\nThe largest silhouette score of {largest_score:.2f} was found for {num_clusters} clusters. Thus, cluster assignment will be performed for {num_clusters} clusters.")
-    else:
-        import warnings
-        warnings.warn("\nWARNING: Silhouette score is small!", RuntimeWarning)
-        print(f"The largest silhouette score of {largest_score:.2f} was found for {num_clusters} clusters... Considering this value is smaller than 0.4, you may want to try alternative clustering methods. Regardless, cluster assignment will be performed for {num_clusters} clusters.")
-    
-    # Assign samples to clusters based on the k value with highest silhouette score
-    assigned_samps = assign_to_cluster(PCA_pcs, data_t, num_clusters, args.clusterchoice)
-    
+        assigned_samps = assign_to_cluster(PCA_pcs, data_t, args.numclus, args.clusterchoice)
+        assigned_samps_fname = os.path.join(args.outdir, f"kmeans_sample_cluster_assignment_{args.numclus}_clusters.txt")
+         
+        
     # print("\nSample cluster assignment can be seen below.")
     # print(assigned_samps.to_csv(sep='\t', index=False))
     
-    assigned_samps_fname = os.path.join(args.outdir, f"kmeans_sample_cluster_assignment_{num_clusters}_clusters.txt")
     assigned_samps.to_csv(assigned_samps_fname, sep = "\t", index = False)   
-        
-    # Plot resulting silhouette scores
-    plt.style.use("fivethirtyeight")
-    plt.plot(range(2, kmax), sil_scores)
-    plt.xticks(range(2, kmax))
-    plt.xlabel("Number of Clusters")
-    plt.ylabel("Silhouette Coefficient")
-    plt.show() 
     
-    outname = os.path.join(args.outdir, f"kmeans_silhouette_scores.png")
-    plt.savefig(outname, bbox_inches='tight')
-
     print(f"\nSample cluster assignment saved here: {assigned_samps_fname}")     
-    print(f"Calculated silhouette scores for each number of clusters saved here: {outname}")     
-    print(f"PCA plot for scaled input data saved here: {pca_outname}\n")     
+    
+    if args.plotpca:
+        print(f"PCA plot for scaled input data saved here: {outpath}\n")     
