@@ -6,7 +6,7 @@ import pickle
 from pathlib import Path
 import matplotlib.pyplot as plt
 import warnings
-from analyze import file_to_list
+from analyze import file_to_list, NotASubsetError
 import os
 
 if __name__ == '__main__':
@@ -62,13 +62,7 @@ if __name__ == '__main__':
     data_genes = list(indata.index)
     
     if not set(user_gene_list).issubset(set(data_genes)):
-        genes_missing = list(set(user_gene_list).difference(data_genes)) # Find genes not in the data provided
-        print(genes_missing)
-        print("\nError: The following genes in the supplied gene list are not present in the data provided:")
-        [print(i) for i in genes_missing]
-        print("\n")
-
-        raise Exception("Please ensure the genes in the supplied list are a subset of the genes in the dataset.")
+        raise NotASubsetError(user_gene_list, data_genes)
 
     indata = indata.T
     indata.index.name = "name"
@@ -100,8 +94,6 @@ if __name__ == '__main__':
     subdata_melt['gene'] = pd.Categorical(subdata_melt.gene, ordered=True, categories=user_gene_list)
     subdata_melt = subdata_melt.sort_values(['group','gene'])
     
-    print(subdata_melt)
-
     # Set colors for plotting if the user has specified colors      
     if args.colors is not None:
         assert len(args.colors) == len(args.groupnames)
