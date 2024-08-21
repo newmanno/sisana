@@ -25,9 +25,9 @@ if __name__ == '__main__':
     ArgGroup = parser.add_argument_group('Required arguments')  
     ArgGroup.add_argument("-m", "--mapfile", type=str, help="Path to mapping file (csv). If doing an unpaired test (--testtype = mw or tt) then this file maps samples (first column, no header) to groups (second column, no header). Otherwise, if doing a paired analysis (--testtype = paired_tt or wilcoxon) then the samples for one group will go in column 1 (no header) while their paired samples will go in column 2.", required=True) 
     ArgGroup.add_argument("-p", "--datafile", type=str, help="Path to csv file containing the degrees (in/out) of each node", required=True)
-    ArgGroup.add_argument("-s", "--sampnames", type=str, help="Path to txt file containing the order of samples. Only required if using expression data, since degree data will already have the correct header", required=True)
+    ArgGroup.add_argument("-s", "--sampnames", type=str, help="Path to txt file containing the order of samples. Only required if using expression data, since degree data will already have the correct header", required=False)
     ArgGroup.add_argument("-f", "--filetype", choices = ["csv", "txt"], type=str, help="File type, either csv or txt (for tab separated files)", required=True)
-    ArgGroup.add_argument("-d", "--datatype", choices = ["degree", "expression"], type=str, help="Type of input data, either degree or expression", required=True)
+    ArgGroup.add_argument("-d", "--datatype", choices = ["indegree", "outdegree", "expression"], type=str, help="Type of input data, either degree or expression", required=True)
     ArgGroup.add_argument("-c", "--compgroups", type=str, nargs=2, help="Name of groups in mapping file to compare, required if not performing a paired analysis. Please note that if comparing expression, the second group listed will be used as the numerator in calculating the log2 fold change (e.g. log2(group2/group1))", required=False) 
     ArgGroup.add_argument("-t", "--testtype", type=str, choices = ["tt", "mw", "paired_tt", "wilcoxon"], help="Type of comparison to perform, either Student's t-test, Mann-Whitney U, or a test for paired samples", required=True)     
     ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to directory to output file to", required=True) 
@@ -113,11 +113,11 @@ if __name__ == '__main__':
     
     # Write to disk
     if args.testtype == "tt" or args.testtype == "mw":
-        save_file_path = os.path.join(args.outdir, f"comparison_{args.testtype}_between_{args.compgroups[0]}_{args.compgroups[1]}.txt")
-        save_file_path_ranked = os.path.join(args.outdir, f"comparison_{args.testtype}_between_{args.compgroups[0]}_{args.compgroups[1]}_ranked_test_stat.rnk")
+        save_file_path = os.path.join(args.outdir, f"comparison_{args.testtype}_between_{args.compgroups[0]}_{args.compgroups[1]}_{args.datatype}.txt")
+        save_file_path_ranked = os.path.join(args.outdir, f"comparison_{args.testtype}_between_{args.compgroups[0]}_{args.compgroups[1]}_{args.datatype}_ranked_test_stat.rnk")
     if args.testtype == "paired_tt" or args.testtype == "wilcoxon":
-        save_file_path = os.path.join(args.outdir, f"comparison_{args.testtype}.txt")
-        save_file_path_ranked = os.path.join(args.outdir, f"comparison_{args.testtype}_ranked_test_stat.rnk")
+        save_file_path = os.path.join(args.outdir, f"comparison_{args.testtype}_{args.datatype}.txt")
+        save_file_path_ranked = os.path.join(args.outdir, f"comparison_{args.testtype}_{args.datatype}_ranked_test_stat.rnk")
     
     # Make output directory if it does not already exist
     Path(args.outdir).mkdir(parents=True, exist_ok=True)    
