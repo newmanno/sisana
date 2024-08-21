@@ -17,14 +17,10 @@ def file_to_list(fname):
     Returns:
         returnlist: list of objects from the text file
     """
-    with open(fname, 'r') as file:
-        returnlist = []
+    all_lines = open(fname, "r").read().splitlines()
+    returnlist = [name for name in all_lines if name]
 
-        for line in file:
-            line = line.strip()
-            returnlist.append(line)    
-            
-        return (returnlist)   
+    return (returnlist)   
 
 def map_samples(mapfile, type1, type2):
     '''
