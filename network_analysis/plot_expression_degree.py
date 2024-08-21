@@ -114,11 +114,13 @@ if __name__ == '__main__':
     
     if args.plottype == "violin":
         sns.violinplot(data = subdata_melt, x = "gene", y = "value", hue = "group")
+        plt.tight_layout()
         outname = os.path.join(args.outdir, f"{args.prefix}_violin_plot.png")
         plt.savefig(outname)
         print(f"File saved: {outname}")
     elif args.plottype == "boxplot":
         sns.boxplot(data = subdata_melt, x = "gene", y = "value", hue = "group", fliersize = 2)
+        plt.tight_layout()
         outname = os.path.join(args.outdir, f"{args.prefix}_box_plot.png")
         plt.savefig(outname)
         print(f"File saved: {outname}")
