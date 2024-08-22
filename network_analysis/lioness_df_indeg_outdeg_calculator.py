@@ -48,6 +48,10 @@ if __name__ == '__main__':
     outdeg = outdeg_calculator(nwdf_tf)
     indeg = indeg_calculator(nwdf_target)
 
+    # Remove the "TF_" prefix for TFs, which was used for PANDA/LIONESS calculations 
+    newind = [x[3:] for x in outdeg.index]
+    outdeg.index = newind
+    
     # format file names and output
     base_file_name = Path(args.inputfile).stem
     outdeg_filename =  f"{base_file_name}_outdegree.csv"
@@ -56,7 +60,7 @@ if __name__ == '__main__':
     save_file_path_outdeg = os.path.join(args.outdir, outdeg_filename)
     save_file_path_indeg = os.path.join(args.outdir, indeg_filename)
     
-    outdeg.to_csv(save_file_path_outdeg)  
+    outdeg.to_csv(save_file_path_outdeg, index_label='TF')  
     indeg.to_csv(save_file_path_indeg)
     
     print("\nFinished!")
