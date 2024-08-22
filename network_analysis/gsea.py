@@ -19,8 +19,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Example command: python gsea.py -f file.rnk -g genesets.gmt -s Hallmarks -o ./output")
     ArgGroup = parser.add_argument_group('Required arguments') 
     ArgGroup.add_argument("-f", "--genefile", type=str, help="Path to file (.rnk format, which is two column, tab delimited, no header) containing the genes and test statistics to do enrichment on", required=True) 
-    ArgGroup.add_argument("-g", "--gmtdir", type=str, help="Path to the directory containing the gene set files in gmt format", required=True)     
-    ArgGroup.add_argument("-s", "--geneset", type=str, choices = ["KEGG", "Hallmarks", "Reactome"], help="The gene set type to use", required=True)         
+    ArgGroup.add_argument("-g", "--gmtfile", type=str, help="Path to the directory containing the gene set files in gmt format", required=True)     
+    ArgGroup.add_argument("-s", "--geneset", type=str, help="The gene set type you input into --gmtfile", required=True)            
     ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to directory to output file to", required=True) 
     
     args = parser.parse_args()
@@ -29,17 +29,9 @@ if __name__ == '__main__':
     if not os.path.exists(args.outdir):
         os.makedirs(args.outdir)
     
-    # Get the correct gene set based on user input
-    if args.geneset == "KEGG":
-        gset = os.path.join(args.gmtdir, "c2.cp.kegg_medicus.v2023.2.Hs.symbols.gmt")
-    elif args.geneset == "Hallmarks":
-        gset = os.path.join(args.gmtdir, "Hallmark.v2023.2.Hs.symbols.gmt")
-    elif args.geneset == "Reactome":
-        gset = os.path.join(args.gmtdir, "c2.cp.reactome.v2023.2.Hs.symbols.gmt")
-    
     # Run GSEA on a pre-ranked list of genes
     pre_res = gp.prerank(rnk=args.genefile,
-                     gene_sets=gset,
+                     gene_sets=args.gmtfile,
                      threads=4,
                      min_size=5,
                      max_size=1000,
