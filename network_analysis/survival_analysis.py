@@ -5,6 +5,7 @@ import pickle
 import numpy as np
 from analyze import file_to_list, map_samples
 from sksurv.compare import compare_survival
+from pathlib import Path
 
 
 __author__ = 'Nolan Newman'
@@ -31,9 +32,9 @@ if __name__ == '__main__':
 
     # Get data and metadata
     if args.filetype == "csv":
-        meta = pd.read_csv(args.metadata, engine = "pyarrow", index_col=[0], header = 0)
+        meta = pd.read_csv(args.metadata, engine = "python", index_col=[0], header = 0)
     elif args.filetype == "txt":
-        meta = pd.read_csv(args.metadata, sep='\t', engine = "pyarrow", index_col=[0], header = 0)
+        meta = pd.read_csv(args.metadata, sep='\t', engine = "python", index_col=[0], header = 0)
             
     # Make suvival plot (code adapted from https://scikit-survival.readthedocs.io/en/stable/user_guide/00-introduction.html)   
     import matplotlib.pyplot as plt
@@ -77,8 +78,9 @@ if __name__ == '__main__':
     print(f"\nSurvival analysis covariance matrix:")
     print(surv[3])
 
-    plt.savefig(args.outdir + "survival_plot.png")
-    print(f"\nFile saved: {args.outdir}survival_plot.png")     
+    outdir_path = Path(args.outdir)
+    plt.savefig(f"{outdir_path}/{args.compgroups[0]}_v_{args.compgroups[1]}_survival_plot.png")
+    print(f"\nFile saved: {outdir_path}/{args.compgroups[0]}_v_{args.compgroups[1]}_survival_plot.png")     
   
 
 
