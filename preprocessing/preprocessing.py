@@ -1,12 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Oct  6 16:23:26 2023
-
-@author: Nolan K Newman
-
-This script takes as input an expression matrix and finds the number of samples
-each gene is expressed in, as well as their stdev and variance
-"""
 import numpy as np
 import pandas as pd
 import argparse
@@ -17,7 +9,7 @@ from pathlib import Path
 if __name__ == '__main__':
     """
     Description:
-        Filters expression data for parameters (e.g. genes) that are only present in at least m samples.
+        Filters expression data for parameters (e.g. genes) that are only present in at least m samples. Also filters each input file so they have the same genes and TFs across each
     """
 
     parser = argparse.ArgumentParser(description="Example command: python preprocess.py -e <expression_file.tsv> -m <motif_file.txt> -p <ppi_file.txt> -n 10 -o ./output/")
