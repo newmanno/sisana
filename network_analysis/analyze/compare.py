@@ -84,6 +84,9 @@ def calc_tt(group1, group2, ttype):
         u2 = group1.shape[0] * group2.shape[0] - p[0]
         
         statistic = min(u1,u2)
+        if mean(group1) < mean(group2):
+            statistic = statistic * -1
+
         pval = p[1]
     elif ttype == 'paired_tt':
         p = stats.ttest_rel(group1, group2)
@@ -95,7 +98,7 @@ def calc_tt(group1, group2, ttype):
         pval = p[1]
 
     return(statistic, pval)
-
+    
 def calc_log2_fc(group1, group2):
     '''
     Calculates the log2 fold change of means across two groups
@@ -125,10 +128,14 @@ def calc_log2_fc(group1, group2):
     # elif scipy.mean(group2) != 0:
     
     # Only run if all values are positive, otherwise the user likely entered degree as their data file accidentally
-    if mean(group1) == 0 or mean(group2) == 0:
+    avg_g1 = mean(group1)
+    avg_g2 = mean(group2)
+
+    if avg_g1 == 0 or avg_g2 == 0:
         log2FC = "NA"
     elif all(i >= 0 for i in group1) and all(i >= 0 for i in group2):
-        log2FC = math.log2(mean(group2)/mean(group1))
+        log2FC = math.log2(avg_g2/avg_g1)
+        # print(log2FC)
     else:
         print(group1, group2)
         raise Exception("\n\nError: Negative values found in data. The log2 fold change can only be calculated on expression data. Negative values indicate that degree was likely used as an input type instead.\n")
