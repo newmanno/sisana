@@ -1,0 +1,45 @@
+# Stage 4: Visualize the differences between experimental groups. Specify which visualization to perform in the "sisana visualize" command
+visualize:
+  
+  # Use the following option if you wish to make a volcano plot, plotting both the fold change and FDR of genes
+  # example: sisana visualize volcano params.yml
+  volcano: 
+    datafile: # Path to TSV file containing the fold change, p-value, FDR, and mean degree/expression for each gene
+    FCcol: # The name of the column containing the log2 fold change values
+    adjpcol: # The name of the column containing the adj. p-value
+    fcthreshold: # Fold change threshold to use (value will also be applied to the negative end of the fold change axis, meaning a value of 1.5 really means +/- 1.5)"
+    adjpvalthreshold: # Threshold to use for the adjusted p-value
+    numlabels: # Maximum number of values to label on each half of the plot
+    outdir: # The directory to save the output to
+
+  # Use the following option if you wish to make a boxplot or violin plot. Specify which plot type in genelist
+  # example: sisana visualize quantity params.yml
+  quantity: 
+    datafile: # Path to file containing the expression or indegrees of each gene per sample.
+    filetype: # Type of input file, must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv implies tab-separated
+    metadata: # Path to the csv metadata file mapping samples to groups (groups must match names of the groupnames arg), must have a header of the format 'name,group'
+    genelist: # .txt file containing a list of genes to plot, must match the name of genes in the datafile. Recommended to not use more than 10 genes, otherwise use a heatmap.
+    plottype: # The type of plot to create. Choices are "boxplot" or "violin"
+    groups:  # The names of the groups to plot, should ideally be a list of 5 names or less. Groups will be plotted in the order they are written in this argument
+      - # Group 1 (ensure there is a space after the '-')
+      - # Group 2 (ensure there is a space after the '-')    
+    colors:  # The colors for each group, in the same order the groups appear in the groupnames arg. Supports matplotlib named colors (https://matplotlib.org/stable/gallery/color/named_colors.html)
+      - # Color 1 (ensure there is a space after the '-')
+      - # Color 2 (ensure there is a space after the '-')        
+    prefix: # Prefix to use for the output figures. For example, "expression_group1_group2" would produce "expression_group1_group2_box_plot.png" (assuming boxplot was used for plottype)
+    yaxisname: # Name to use for the y-axis
+    outdir: # Path to directory to output file to
+
+  # Use the following to create a heatmap
+  # example: sisana visualize heatmap params.yml
+  heatmap: 
+    datafile: # Path to file containing the expression or indegrees of each gene per sample
+    filetype: # Type of input file, must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv implies tab-separated
+    metadata: # Path to the csv metadata file mapping samples to groups (groups must match names of the groupnames arg), must have a header of the format 'name,group'
+    genelist: # .txt file containing a list of genes to plot, must match the name of genes in the datafile. Recommended to not use more than 10 genes, otherwise use a heatmap.
+    hierarchicalcluster: # Flag ("True" or "False") for if you wish to perform hierarchical clustering on the genes
+    groups:  # The names of the groups to plot (from the --metadata file). Groups will be plotted as column groups in the order they are written in this argument
+      - # Group 1 (ensure there is a space after the '-')
+      - # Group 2 (ensure there is a space after the '-')      
+    prefix: # Prefix to use for the output file; note that the output file will automatically be generated with the suffix '_heatmap.png'
+    outdir: # Path to directory to output file to

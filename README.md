@@ -29,7 +29,7 @@ git clone https://github.com/newmanno/sisana.git
 4. Move into the repo directory, then run the following command to install the required modules
 ```
 cd sisana
-pip3 install -r requirements.txt
+pip3 install -e .
 ```
 
 5. Install the newest netZooPy module
@@ -40,20 +40,16 @@ conda install -c netzoo -c conda-forge netzoopy
 ## Pipeline overview
 ![Pipeline overview](docs/pipeline2.png)
 
+## Setting up your params.yml file
+The most important thing to get right in order to correctly run SiSaNA is the structure of your params.yml file. SiSaNA comes with a params.yml file that is annotated to explain the function of each argument. The params.yml file is separated into 'chunks' that reflect the same subcommands available in SiSaNA on the command line. For each step of SiSaNA, you will need to use the correct subcommand, as well as have the parameters set up in the params.yml file.
+
 ## Pre-processing of data
-This step is actually performed prior to running PANDA/LIONESS, and it filters the expression matrix, PPI file, and prior motif to contain the same genes/TFs, which is necessary for running PANDA/LIONESS.
+The "preprocess" subcommand is the first stage of SiSaNA, where it preprocess the input data to get it in a format that the PANDA and LIONESS algorithms can handle. This will likely involve the removal of genes or transcription factors that are not consistent across files. Information regarding the removal of these factors is given at the end of the preprocessing step.
 
 #### Example command
 ```
-python preprocess.py -e expression_file.tsv -m motif_file.txt -p ppi_file.txt -n 10 -o ./output/
+sisana preprocess params.yml
 ```
-
-#### Inputs
- - `-e`: Path to file containing the gene expression data. Row names must be genes, the expression file does not have a header, and the cells are separated by a tab
- - `-m`: Path to motif file, which gets filtered to only contain genes that pass the minimum number of samples threshold
- - `-p`: Path to ppi file, which gets filtered to only contain genes that pass the minimum number of samples threshold
- - `-n`: Minimum number of samples a gene must be expressed in; expression data will be filtered for only genes that pass
- - `-o`: Path to output directory
 
 #### Outputs
 Three files, one for each of the three filtered input files. 
@@ -62,125 +58,56 @@ Three files, one for each of the three filtered input files.
 
 
 
-## Run PANDA
-This step creates a PANDA network from the filtered files. See documentation for netZooPy (https://github.com/netZoo/netZooPy/tree/master). An example command is given below.
+## Reconstruct and analyze the network
+This second SiSaNA stage, "generate", uses the PANDA and LIONESS algorithms of netZooPy to reconstruct gene regulatory networks. Documentation for netZooPy can be found at https://github.com/netZoo/netZooPy/tree/master. It then performs basic analyses of these networks by calculating in-degree of genes (also called gene targeting scores)and out-degree of transcription factors (TFs).
 
 #### Example command
 ```
-python run_panda.py -e expression_data_filtered.txt -m motif_data_filtered.txt -p ppi_data_filtered.txt -r True -o output_file.txt
+sisana generate ./input/params.yml
 ```
-<br />
-
-
-
-## Run LIONESS
-Similar to the PANDA step, this step creates LIONESS networks from the filtered files. See documentation for netZooPy (https://github.com/netZoo/netZooPy/tree/master). An example command is given below.
-
-#### Example command
-```
-python run_lioness.py -e expression_data_filtered.txt -m motif_data_filtered.txt -p ppi_data_filtered.txt -g cpu -r single -c 4 -o ./output/ -f mat
-```
-<br />
-
-
-## Serialize the LIONESS output
-We now save the LIONESS output as a pickle file
-
-#### Example command
-```
-python lioness_to_pickle_df.py -p panda_output.txt -q lioness_output.npy -t npy -n sampnames.txt -o ./output/lioness_df.pickle
-```
-
-#### Inputs
- - `-p`: Path to pickle file created by lioness_to_pickle_df.py script
- - `-q`: Path to file produced by the run_lioness.py script
- - `-t`: File type of lioness input (the -q file)
- - `-n`: File with list of sample names (one per line) in the same order that were supplied to run_lioness.py
- - `-o`: Path to directory to save output file to
 
 #### Outputs
-A single file of the LIONESS data frame in .pickle format
-<br />
-<br />
-
-
-
-## Filter LIONESS output for only known interactions in the prior motif
-
-#### Example command
-```
-python filter_edges_for_prior.py -p lioness_df.pickle -m motif.tsv -o ./output -f pickle
-```
-
-#### Inputs
- - `-p`: Path to pickle file created by lioness_to_pickle_df.py script
- - `-m`: Path to the prior motif file used in the original PANDA/LIONESS script
- - `-o`: Path to directory to output file to
- - `-f`: Format of file to output the filtered network to (either csv or pickle)
-   
-#### Outputs
-A single output file in either csv or pickle format, filtered for only the edges that were known prior interactions
-<br />
+1. lioness.npy, which contains all calculated edges for each sample
+2. lioness.pickle, which is the same thing, just serialized to make reading into python quicker
+3. A file containing the calculated indegree and outdegree of each gene and transcription factor, respectively.
 <br />
 
 
+## Comparing two experimental groups
+The next stage in SiSaNA, "compare", is used to find out how groups differ between each other. SiSaNA offers multiple ways to do this comparison, including t-tests (and Mann-Whitney tests), paired t-tests (and Wilcoxon paired t-tests), survival analysis (typically used for cancer data), and gene set enrichment analysis (GSEA).
 
-## Reduce the number of decimal points (OPTIONAL)
-Now, we reduce the number of decimal places in the output file to save on storage space.
+To compare the in- and out-degrees between two treatment groups, using either a Student's t-test or a Mann-Whitney test (or for paired samples, one can use either a paired t-test or Wilcoxon signed-rank test).
 
-#### Example command
+#### Example commands
+To compare the values between two groups in order to identify differentially expressed genes are differential degrees, you can use the following command:
 ```
-python reduce_number_decimal_places.py -n lioness_df.pickle -i pickle -o ./output/ -f csv -d 3
-```
-
-#### Inputs
- - `-n`: Path to either the indegree/outdegree file from lioness_df_indeg_outdeg_calculator.py or the LIONESS output file
- - `-i`: File type of the input file (either pickle or csv)
- - `-o`: Path to directory to output file to
- - `-f`: File type of output file
- - `-d`: Number of decimal points to truncate the degrees to
-
-#### Outputs
-A single file with indegree/outdegree measurements truncated to the desired number of decimal points
-<br />
-<br />
-
-
-
-## Calculating in-degree and out-degree of genes and TFs in LIONESS networks
-Once the LIONESS networks are made, a simple analysis to do is to calculate the in- and out-degrees of the nodes in the network, which is done in this step.
-
-#### Example command
-```
-python lioness_df_indeg_outdeg_calculator.py -i lioness_df.pickle -t pickle -o ./output/
+sisana compare means params.yml
 ```
 
-#### Inputs
- - `-i`: Path to lioness file, either in .csv format or the .pickle file created by lioness_to_pickle_df.py script
- - `-t`: File type of LIONESS input file (-q)
- - `-o`: Path to pickle file to output
-   
-#### Outputs
-CSV files for both indegree (also known as gene targeting score) and outdegree
-<br />
+For performing survival analyses, you can use a command like this:
+```
+sisana compare survival params.yml
+```
+
+...and for gene set enrichment:
+```
+sisana compare gsea params.yml
+```
 <br />
 
 
-
-## Comparing the in-degrees and out-degrees between treatment groups
-Then, one can compare the in- and out-degrees between two treatment groups, using either a Student's t-test or a Mann-Whitney test (or for paired samples, one can use either a paired t-test or Wilcoxon signed-rank test).
-
-#### Example command
+## Visualization of results
+The final stage of SiSaNA, "visualize" allows you to visualize the results of your analysis on publication-ready figures. There are multiple types of visualization you can perform, including generating volcano plots...
 ```
-python compare_degrees.py -m mapping_file.csv -p indegree/outdegree file.csv -c high low -t mw -o ./output/
+sisana visualize volcano params.yml
 ```
 
-#### Inputs
- - `-m`: Path to mapping file (csv). If doing an unpaired test (--testtype = mw or tt) then this file maps samples (first column, no header) to groups (second column, no header). Otherwise, if doing a paired analysis (--testtype = paired_tt or wilcoxon) then the samples for one group will go in column 1 (no header) while their paired samples will go in column 2.
- - `-p`: Path to csv file containing the degrees (in/out) of each node
- - `-c`: A list (two strings) of the groups in the mapping file to perform comparisons between. Required if not performing a paired analysis.
- - `-t`: Type of comparison to perform, either Student's t-test, Mann-Whitney U, paired t-test, or Wilcoxon
- - `-o`: Path to directory to output file to
+...making boxplots or violin plots of expression/degrees...
+```
+sisana visualize quantity params.yml
+```
 
-#### Outputs
-A single csv file containing the input degree dataframe, as well as the p-values and adjusted p-values (FDR) for each gene
+...and creating heatmaps
+```
+sisana visualize heatmap params.yml
+```
