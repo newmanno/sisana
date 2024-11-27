@@ -1,0 +1,10 @@
+# Stage 2: Reconstruct networks and calculate degrees
+# example: sisana generate -p params.yml
+generate:
+  processed_paths: # Path to yaml file containing the location of the processed data files
+  method: # Which method to use, either "panda" to run just PANDA or "lioness", which runs PANDA first, then LIONESS
+  outdir: # output directory
+
+  # The following commands are used if you specified "lioness" for the method arg
+  compute: # Whether to use "gpu" or "cpu" for computing LIONESS networks
+  ncores: # Number of cores to use for calculating LIONESS networks. Must be less than or equal to the number of samples

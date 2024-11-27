@@ -87,7 +87,7 @@ def perform_gsea(genefile: str, gmtfile: str, geneset: str, outdir: str):
                    figsize=(15,20)
                   )
     
-    gsea_plot_name = os.path.join(outdir, f"GSEA_{geneset}_plot.pdf")
+    gsea_plot_name = os.path.join(outdir, f"GSEA_{geneset}_basic_enrichment_plot.png")
     ax.figure.savefig(gsea_plot_name, bbox_inches = "tight")
     
     # Plot significant GSEA terms
@@ -101,10 +101,9 @@ def perform_gsea(genefile: str, gmtfile: str, geneset: str, outdir: str):
                 cutoff=0.25, 
                 show_ring=False)
 
-    dotplot_name = os.path.join(outdir, f"GSEA_dotplot_{geneset}.pdf")
+    dotplot_name = os.path.join(outdir, f"GSEA_{geneset}_basic_enrichment_dotplot.png")
     ax.figure.savefig(dotplot_name, bbox_inches = "tight")
 
-    print("Done!")
+    print("\nDone!")
     
-    print("Files created:")
     print(f"Files created:\n{res_file_name}\n{gsea_plot_name}\n{dotplot_name}\n")

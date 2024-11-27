@@ -6,14 +6,14 @@ import pickle
 from pathlib import Path
 import matplotlib.pyplot as plt
 import warnings
-from analyze import file_to_list
+from .analyze import file_to_list
 import csv
 import os
 import warnings
 import numpy as np
 import scipy
 
-def calculate_degree(datafile: str, filetype: str, metadata: str,
+def plot_heatmap(datafile: str, filetype: str, metadata: str,
                      genelist: str, hierarchicalcluster: bool,
                      groups: list, prefix: str, outdir: str):
     '''
@@ -86,7 +86,7 @@ def calculate_degree(datafile: str, filetype: str, metadata: str,
     # Find the overlap between the samples in the data df and the metadata df
     # Note that ideally there should be a perfect overlap, but this ensures the code will not crash
     # due to issues later 
-    samp_data_list = dat.columns
+    samp_data_list = datadf.columns
     
     samp_meta_file = pd.read_csv(metadata, header = None)
     samp_meta_list = samp_meta_file.iloc[:,0].tolist()
@@ -104,7 +104,7 @@ def calculate_degree(datafile: str, filetype: str, metadata: str,
     
         samp_overlaps = list(set(samp_data_list) & set(samp_meta_list)) # Get the overlapping samples between metadata and data df        
         print(f"The following samples are THE SAME between the metadata and data table and will be plotted: {samp_overlaps}\n")
-        dat = dat[dat.columns.intersection(samp_overlaps)] # remove non-overlap samples from data df
+        dat = datadf[datadf.columns.intersection(samp_overlaps)] # remove non-overlap samples from data df
         samp_meta_file = samp_meta_file[samp_meta_file.iloc[:,0].isin(samp_overlaps)] # remove non-overlap samples from metadata df
     
     # Assign samples from mapping file to groups

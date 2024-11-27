@@ -1,0 +1,6 @@
+# Stage 5: Extract edges that connect to specified TFs or genes. Specify whether to use "genes" or "tfs" in the "sisana extract" command.
+# example: sisana extract params.yml
+extract:
+  pickle: # The path to the lioness.pickle file created in the "generate" step
+  namefile: # The path to the file that contains the names of TFs or genes you wish to extract
+  outdir: # The directory to save the output file to

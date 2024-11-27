@@ -6,6 +6,8 @@ import re
 import pandas 
 from statistics import mean
 import math
+import numpy as np
+import sys
 
 def file_to_list(fname):
     """
@@ -99,6 +101,29 @@ def calc_tt(group1, group2, ttype):
 
     return(statistic, pval)
     
+def transform_edge_to_positive_val(edgeval):
+    '''
+    Transform degree values to be positive so fold change can be calculated. This transformation 
+    is described in the paper "Regulatory Network of PD1 Signaling Is Associated with Prognosis 
+    in Glioblastoma Multiforme"
+        
+        Arguments:
+            - edgeval: float, value of edge
+            
+        Returns:
+            - float, transformed value of edge
+    '''
+    # We get an inf if we have too large of values, but since transforming a large value
+    # does not change the resulting value (i.e. ln(e^1000) + 1) = 1000, we can avoid the
+    # inf values by just not transforming those edges
+    if edgeval > 700:
+        newval = edgeval
+    else:
+        newval = math.log(np.exp(edgeval) + 1)
+    if newval == float("inf"):
+        raise Exception(f"val {edgeval} gives a result of inf")
+    return(newval)
+
 def calc_log2_fc(group1, group2):
     '''
     Calculates the log2 fold change of means across two groups
@@ -127,14 +152,17 @@ def calc_log2_fc(group1, group2):
         
     # elif scipy.mean(group2) != 0:
     
-    # Only run if all values are positive, otherwise the user likely entered degree as their data file accidentally
     avg_g1 = mean(group1)
     avg_g2 = mean(group2)
 
     if avg_g1 == 0 or avg_g2 == 0:
         log2FC = "NA"
+        # print("log2FC is NA")
+
     elif all(i >= 0 for i in group1) and all(i >= 0 for i in group2):
         log2FC = math.log2(avg_g2/avg_g1)
+        # print(f"log2FC is {log2FC}\n")
+
         # print(log2FC)
     else:
         print(group1, group2)

@@ -1,0 +1,8 @@
+# Stage 1: Preprocess data to format for next stage
+# example: sisana preprocess -p params.yml
+preprocess:
+  exp_file: # Path to expression file, which MUST CONTAIN A HEADER
+  motif_file: # path to motif file
+  ppi_file:  # path to PPI file
+  number: # number of samples a gene must be expressed in
+  outdir:  # The directory to save the output to

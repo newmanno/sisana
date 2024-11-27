@@ -4,9 +4,11 @@ from netZooPy.panda.panda import Panda
 from netZooPy.lioness.lioness import Lioness
 from sisana.preprocessing import preprocess_data
 from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes
-from sisana.comparisons import calculate_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree
+from sisana.comparisons import calculate_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap
+import sisana.docs
 import os 
 import pandas as pd
+import sys
 
 def cli():
     """
@@ -30,17 +32,18 @@ def cli():
     # create the top-level parser
     parser = argparse.ArgumentParser(prog='sisana.py', description=DESCRIPTION, epilog=EPILOG)    
 
-    # Primary subcommands to use
+    # Add subcommands
     subparsers = parser.add_subparsers(title='Subcommands', dest='command')
-    pre = subparsers.add_parser('preprocess', help='Filters expression data for parameters (e.g. genes) that are only present in at least m samples. Also filters each input file so they have the same genes and TFs across each')
-    gen = subparsers.add_parser('generate', help='Generates PANDA and LIONESS networks')
-    ext = subparsers.add_parser('extract', help='Extract edges connected to specified TFs/genes')
-    comp = subparsers.add_parser('compare', help='Compare networks between smaple groups')
-    vis = subparsers.add_parser('visualize', help='Visualize the calculated degrees of each sample group')
+    pre = subparsers.add_parser('preprocess', help='Filters expression data for parameters (e.g. genes) that are only present in at least m samples. Also filters each input file so they have the same genes and TFs across each', epilog=sisana.docs.preprocess_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
+    gen = subparsers.add_parser('generate', help='Generates PANDA and LIONESS networks', epilog=sisana.docs.generate_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ext = subparsers.add_parser('extract', help='Extract edges connected to specified TFs/genes', epilog=sisana.docs.extract_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
+    comp = subparsers.add_parser('compare', help='Compare networks between sample groups', epilog=sisana.docs.compare_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
+    vis = subparsers.add_parser('visualize', help='Visualize the calculated degrees of each sample group', epilog=sisana.docs.visualize_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
 
     # options for preprocess subcommand
+    # pre.add_argument("-t", "--template", action="store_true", help='Flag for whether to show the path to the template file')
     pre.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
-    
+        
     # options for generate subcommand    
     gen.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
@@ -92,9 +95,13 @@ def cli():
 
     elif args.command == 'generate':
         
-        gen_params = yaml.load(open(args.params), Loader=yaml.FullLoader)
-        data_paths = yaml.load(open(gen_params['generate']['processed_paths']), Loader=yaml.FullLoader)
-    
+        # gen_params = yaml.load(open(args.params), Loader=yaml.FullLoader)
+        # data_paths = yaml.load(open(params['generate']['processed_paths']), Loader=yaml.FullLoader)    
+        data_paths = yaml.load(open('./tmp/processed_data_paths.yml'), Loader=yaml.FullLoader)
+        
+        # Create output dir if one does not already exist
+        os.makedirs(params['generate']['outdir'], exist_ok=True)
+
         panda_obj = Panda(expression_file=data_paths['exp'], 
                         motif_file=data_paths['motif'], 
                         ppi_file=data_paths['ppi'], 
@@ -103,31 +110,31 @@ def cli():
                         keep_expression_matrix=True, 
                         save_memory=False)
 
-        panda_obj.save_panda_results(gen_params['generate']['outdir'] + "panda_output.txt")
+        panda_obj.save_panda_results(params['generate']['outdir'] + "panda_output.txt")
         
-        print("PANDA network saved to " + gen_params['generate']['outdir'])
+        print("PANDA network saved to " + params['generate']['outdir'])
         
-        if gen_params['generate']['method'] == 'lioness':
+        if params['generate']['method'] == 'lioness':
             lion = Lioness(panda_obj, 
-                        computing=gen_params['generate']['compute'], 
+                        computing=params['generate']['compute'], 
                         precision="double",
-                        ncores=gen_params['generate']['ncores'], 
-                        save_dir=gen_params['generate']['outdir'], 
+                        ncores=params['generate']['ncores'], 
+                        save_dir=params['generate']['outdir'], 
                         save_fmt="npy")
 
-        pickle_path = os.path.join(gen_params['generate']['outdir'], 'lioness.pickle')
-        convert_lion_to_pickle(os.path.join(gen_params['generate']['outdir'], 'panda_output.txt'),
-                            gen_params['generate']['outdir'] + 'lioness.' + gen_params['generate']['format'],
-                            gen_params['generate']['format'], 
+        pickle_path = './tmp/lioness.pickle'
+        convert_lion_to_pickle(os.path.join(params['generate']['outdir'], 'panda_output.txt'),
+                            params['generate']['outdir'] + 'lioness.npy',
+                            "npy", 
                             './tmp/samples.txt',  
                             pickle_path)
 
         calculate_degree(inputfile=pickle_path,
                          datatype="pickle",
-                         outdir=gen_params['generate']['outdir'])
+                         outdir=params['generate']['outdir'])
 
-        print("PANDA network saved to " + gen_params['generate']['outdir'])
-        print("LIONESS network saved to " + os.path.join(gen_params['generate']['outdir'], "lioness.", gen_params['generate']['format']))
+        print("PANDA network saved to " + params['generate']['outdir'])
+        print("LIONESS network saved to " + os.path.join(params['generate']['outdir'], "lioness.npy"))
         print("Pickled LIONESS network (for faster loading into Python) saved to " + pickle_path)
 
     ########################################################
@@ -168,10 +175,12 @@ def cli():
 
         if args.plotchoice == "volcano":    
             plot_volcano(datafile=params["visualize"]["volcano"]["datafile"],
-                        fcthreshold=params["visualize"]["volcano"]["fcthreshold"], 
-                        adjpvalthreshold=params["visualize"]["volcano"]["adjpvalthreshold"],
-                        numlabels=params["visualize"]["volcano"]["numlabels"],
-                        outdir=params["visualize"]["volcano"]["outdir"])      
+                         fccol=params["visualize"]["volcano"]["FCcol"],
+                         adjpcol=params["visualize"]["volcano"]["adjpcol"],
+                         fcthreshold=params["visualize"]["volcano"]["fcthreshold"], 
+                         adjpvalthreshold=params["visualize"]["volcano"]["adjpvalthreshold"],
+                         numlabels=params["visualize"]["volcano"]["numlabels"],
+                         outdir=params["visualize"]["volcano"]["outdir"])      
     
         if args.plotchoice == "quantity":    
             plot_expression_degree(datafile=params["visualize"]["quantity"]["datafile"],
@@ -186,16 +195,14 @@ def cli():
                         outdir=params["visualize"]["quantity"]["outdir"])   
             
         if args.plotchoice == "heatmap":    
-            plot_expression_degree(datafile=params["visualize"]["heatmap"]["datafile"],
+            plot_heatmap(datafile=params["visualize"]["heatmap"]["datafile"],
                         filetype=params["visualize"]["heatmap"]["filetype"], 
                         metadata=params["visualize"]["heatmap"]["metadata"],
-                        genelist=params["visualize"]["quantity"]["genelist"],
-                        plottype=params["visualize"]["quantity"]["plottype"],
-                        groups=params["visualize"]["quantity"]["groups"],
-                        colors=params["visualize"]["quantity"]["colors"],
-                        prefix=params["visualize"]["quantity"]["prefix"],
-                        yaxisname=params["visualize"]["quantity"]["yaxisname"],
-                        outdir=params["visualize"]["quantity"]["outdir"])   
+                        genelist=params["visualize"]["heatmap"]["genelist"],
+                        hierarchicalcluster=params["visualize"]["heatmap"]["hierarchicalcluster"],
+                        groups=params["visualize"]["heatmap"]["groups"],
+                        prefix=params["visualize"]["heatmap"]["prefix"],
+                        outdir=params["visualize"]["heatmap"]["outdir"])   
             
     ########################################################
     # 5) Optional, extract edges that connect to specific TFs/genes

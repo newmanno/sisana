@@ -177,7 +177,7 @@ def preprocess_data(exp: str, motif: str, ppi: str, number: int, outdir: str):
     save_file_path_filter_stats = os.path.join(outdir, expoutfile + "_filtering_statistics.txt")
 
     data_paths = {'exp': save_file_path_exp, 'motif': save_file_path_motif, 'ppi': save_file_path_ppi}    
-    with open(os.path.join(outdir, 'processed_data_paths.yml'), 'w') as yaml_file:
+    with open('./tmp/processed_data_paths.yml', 'w') as yaml_file:
         yaml.dump(data_paths, yaml_file, default_flow_style=False)
     
     with open(save_file_path_filter_stats, 'w') as sys.stdout:

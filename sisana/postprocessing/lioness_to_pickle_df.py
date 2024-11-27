@@ -40,6 +40,8 @@ def convert_lion_to_pickle(panda: str, lion: str, type: str, names: str, outfile
     # Create data frames from input files
     pan = dfs_from_files[0]
     lion = dfs_from_files[1]
+    print(lion.head())
+
 
     pan.columns = ['TF', 'Target', 'Interaction', 'Score']
     pan["TF-target"] = "TF_" + pan["TF"] + "<==>" + pan["Target"]
@@ -51,6 +53,7 @@ def convert_lion_to_pickle(panda: str, lion: str, type: str, names: str, outfile
     fileread = sampsfile.read()
     namelist = fileread.split("\n") 
     namelist = list(filter(None, namelist))
+    print(namelist)
         
     lion.columns = namelist
     lion.index = pan["TF-target"]  

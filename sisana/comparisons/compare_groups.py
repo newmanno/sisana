@@ -6,7 +6,7 @@ from pathlib import Path
 import time
 import csv
 from scipy import stats
-from .analyze import file_to_list, map_samples, calc_tt, calc_log2_fc
+from .analyze import file_to_list, map_samples, calc_tt, calc_log2_fc, transform_edge_to_positive_val
 import sys
 # from statistics import mean
 
@@ -23,7 +23,7 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     -----------
         - datafile: str, Path to the data file
         - mapfile: str, Path to the mapping file, which maps sample name to sample group
-        - datatype: str, The type of data being used (example: "expression" or "indegree")
+        - datatype: str, The type of data being used ("expression" or "degree")
         - groups: str, Names of the two groups (from the second column of mapfile) to be compared. The second group listed will be used as the numerator in the fold change calulation.
         - testtype: str, Type of comparison to perform, either "tt" for Student's t-test, "mw" for Mann-Whitney U, "paired_tt", or "wilcoxon"
         - filetype: str, The type of data file ("csv" or "txt" or "tsv") being used
@@ -109,12 +109,29 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
              
     print(pval)
        
-    # Calculate log2FC (only for expression data, since you can have negative degree values)
-    # if args.foldchange:
-    #     try:
-    #         fc = compdf.apply(lambda row : calc_log2_fc(row[sampdict[groups[1]]], row[sampdict[groups[0]]]), axis = 1)
-    #     except:
-    #         raise Exception("Error: Could not compute log2 fold change, potentially due to negative values in input.")
+    # For expression, do regular log2FC
+    # For degrees, first need to transform the edge value by doing ln(e^w + 1),
+    # then calculate degrees. Then you can do the log2FC of degrees
+    # Calculate log2FC (only for expression data, since you can have negative 
+    # degree values). This transformation is described in the paper "Regulatory Network 
+    # of PD1 Signaling Is Associated with Prognosis in Glioblastoma Multiforme"
+    if datatype == "expression":
+        fc = compdf.apply(lambda row : calc_log2_fc(row[sampdict[groups[1]]], row[sampdict[groups[0]]]), axis = 1)
+
+    if datatype == "degree":
+        # Transform edges to positive values
+        print("Datafile before transformation")
+        print(compdf)
+        
+        compdf = compdf.apply(np.vectorize(transform_edge_to_positive_val))
+        
+        print("Datafile after transformation")
+        print(compdf)
+
+        fc = compdf.apply(lambda row : calc_log2_fc(row[sampdict[groups[1]]], row[sampdict[groups[0]]]), axis = 1)
+            
+        # raise Exception("Error: Could not compute log2 fold change, potentially due to negative values in input.")
+    
     print("Comparisons finished...")
     
     # Format the output data frame
@@ -139,12 +156,8 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     newpvaldf[mean_g2_colname] = compdf[sampdict[groups[1]]].mean(axis=1)
     newpvaldf[mean_g1_colname] = compdf[sampdict[groups[0]]].mean(axis=1)
     
-    # if args.foldchange:        
-    #     fc_colname = f"mean_log2FC_{args.compgroups[1]}/{args.compgroups[0]}"      
-    #     newpvaldf[fc_colname] = fc
-
-        # newpvaldf["mean_group1"] = mean(newpvaldf[sampdict[groups[0]]])
-        # newpvaldf["mean_group2"] = fc
+    fc_colname = f"mean_log2FC_{groups[1]}/{groups[0]}"      
+    newpvaldf[fc_colname] = fc
         
     # Perform multiple test correction
     newpvaldf['FDR'] = stats.false_discovery_control(newpvaldf[pval_colname])
@@ -152,8 +165,9 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
    
     # Create new df without pval, ranked on test statistic
     ranked = newpvaldf.sort_values('test_statistic', ascending = False)
-    print(ranked)
     ranked.drop([pval_colname, 'FDR'], inplace=True, axis=1)
+    ranked = ranked["test_statistic"]
+
     
     # if args.datatype == "expression":      
     #     ranked.drop([mean_g2_colname, mean_g1_colname], inplace=True, axis=1)

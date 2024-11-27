@@ -49,6 +49,9 @@ def extract_tfs_genes(pickle: str, datatype: str, namefile: str, outdir: str):
     
     # args = parser.parse_args()
     
+    # Create output dir if one does not already exist
+    os.makedirs(outdir, exist_ok=True)
+    
     lion = pd.read_pickle(pickle)
     
     base_file_name = Path(pickle).stem

@@ -1,0 +1,36 @@
+# Stage 3: Compare experimental groups. Specify which comparison type to perform in the "sisana compare" command.
+compare:
+
+  # Use the following if you wish to perform either a t-test, Mann-Whitney test, or their paired alternatives
+  # example: sisana compare means params.yml
+  means: 
+    datafile: # Path to the data file (either expression, indegree, or outdegree)
+    mapfile: # Path to the mapping file, which maps sample name to sample group
+    datatype: # The type of data being used (example: "expression" or "degree")
+    groups:  # Names of the two groups (from the second column of mapfile) to be compared. The second group listed will be used as the numerator in the fold change calulation.
+      - # Group 1 (ensure there is a space after the '-')
+      - # Group 2 (ensure there is a space after the '-')
+    testtype: # Type of comparison to perform, either "tt" for Student's t-test, "mw" for Mann-Whitney U, "paired_tt", or "wilcoxon"
+    filetype: # The type of data file ("csv" or "txt" or "tsv") being used
+    outdir: # The directory to save the output to
+
+  # Use the following if you wish to perform a survival analysis between two sample groups
+  # example: sisana compare survival -p params.yml
+  survival:
+    metadata: # Path to mapping file ("csv" or "txt") that maps samples to groups. Must also contain a column describing the survival status (see alivestatus_colname param)
+    filetype: # Type of file, used to indicate the delimiter to use for metadata. Enter "csv" or "txt" for this.
+    sampgroup_colname: # Name of column containing sample group names
+    alivestatus_colname: # Name of column that contains the status of the individual. Must contain True/False values only, where True = dead (event occurred) and False = alive.
+    days_colname: # Name of column containing either the number of days an individual survived or the number of days to the last follow up.
+    groups: # The names of the two groups (from the metadata file) to compare
+      - # Group 1 (ensure there is a space after the '-')
+      - # Group 2 (ensure there is a space after the '-')
+    outdir: # The directory to save the output to
+
+  # Use the following if you wish to perform gene set enrichment analysis (GSEA)
+  # example: sisana compare gsea params.yml
+  gsea:
+    genefile: # Path to file (.rnk format, which is two column, tab delimited, no header) containing the genes and test statistics to do enrichment on
+    gmtfile: # Path to the gene set file in gmt format
+    geneset: # The gene set type used for gmtfile
+    outdir: # The directory to save the output to

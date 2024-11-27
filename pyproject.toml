@@ -10,10 +10,16 @@ name = "sisana"
 authors = [
     {name = "Nolan Newman", email = "nolan.newman@ncmm.uio.no"},
 ]
-version = "1.2.0"
+version = "0.1.0"
 description = "A command line interface tool to reconstruct and analyze single sample networks."
 readme = "README.md"
 requires-python = "==3.9.19"
+keywords = ["transcription-factors", "gene-regulatory-network", "panda", "lioness"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
 dependencies = [
     "numpy",
     "pandas",
@@ -24,3 +30,6 @@ sisana = "sisana.sisana:cli"
 
 [project.urls]
 Repository = "https://github.com/newmanno/sisana"
+
+[project.scripts]
+sisana = "sisana.sisana:cli"
