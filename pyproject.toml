@@ -24,7 +24,7 @@ dependencies = [
     "argparse",
     "numpy",
     "pandas",
-    "netZooPy" >= "0.10.6",
+    "netZooPy >= 0.10.6",
 ]
 
 [project.scripts]

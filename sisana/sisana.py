@@ -4,7 +4,7 @@ from netZooPy.panda.panda import Panda
 from netZooPy.lioness.lioness import Lioness
 from sisana.preprocessing import preprocess_data
 from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes
-from sisana.comparisons import calculate_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap
+from sisana.analyze_networks import calculate_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap
 import sisana.docs
 import os 
 import pandas as pd
