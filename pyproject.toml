@@ -21,8 +21,10 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 dependencies = [
+    "argparse",
     "numpy",
     "pandas",
+    "netZooPy" >= "0.10.6",
 ]
 
 [project.scripts]
@@ -30,6 +32,3 @@ sisana = "sisana.sisana:cli"
 
 [project.urls]
 Repository = "https://github.com/newmanno/sisana"
-
-[project.scripts]
-sisana = "sisana.sisana:cli"
