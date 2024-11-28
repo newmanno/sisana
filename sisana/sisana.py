@@ -5,6 +5,7 @@ from netZooPy.lioness.lioness import Lioness
 from sisana.preprocessing import preprocess_data
 from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes
 from sisana.analyze_networks import calculate_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap
+from sisana.example_input import find_ex_paths
 import sisana.docs
 import os 
 import pandas as pd
@@ -31,6 +32,7 @@ def cli():
     
     # create the top-level parser
     parser = argparse.ArgumentParser(prog='sisana.py', description=DESCRIPTION, epilog=EPILOG)    
+    parser.add_argument('-e', '--example', action='store_true', help='Copies the example input files into a directory called "./example_inputs"')    
 
     # Add subcommands
     subparsers = parser.add_subparsers(title='Subcommands', dest='command')
@@ -60,6 +62,19 @@ def cli():
     vis.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
     args = parser.parse_args()
+        
+    # If user wants example files, retrieve them from their installed paths
+    if args.example:
+        import shutil
+        import glob
+        os.makedirs('./example_inputs/', exist_ok=True)
+        all_ex_files = find_ex_paths()
+
+        for fname in all_ex_files:
+            print(fname)
+            shutil.copy2(fname, './example_inputs')
+        print("Example input files have been created in ./example_inputs/")
+        sys.exit(0)
         
     params = yaml.load(open(args.params), Loader=yaml.FullLoader)
 

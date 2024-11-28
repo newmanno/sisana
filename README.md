@@ -34,11 +34,15 @@ cd sisana
 ## Pipeline overview
 ![Pipeline overview](docs/pipeline2.png)
 
-## Setting up your params.yml file
-The most important thing to get right in order to correctly run SiSaNA is the structure of your params.yml file. SiSaNA comes with a params.yml file that is annotated to explain the function of each argument. The params.yml file is separated into 'chunks' that reflect the same subcommands available in SiSaNA on the command line. For each step of SiSaNA, you will need to use the correct subcommand, as well as have the parameters set up in the params.yml file.
+## Example input files
+Example input files can be obtained using the command
+```
+sisana -e
+```
+These files will be copied to a new directory in the current working directory, called "example_inputs". The files can be used in the commands listed down below.
 
 ## Setting up your params.yml file
-Example input files can be found in the sisana/example_input directory. These files can be used in the commands listed down below.
+The most important thing to get right in order to correctly run SiSaNA is the structure of your params.yml file. SiSaNA comes with a params.yml file that is annotated to explain the function of each argument. The params.yml file is separated into 'chunks' that reflect the same subcommands available in SiSaNA on the command line. For each step of SiSaNA, you will need to use the correct subcommand, as well as have the parameters set up in the params.yml file.
 
 ## Pre-processing of data
 The "preprocess" subcommand is the first stage of SiSaNA, where it preprocess the input data to get it in a format that the PANDA and LIONESS algorithms can handle. This will likely involve the removal of genes or transcription factors that are not consistent across files. Information regarding the removal of these factors is given at the end of the preprocessing step.
