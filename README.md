@@ -3,15 +3,14 @@ Single Sample Network Analysis
 
 SiSaNA is used both before and after creating both PANDA and LIONESS networks from the package netZooPy. SiSaNA first needs to pre-process the data to be ran in PANDA/LIONESS. SiSaNA takes the LIONESS output, processes it to be analyzed downstream, and then calculates in- and out-degree for each of the reconstructed networks. Additionally, it can compare the expression/degree between groups of interest, including performing statistical tests, visualizing the results (volcano plots, boxplots, and violin plots), and compare the survival between groups.
 
-**Note: The steps below are for the basic use of SiSaNA. There are other functionalities across different scripts that are not covered in this file.**
+**Note: The steps below are for the basic use of SiSaNA. Additional functionalities are still under development.**
 
 ## Requirements
- - python v3.9.19 (see installation steps for creating a conda environment with this specific Python version). SiSaNA may work with other versions of Python as well, but has been written and tested on this version.
- - A cloned repo of netZooPy (https://github.com/netZoo/netZooPy/tree/master)
+ - python v3.9.19 (see installation steps for creating a conda environment with this specific Python version). SiSaNA should work with versions of Python 3.9.0 or greater, but as it has been written and tested on this version, we will use 3.9.19.
    
 ## Installation can be performed by running the following steps
 
-1. Create a conda virtual environment with python 3.9.19. 
+1. Create a conda virtual environment with python version 3.9.19. 
 ```
 conda create --prefix /path/to/env-name python=3.9.19
 ```
@@ -21,20 +20,15 @@ conda create --prefix /path/to/env-name python=3.9.19
 conda activate /path/to/env-name
 ```
 
-3. Clone this repo
+3. Install SiSaNA via the pip package installer
 ```
-git clone https://github.com/newmanno/sisana.git
+pip3 install sisana
 ```
 
-4. Move into the repo directory, then run the following command to install the required modules
+4. Create a directory for the analysis and move into the analysis directory
 ```
+mkdir sisana
 cd sisana
-pip3 install -e .
-```
-
-5. Install the newest netZooPy module
-```
-conda install -c netzoo -c conda-forge netzoopy
 ```
 
 ## Pipeline overview
@@ -42,6 +36,9 @@ conda install -c netzoo -c conda-forge netzoopy
 
 ## Setting up your params.yml file
 The most important thing to get right in order to correctly run SiSaNA is the structure of your params.yml file. SiSaNA comes with a params.yml file that is annotated to explain the function of each argument. The params.yml file is separated into 'chunks' that reflect the same subcommands available in SiSaNA on the command line. For each step of SiSaNA, you will need to use the correct subcommand, as well as have the parameters set up in the params.yml file.
+
+## Setting up your params.yml file
+Example input files can be found in the sisana/example_input directory. These files can be used in the commands listed down below.
 
 ## Pre-processing of data
 The "preprocess" subcommand is the first stage of SiSaNA, where it preprocess the input data to get it in a format that the PANDA and LIONESS algorithms can handle. This will likely involve the removal of genes or transcription factors that are not consistent across files. Information regarding the removal of these factors is given at the end of the preprocessing step.

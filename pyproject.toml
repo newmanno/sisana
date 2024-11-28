@@ -2,18 +2,15 @@
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["sisana"]
-
 [project]
 name = "sisana"
 authors = [
     {name = "Nolan Newman", email = "nolan.newman@ncmm.uio.no"},
 ]
-version = "0.1.0"
+version = "0.0.1"
 description = "A command line interface tool to reconstruct and analyze single sample networks."
 readme = "README.md"
-requires-python = "==3.9.19"
+requires-python = ">=3.9.0"
 keywords = ["transcription-factors", "gene-regulatory-network", "panda", "lioness"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -21,11 +18,30 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 dependencies = [
-    "argparse",
     "numpy",
     "pandas",
-    "netZooPy >= 0.10.6",
+    "netZooPy",
+    "scikit-learn",
+    "scikit-survival",
+    "matplotlib",
+    "pathlib",
+    "gseapy",
+    "seaborn",
+    "adjustText",
+    "pyyaml",
 ]
+
+[tool.setuptools.packages.find]
+where = ["."] 
+include = ["sisana", 
+    "sisana.docs",    
+    "sisana.postprocessing", 
+    "sisana.preprocessing", 
+    "sisana.postprocessing.post", 
+    "sisana.analyze_networks",
+    "sisana.analyze_networks.analyze", 
+    "sisana.analyze_networks.genesets"] 
+namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
 
 [project.scripts]
 sisana = "sisana.sisana:cli"
