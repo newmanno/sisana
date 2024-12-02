@@ -53,7 +53,6 @@ def convert_lion_to_pickle(panda: str, lion: str, type: str, names: str, outfile
     fileread = sampsfile.read()
     namelist = fileread.split("\n") 
     namelist = list(filter(None, namelist))
-    print(namelist)
         
     lion.columns = namelist
     lion.index = pan["TF-target"]  
