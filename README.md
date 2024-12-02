@@ -32,7 +32,7 @@ cd sisana
 ```
 
 ## Pipeline overview
-![Pipeline overview](docs/pipeline2.png)
+![Pipeline overview](docs/sisana_pipeline_overview_v2.png)
 
 ## Example input files
 Example input files can be obtained using the command
@@ -60,7 +60,7 @@ Three files, one for each of the three filtered input files.
 
 
 ## Reconstruct and analyze the network
-This second SiSaNA stage, "generate", uses the PANDA and LIONESS algorithms of netZooPy to reconstruct gene regulatory networks. Documentation for netZooPy can be found at https://github.com/netZoo/netZooPy/tree/master. It then performs basic analyses of these networks by calculating in-degree of genes (also called gene targeting scores)and out-degree of transcription factors (TFs).
+This second SiSaNA stage, "generate", uses the PANDA and LIONESS algorithms of netZooPy to reconstruct gene regulatory networks. Documentation for netZooPy can be found at https://github.com/netZoo/netZooPy/tree/master. It then performs basic analyses of these networks by calculating in-degree of genes (also called gene targeting scores) and out-degree of transcription factors (TFs).
 
 #### Example command
 ```
@@ -77,7 +77,7 @@ sisana generate ./input/params.yml
 ## Comparing two experimental groups
 The next stage in SiSaNA, "compare", is used to find out how groups differ between each other. SiSaNA offers multiple ways to do this comparison, including t-tests (and Mann-Whitney tests), paired t-tests (and Wilcoxon paired t-tests), survival analysis (typically used for cancer data), and gene set enrichment analysis (GSEA).
 
-To compare the in- and out-degrees between two treatment groups, using either a Student's t-test or a Mann-Whitney test (or for paired samples, one can use either a paired t-test or Wilcoxon signed-rank test).
+To compare the in- and out-degrees between two treatment groups, one can use either a Student's t-test (parametric) or a Mann-Whitney (non-parametric) test. Or for paired samples, one can use either a paired t-test or Wilcoxon signed-rank test, respectively.
 
 #### Example commands
 To compare the values between two groups in order to identify differentially expressed genes are differential degrees, you can use the following command:
