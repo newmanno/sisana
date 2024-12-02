@@ -1,6 +1,6 @@
 import os
 
-def find_ex_paths():
+def find_example_paths():
     '''
     Description:
         This code finds the paths to the files in this folder so files can be copied to user's current working directory
@@ -20,7 +20,11 @@ def find_ex_paths():
               "genes.txt",
               "motif_tcga_brca.tsv",
               "params.yml",
-              "ppi_tcga_brca.tsv"]
+              "ppi_tcga_brca.tsv",
+              "c2.cp.kegg_medicus.v2023.2.Hs.symbols.gmt",
+              "c2.cp.reactome.v2023.2.Hs.symbols.gmt",
+              "Hallmark.v2023.2.Hs.symbols.gmt",
+              "top_50_genes_heatmap.txt"]
     dir_path = os.path.dirname(os.path.realpath(__file__))
     files = [dir_path + "/" + x for x in fnames]
     return(files)
