@@ -4,6 +4,8 @@ import argparse
 import sys
 import pickle
 from pathlib import Path
+from scipy.cluster.hierarchy import linkage, dendrogram
+from scipy.stats import zscore
 import matplotlib.pyplot as plt
 import warnings
 from .analyze import file_to_list
@@ -15,7 +17,8 @@ import scipy
 
 def plot_heatmap(datafile: str, filetype: str, metadata: str,
                      genelist: str, hierarchicalcluster: bool,
-                     groups: list, prefix: str, outdir: str):
+                     groups: list, prefix: str, plotnames: bool,
+                     outdir: str):
     '''
     Description:
         This code creates a heatmap of either the expression or degrees from LIONESS networks
@@ -29,6 +32,7 @@ def plot_heatmap(datafile: str, filetype: str, metadata: str,
         - hierarchicalcluster: bool, Flag for if you wish to perform hierarchical clustering on the genes
         - groups: list, The names of the groups to plot (from the --metadata file). Groups will be plotted as column groups in the order they are written in this argument
         - prefix: str, Prefix to use for the output file; note that the output file will automatically be generated with the suffix '_heatmap.png'
+        - plotnmaes: str, Flag for whether to plot the names of the genes on the heatmap        
         - outdir: str, Path to output directory
     
     Returns:
@@ -55,7 +59,9 @@ def plot_heatmap(datafile: str, filetype: str, metadata: str,
         datadf = pd.read_csv(datafile, index_col = 0)
     elif filetype == "txt" or filetype == "tsv":
         datadf = pd.read_csv(datafile, index_col = 0, sep = "\t")
-            
+        
+    os.makedirs(outdir, exist_ok=True)
+     
     def assign_samples(mapfile, selected_groups):
         '''
         Function that assigns samples to groups for statistical analysis
@@ -78,6 +84,8 @@ def plot_heatmap(datafile: str, filetype: str, metadata: str,
         return(samp_type_dict)
   
     # Add column names if they are not already there
+    # Note: Removed after changing upstream steps to ensure that only headered files
+    # can be used in the pipeline
     # if not fileheader:
     #     samps = file_to_list(sampleorder)
     #     indata.columns = samps     
@@ -98,12 +106,9 @@ def plot_heatmap(datafile: str, filetype: str, metadata: str,
         
     if len(diffsamps) > 0:  
         warnings.warn("Warning: Your samples in your metadata file are not a perfect match to the samples in the data file. The heatmaps will only be made on the overlapping samples of the two.") 
-        print(f"\nSamples in metadata: {samp_meta_list}")
-        print(f"\nSamples in data file: {samp_data_list}")
-        print(f"\nThe following samples are DIFFERENT between the metadata and data table: {diffsamps}\n")
+        print(f"\nThe following samples are DIFFERENT between the metadata and data table, and thus will not be plotted: {diffsamps}\n")
     
         samp_overlaps = list(set(samp_data_list) & set(samp_meta_list)) # Get the overlapping samples between metadata and data df        
-        print(f"The following samples are THE SAME between the metadata and data table and will be plotted: {samp_overlaps}\n")
         dat = datadf[datadf.columns.intersection(samp_overlaps)] # remove non-overlap samples from data df
         samp_meta_file = samp_meta_file[samp_meta_file.iloc[:,0].isin(samp_overlaps)] # remove non-overlap samples from metadata df
     
@@ -121,20 +126,24 @@ def plot_heatmap(datafile: str, filetype: str, metadata: str,
     dat.to_csv(out_filtered_dat_path)
     
     # Calculate z-score. Normally this could just be done in the call to the heatmap
-    # method, but in this case we need grouped heatmaps without hierarchical clustering,
-    # so I am calculating them first, and then appending per-group heatmaps
-    from scipy.stats import zscore
+    # method, but in this case we need grouped heatmaps with hierarchical clustering,
+    # so I am calculating z-scores first, then performing the clustering, and 
+    # finally appending heatmaps to one another on a per-group basis
     dat_z = dat.apply(zscore, axis=1)
+    
+    Z = linkage(dat_z, method='ward')
+    leaf_order = dendrogram(Z, no_plot=True)['ivl']
+    ordered_df = dat_z.iloc[map(int, leaf_order),:]
     
     out_filtered_dat_z_path = os.path.join(outdir, f"{prefix}_filtered_data_file_for_heatmap_genes_zscore.csv")
     dat_z.to_csv(out_filtered_dat_z_path)    
 
     # Split the z-score data frame per sample group
     zdfs = {}
-    all_input_samps = dat_z.columns
+    all_input_samps = ordered_df.columns
     
     for i in groups:
-        zdfs[i] = dat_z[sampdict[i]]
+        zdfs[i] = ordered_df[sampdict[i]]
     
     # fig, axs =plt.subplots(nrows = 1, ncols = len(groups), constrained_layout = True)
     fig, axs = plt.subplots(nrows = 1, ncols = len(groups), figsize=(len(groups) * 2, 2), width_ratios=[len(df.columns) for df in zdfs.values()])
@@ -143,18 +152,18 @@ def plot_heatmap(datafile: str, filetype: str, metadata: str,
     
     # Manually set the min and max values of the heatmaps so the same scale applies to all heatmaps,
     # otherwise the color bar only applies to the last heatmap that gets plotted
-    arr = dat_z.to_numpy().flatten() # an array of all values in the dat_z df
+    arr = ordered_df.to_numpy().flatten() # an array of all values in the dat_z df
 
     min_val = np.percentile(arr, 1) # vals will be the 1st and 99th percentile, so extreme (outlier) values will not influence the scale
     max_val = np.percentile(arr, 99)
         
-    # min_val = dat_z.to_numpy().min()
-    # max_val = dat_z.to_numpy().max()
+    # min_val = ordered_df.to_numpy().min()
+    # max_val = ordered_df.to_numpy().max()
     
     cmap_col = "RdBu_r"
     square_choice = False
     xticklabels_choice = False
-    yticklabels_choice = False
+    yticklabels_choice = plotnames
     center_choice = 0
     
     i = 0 # Counter to keep track of position in axs array
@@ -166,8 +175,8 @@ def plot_heatmap(datafile: str, filetype: str, metadata: str,
         # Need to create each heatmap separately depending on its position in the 1D array of heatmaps (axs)
         if i == 0:
             sns_plot = sns.heatmap(v, ax=axs[i], xticklabels = xticklabels_choice, yticklabels = yticklabels_choice, square = square_choice, cmap = cmap_col, cbar = False, vmin = min_val, vmax = max_val, center = center_choice)
-            sns_plot.set_yticklabels(sns_plot.get_yticklabels(), rotation = 0, fontsize = 4)
-            ax.yaxis.set_tick_params(labelsize = 8)
+            sns_plot.set_yticklabels(sns_plot.get_yticklabels(), rotation = 0, fontsize = 2)
+            ax.yaxis.set_tick_params(labelsize = 2)
 
         # for any middle position (not first or last) in the axs array
         elif (i > 0) and (i < len(groups) - 1):
