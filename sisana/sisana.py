@@ -218,6 +218,7 @@ def cli():
                         hierarchicalcluster=params["visualize"]["heatmap"]["hierarchicalcluster"],
                         groups=params["visualize"]["heatmap"]["groups"],
                         prefix=params["visualize"]["heatmap"]["prefix"],
+                        plotnames=params["visualize"]["heatmap"]["plotnames"],
                         outdir=params["visualize"]["heatmap"]["outdir"])   
             
     ########################################################
