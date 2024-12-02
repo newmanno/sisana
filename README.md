@@ -49,7 +49,7 @@ The "preprocess" subcommand is the first stage of SiSaNA, where it preprocess th
 
 #### Example command
 ```
-sisana preprocess params.yml
+sisana preprocess ./example_inputs/params.yml
 ```
 
 #### Outputs
@@ -64,13 +64,13 @@ This second SiSaNA stage, "generate", uses the PANDA and LIONESS algorithms of n
 
 #### Example command
 ```
-sisana generate ./input/params.yml
+sisana generate ./example_inputs/params.yml
 ```
 
 #### Outputs
 1. lioness.npy, which contains all calculated edges for each sample
 2. lioness.pickle, which is the same thing, just serialized to make reading into python quicker
-3. A file containing the calculated indegree and outdegree of each gene and transcription factor, respectively.
+3. A file containing the calculated indegree and another file with the outdegree of each gene and transcription factor, respectively.
 <br />
 
 
@@ -82,17 +82,17 @@ To compare the in- and out-degrees between two treatment groups, one can use eit
 #### Example commands
 To compare the values between two groups in order to identify differentially expressed genes are differential degrees, you can use the following command:
 ```
-sisana compare means params.yml
+sisana compare means ./example_inputs/params.yml
 ```
 
 For performing survival analyses, you can use a command like this:
 ```
-sisana compare survival params.yml
+sisana compare survival ./example_inputs/params.yml
 ```
 
 ...and for gene set enrichment:
 ```
-sisana compare gsea params.yml
+sisana compare gsea ./example_inputs/params.yml
 ```
 <br />
 
@@ -100,15 +100,15 @@ sisana compare gsea params.yml
 ## Visualization of results
 The final stage of SiSaNA, "visualize" allows you to visualize the results of your analysis on publication-ready figures. There are multiple types of visualization you can perform, including generating volcano plots...
 ```
-sisana visualize volcano params.yml
+sisana visualize volcano ./example_inputs/params.yml
 ```
 
 ...making boxplots or violin plots of expression/degrees...
 ```
-sisana visualize quantity params.yml
+sisana visualize quantity ./example_inputs/params.yml
 ```
 
 ...and creating heatmaps
 ```
-sisana visualize heatmap params.yml
+sisana visualize heatmap ./example_inputs/params.yml
 ```
