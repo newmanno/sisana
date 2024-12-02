@@ -39,7 +39,7 @@ Example input files can be obtained using the command
 ```
 sisana -e
 ```
-These files will be copied to a new directory in the current working directory, called "example_inputs". The files can be used in the commands listed down below.
+These files will be copied to a new directory in the current working directory, called "example_inputs". One of these example files is the params.yml file, which can be used as a template and edited for your own data (see next section). Each user-defined parameter in the params.yml file is documented with a comment to explain the function of the parameter. The comments do not need to be removed prior to running SiSaNA. The files in this example_inputs directory can be used in the commands listed down below.
 
 ## Setting up your params.yml file
 The most important thing to get right in order to correctly run SiSaNA is the structure of your params.yml file. SiSaNA comes with a params.yml file that is annotated to explain the function of each argument. The params.yml file is separated into 'chunks' that reflect the same subcommands available in SiSaNA on the command line. For each step of SiSaNA, you will need to use the correct subcommand, as well as have the parameters set up in the params.yml file.
