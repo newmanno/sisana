@@ -65,13 +65,14 @@ def cli():
         
     # If user wants example files, retrieve them from their installed paths
     if args.example:
+        print("Copying example files. Please wait...")
+
         import shutil
         import glob
         os.makedirs('./example_inputs/', exist_ok=True)
         all_ex_files = find_ex_paths()
 
         for fname in all_ex_files:
-            print(fname)
             shutil.copy2(fname, './example_inputs')
         print("Example input files have been created in ./example_inputs/")
         sys.exit(0)
