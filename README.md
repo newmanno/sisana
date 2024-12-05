@@ -12,12 +12,12 @@ SiSaNA is used both before and after creating both PANDA and LIONESS networks fr
 
 1. Create a conda virtual environment with python version 3.9.19. 
 ```
-conda create --prefix /path/to/env-name python=3.9.19
+conda create --prefix </path/to/env-name> python=3.9.19
 ```
 
 2. Enter the conda environment
 ```
-conda activate /path/to/env-name
+conda activate </path/to/env-name>
 ```
 
 3. Install SiSaNA via the pip package installer
