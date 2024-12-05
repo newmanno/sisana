@@ -178,8 +178,14 @@ extract_desc = """
 -----------------------------------
 
 This is an optional step that allows the user to extract edges connected to specific TFs or genes.
+Note that after "sisana extract", you also need to supply either "genes" or "tfs" to tell SiSaNA
+what type of data you are inputting.
 
-Example: sisana extract genes params.yml
+Examples: sisana extract genes params.yml
+
+          OR
+          
+          sisana extract tfs params.yml
 
   - Input files:
     - pickle: The lioness.pickle file created in the "generate" step
