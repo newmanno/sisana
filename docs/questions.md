@@ -14,4 +14,4 @@
 
 8. Take 5 of the top differential indegrees (which you calculated in step 4) and make a box plot for those genes.
 
-9. How many TFs have edges that connect to (regulate) the GDI2 gene in your network? (Hint: Use the help function of SiSaNA (sisana -h) to find a subcommand that can help with this).
+9. How many TFs have edges that connect to (regulate) the GDI2 gene in your network? You can use the help function of SiSaNA (sisana -h) to find a subcommand that can help with this. Then, to get more information and an example of that subcommand you can use "sisana <subcommand> -h".
