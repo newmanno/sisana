@@ -4,11 +4,11 @@
 
 3. Following the comparison of the expression of the two Luminal breast cancer groups (the default setup in the params.yml file), take a look at the output .txt file. What are some of the most differentially expressed genes? 
 
-4. Do the same comparison as before but for the indegrees this time. 
+4. Do the same comparison as before but for the indegrees this time. (Hint: You will need to modify something in the params.yml file for this!)
 
 5. Take a look at the output of the "sisana visualize survival" command. Do you know how to interpret this image? Additionally, there is a p-value listed there. Do you think we can conclude based on this p-value that there is a significant difference in the survival of Luminal A vs Luminal B patients?
 
-6. Following running the "sisana compare gsea" step, what are the three top pathways? Run this step again, but with the Hallmark gene set instead of the Reactome one.
+6. Following running the "sisana compare gsea" step, what are the three top pathways? Run this step again, but with the Hallmark gene set instead of the Reactome one. (Hint: You will need to modify two parameters in the params.yml file for this!)
 
 7. Now let's look at the output of the "sisana visualize volcano" command. What do the dots on the left and right side of the plot represent? Do you recognize any of these genes?
 
