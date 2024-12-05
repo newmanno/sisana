@@ -12,12 +12,12 @@ SiSaNA is used both before and after creating both PANDA and LIONESS networks fr
 
 1. Create a conda virtual environment with python version 3.9.19. 
 ```
-conda create --prefix /path/to/env-name python=3.9.19
+conda create --prefix </path/to/env-name> python=3.9.19
 ```
 
 2. Enter the conda environment
 ```
-conda activate /path/to/env-name
+conda activate </path/to/env-name>
 ```
 
 3. Install SiSaNA via the pip package installer
@@ -40,6 +40,17 @@ Example input files can be obtained using the command
 sisana -e
 ```
 These files will be copied to a new directory in the current working directory, called "example_inputs". One of these example files is the params.yml file, which can be used as a template and edited for your own data (see next section). Each user-defined parameter in the params.yml file is documented with a comment to explain the function of the parameter. The comments do not need to be removed prior to running SiSaNA. The files in this example_inputs directory can be used in the commands listed down below.
+
+## Viewing help documentation on SiSaNA
+To view help documentation on which subcommands are available, the following can be used:
+```
+sisana -h
+```
+
+For further information on these subcommands, simply put the name of the subcommand before the `-h`
+```
+sisana <subcommand> -h
+```
 
 ## Setting up your params.yml file
 The most important thing to get right in order to correctly run SiSaNA is the structure of your params.yml file. SiSaNA comes with a params.yml file that is annotated to explain the function of each argument. The params.yml file is separated into 'chunks' that reflect the same subcommands available in SiSaNA on the command line. For each step of SiSaNA, you will need to use the correct subcommand, as well as have the parameters set up in the params.yml file.
