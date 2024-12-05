@@ -2,7 +2,7 @@
 
 2. After running the generate step, a few files are automatically generated. Which of them might you use to determine which genes were being most highly regulated?
 
-3. Following the comparison of the expression of the two Luminal breast cancer groups (the default setup in the params.yml file), take a look at the output .txt file. What are some of the most differentially expressed genes? 
+3. Following the comparison of the expression of the two Luminal breast cancer groups (the default setup in the params.yml file), take a look at the output .txt file, which should be sorted based on the p-value. What are some of the most differentially expressed genes? 
 
 4. Do the same comparison as before but for the indegrees this time. (Hint: You will need to modify something in the params.yml file for this!)
 
