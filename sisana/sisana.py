@@ -149,7 +149,7 @@ def cli():
         # 
         # This transformation is described in the paper "Regulatory Network of PD1 Signaling Is Associated 
         # with Prognosis in Glioblastoma Multiforme"
-        print("Now tranforming edges...")
+        print("Now transforming edges...")
 
         print("Datafile before transformation")
         print(liondf.head(n=20))
