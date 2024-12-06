@@ -51,7 +51,7 @@ compare:
   # example: sisana compare gsea params.yml
   gsea:
     genefile: ./output/compare_means/comparison_mw_between_LumA_LumB_expression_ranked_test_stat.rnk # Path to file (.rnk format, which is two column, tab delimited, no header) containing the genes and test statistics to do enrichment on
-    gmtfile:  ./example_inputs/c2.cp.reactome.v2023.2.Hs.symbols.gmt # Path to the gene set file in gmt format
+    gmtfile: ./example_inputs/c2.cp.reactome.v2023.2.Hs.symbols.gmt # Path to the gene set file in gmt format
     geneset: Reactome # The gene set type used for gmtfile
     outdir: ./output/gsea/ # The directory to save the output to
 
@@ -105,6 +105,6 @@ visualize:
 # Stage 5: Extract edges that connect to specified TFs or genes. Specify whether to use "genes" or "tfs" in the "sisana extract" command.
 # example: sisana extract params.yml
 extract:
-  pickle: ./tmp/lioness.pickle # The path to the lioness.pickle file created in the "generate" step
-  namefile: ./example_inputs/genes.txt # The path to the file that contains the names of TFs or genes you wish to extract
+  pickle: ./tmp/lioness_transformed_edges.pickle # The path to the lioness_transformed_edges.pickle file created in the "generate" step
+  namefile: ./example_inputs/genes.txt # The path to the file that contains the names of TFs or genes (and their associated edges) you wish to extract
   outdir: ./output/extract/ # The directory to save the output file to

@@ -10,7 +10,6 @@ from .analyze import file_to_list, map_samples, calc_tt, calc_log2_fc, transform
 import sys
 # from statistics import mean
 
-
 __author__ = 'Nolan Newman'
 __contact__ = 'nolankn@uio.no'
     
@@ -49,7 +48,7 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     
     # args = parser.parse_args()
     
-    # Create output directory if one does not already exist
+    # Create output directory if one does not already exist    
     os.makedirs(outdir, exist_ok=True)
     
     if filetype == "csv" and (datafile[-3:] == "txt" or datafile[-3:] == "tsv"):
@@ -104,10 +103,7 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
         # print(f"Samnples in group 1:\n{groups["group1"]})")
         # print(f"\nSamples in group 2:\n{groups["group2"]})")
         
-        pval = compdf.apply(lambda row : calc_tt(row[groups["group1"]], row[groups["group2"]], testtype), axis = 1)
-             
-             
-    print(pval)
+        pval = compdf.apply(lambda row : calc_tt(row[groups["group1"]], row[groups["group2"]], testtype), axis = 1) 
        
     # For expression, do regular log2FC
     # For degrees, first need to transform the edge value by doing ln(e^w + 1),
@@ -115,42 +111,25 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     # Calculate log2FC (only for expression data, since you can have negative 
     # degree values). This transformation is described in the paper "Regulatory Network 
     # of PD1 Signaling Is Associated with Prognosis in Glioblastoma Multiforme"
-    if datatype == "expression":
-        fc = compdf.apply(lambda row : calc_log2_fc(row[sampdict[groups[1]]], row[sampdict[groups[0]]]), axis = 1)
+    # if datatype == "expression":
+    #     fc = compdf.apply(lambda row : calc_log2_fc(row[sampdict[groups[1]]], row[sampdict[groups[0]]]), axis = 1)
 
-    if datatype == "degree":
-        # Transform edges to positive values
-        print("Datafile before transformation")
-        print(compdf)
-        
-        compdf = compdf.apply(np.vectorize(transform_edge_to_positive_val))
-        
-        print("Datafile after transformation")
-        print(compdf)
-
-        fc = compdf.apply(lambda row : calc_log2_fc(row[sampdict[groups[1]]], row[sampdict[groups[0]]]), axis = 1)
-            
-        # raise Exception("Error: Could not compute log2 fold change, potentially due to negative values in input.")
+    # if datatype == "degree":
     
+    fc = compdf.apply(lambda row : calc_log2_fc(row[sampdict[groups[0]]], row[sampdict[groups[1]]]), axis = 1)
+
     print("Comparisons finished...")
     
     # Format the output data frame
     pval_colname = testtype + "_pvalue"
-    # print(pval_colname)
-    # print("pval.index")
-    # print(pval.index)
-    # print("pval.values")
-    # print(pval.values)
-    
-    
-    
+
     pvaldf = pd.DataFrame({'Target':pval.index, pval_colname:pval.values})
     newpvaldf = pd.DataFrame(pvaldf[pval_colname].to_list(), columns=['test_statistic',pval_colname])
     newpvaldf['Target'] = pval.index
     newpvaldf = newpvaldf.set_index('Target')  
     
     # Calcuate means per group
-    #if args.datatype == "expression":            
+    # if args.datatype == "expression":            
     mean_g2_colname = f"mean_{groups[1]}"    
     mean_g1_colname = f"mean_{groups[0]}"      
     newpvaldf[mean_g2_colname] = compdf[sampdict[groups[1]]].mean(axis=1)
@@ -167,13 +146,6 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     ranked = newpvaldf.sort_values('test_statistic', ascending = False)
     ranked.drop([pval_colname, 'FDR'], inplace=True, axis=1)
     ranked = ranked["test_statistic"]
-
-    
-    # if args.datatype == "expression":      
-    #     ranked.drop([mean_g2_colname, mean_g1_colname], inplace=True, axis=1)
-    
-    # if args.foldchange:      
-    #     ranked.drop(fc_colname, inplace=True, axis=1)
             
     # Write to disk
     if testtype == "tt" or testtype == "mw":

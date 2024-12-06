@@ -5,11 +5,13 @@ from netZooPy.lioness.lioness import Lioness
 from sisana.preprocessing import preprocess_data
 from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes
 from sisana.analyze_networks import calculate_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap
+from sisana.analyze_networks.analyze import transform_edge_to_positive_val
 from sisana.example_input import find_example_paths
 import sisana.docs
 import os 
 import pandas as pd
 import sys
+import numpy as np
 
 def cli():
     """
@@ -26,7 +28,7 @@ def cli():
     Developed by Nolan Newman (nolan.newman@ncmm.uio.no).
     """
     EPILOG = """
-    Code available under GPL-3.0 license:
+    Code available under MIT license:
     https://github.com/newmanno/sisana
     """
     
@@ -70,7 +72,7 @@ def cli():
         import shutil
         import glob
         os.makedirs('./example_inputs/', exist_ok=True)
-        all_ex_files = find_ex_paths()
+        all_ex_files = find_example_paths()
 
         for fname in all_ex_files:
             shutil.copy2(fname, './example_inputs')
@@ -119,12 +121,12 @@ def cli():
         os.makedirs(params['generate']['outdir'], exist_ok=True)
 
         panda_obj = Panda(expression_file=data_paths['exp'], 
-                        motif_file=data_paths['motif'], 
-                        ppi_file=data_paths['ppi'], 
-                        save_tmp=False, 
-                        remove_missing=False, 
-                        keep_expression_matrix=True, 
-                        save_memory=False)
+                          motif_file=data_paths['motif'], 
+                          ppi_file=data_paths['ppi'], 
+                          save_tmp=False, 
+                          remove_missing=False, 
+                          keep_expression_matrix=True, 
+                          save_memory=False)
 
         panda_obj.save_panda_results(params['generate']['outdir'] + "panda_output.txt")
         
@@ -132,26 +134,46 @@ def cli():
         
         if params['generate']['method'] == 'lioness':
             lion = Lioness(panda_obj, 
-                        computing=params['generate']['compute'], 
-                        precision="double",
-                        ncores=params['generate']['ncores'], 
-                        save_dir=params['generate']['outdir'], 
-                        save_fmt="npy")
+                           computing=params['generate']['compute'], 
+                           precision="double",
+                           ncores=params['generate']['ncores'], 
+                           save_dir=params['generate']['outdir'], 
+                           save_fmt="npy")
+        
+        lion_loc = params['generate']['outdir'] + "lioness.npy"
+        liondf = pd.DataFrame(np.load(lion_loc))            
+            
+        # To make the edges positive values for log2FC calculation later on, first need to transform 
+        # edges by doing ln(e^w + 1), then calculate degrees. Then you can do the log2FC of degrees
+        # in next step
+        # 
+        # This transformation is described in the paper "Regulatory Network of PD1 Signaling Is Associated 
+        # with Prognosis in Glioblastoma Multiforme"
+        print("Now tranforming edges...")
 
-        pickle_path = './tmp/lioness.pickle'
+        print("Datafile before transformation")
+        print(liondf.head(n=20))
+        
+        lion_transformed = liondf.apply(np.vectorize(transform_edge_to_positive_val))
+        
+        print("Datafile after transformation")
+        print(lion_transformed.head(n=20))        
+        
+        print("PANDA network saved to " + os.path.join(params['generate']['outdir'], "panda_output.txt"))
+        print("LIONESS network saved to " + os.path.join(params['generate']['outdir'], "lioness.npy"))
+        print("LIONESS network with transformed edge values saved to " + os.path.join(params['generate']['outdir'], "lioness_transformed_edges.npy"))
+        
+        pickle_path = './tmp/lioness_transformed_edges.pickle'
         convert_lion_to_pickle(os.path.join(params['generate']['outdir'], 'panda_output.txt'),
-                            params['generate']['outdir'] + 'lioness.npy',
-                            "npy", 
-                            './tmp/samples.txt',  
-                            pickle_path)
-
+                               lion_transformed,
+                               "npy", 
+                               './tmp/samples.txt',  
+                               pickle_path)
+        
+        print("Now calculating degrees...")
         calculate_degree(inputfile=pickle_path,
                          datatype="pickle",
                          outdir=params['generate']['outdir'])
-
-        print("PANDA network saved to " + params['generate']['outdir'])
-        print("LIONESS network saved to " + os.path.join(params['generate']['outdir'], "lioness.npy"))
-        print("Pickled LIONESS network (for faster loading into Python) saved to " + pickle_path)
 
     ########################################################
     # 3) Compare between sample groups
@@ -161,27 +183,27 @@ def cli():
         
         if args.compchoice == "means":        
             compare_bw_groups(datafile=params["compare"]["means"]["datafile"], 
-                        mapfile=params["compare"]["means"]["mapfile"], 
-                        datatype=params["compare"]["means"]["datatype"], 
-                        groups=params["compare"]["means"]["groups"],
-                        testtype=params["compare"]["means"]["testtype"], 
-                        filetype=params["compare"]["means"]["filetype"], 
-                        outdir=params["compare"]["means"]["outdir"])
+                              mapfile=params["compare"]["means"]["mapfile"], 
+                              datatype=params["compare"]["means"]["datatype"], 
+                              groups=params["compare"]["means"]["groups"],
+                              testtype=params["compare"]["means"]["testtype"], 
+                              filetype=params["compare"]["means"]["filetype"], 
+                              outdir=params["compare"]["means"]["outdir"])
         
         if args.compchoice == "survival":     
             survival_analysis(metadata=params["compare"]["survival"]["metadata"],
-                            filetype=params["compare"]["survival"]["filetype"], 
-                            sampgroup_colname=params["compare"]["survival"]["sampgroup_colname"],
-                            alivestatus_colname=params["compare"]["survival"]["alivestatus_colname"],
-                            days_colname=params["compare"]["survival"]["days_colname"],
-                            groups=params["compare"]["survival"]["groups"],
-                            outdir=params["compare"]["survival"]["outdir"])
+                              filetype=params["compare"]["survival"]["filetype"], 
+                              sampgroup_colname=params["compare"]["survival"]["sampgroup_colname"],
+                              alivestatus_colname=params["compare"]["survival"]["alivestatus_colname"],
+                              days_colname=params["compare"]["survival"]["days_colname"],
+                              groups=params["compare"]["survival"]["groups"],
+                              outdir=params["compare"]["survival"]["outdir"])
         
         if args.compchoice == "gsea":    
             perform_gsea(genefile=params["compare"]["gsea"]["genefile"], 
-                        gmtfile=params["compare"]["gsea"]["gmtfile"], 
-                        geneset=params["compare"]["gsea"]["geneset"], 
-                        outdir=params["compare"]["gsea"]["outdir"])
+                         gmtfile=params["compare"]["gsea"]["gmtfile"], 
+                         geneset=params["compare"]["gsea"]["geneset"], 
+                         outdir=params["compare"]["gsea"]["outdir"])
     
     ########################################################
     # 4) Visualize results
@@ -228,7 +250,7 @@ def cli():
     elif args.command == 'extract':
         
         extract_tfs_genes(pickle=params["extract"]["pickle"], 
-                            datatype=args.extractchoice, 
-                            namefile=params["extract"]["namefile"], 
-                            outdir=params["extract"]["outdir"])
+                         datatype=args.extractchoice, 
+                         namefile=params["extract"]["namefile"], 
+                         outdir=params["extract"]["outdir"])
             

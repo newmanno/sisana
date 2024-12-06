@@ -2,4 +2,14 @@
 
 include pyproject.toml
 include requirements.txt
-include example_analysis/*
+recursive-include sisana/example_input *
+recursive-include sisana/analyze_networks/genesets *
+include sisana/docs/*.yml
+exclude sisana/analyze_networks/clustering.py
+exclude sisana/analyze_networks/analyze/cluster.py
+exclude sisana/analyze_networks/analyze/consensusClustering.py
+exclude sisana/analyze_networks/compare_clustering.py
+exclude sisana/postprocessing/extract_samples.py
+exclude sisana/postprocessing/create_single_samp_nws.py
+exclude sisana/postprocessing/filter_edges_for_prior.py
+exclude sisana/preprocessing/subset_exp_for_samples.py
