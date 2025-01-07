@@ -72,19 +72,19 @@ visualize:
   # Use the following option if you wish to make a boxplot or violin plot. Specify which plot type in genelist
   # example: sisana visualize quantity params.yml
   quantity: 
-    datafile: ./example_inputs/BRCA_TCGA_20_LumA_LumB_samps_5000_genes_exp.tsv # Path to file containing the expression or indegrees of each gene per sample.
-    filetype: tsv # Type of input file, must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv implies tab-separated
+    datafile: /storage/kuijjerarea/nolan/sisana_test_analysis_4/output/network/lioness_transformed_edges_indegree.csv # Path to file containing the expression or indegrees of each gene per sample.
+    filetype: csv # Type of input file, must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv implies tab-separated
     metadata: ./example_inputs/BRCA_TCGA_20_LumA_LumB_samps_mapping.csv # Path to the csv metadata file mapping samples to groups (groups must match names of the groupnames arg), must have a header of the format 'name,group'
     genelist: ./example_inputs/genes.txt # .txt file containing a list of genes to plot, must match the name of genes in the datafile. Recommended to not use more than 10 genes, otherwise use a heatmap.
-    plottype: violin # The type of plot to create. Choices are "boxplot" or "violin"
+    plottype: boxplot # The type of plot to create. Choices are "boxplot" or "violin"
     groups:  # The names of the groups to plot, should ideally be a list of 5 names or less. Groups will be plotted in the order they are written in this argument
       - LumA
       - LumB    
     colors:  # The colors for each group, in the same order the groups appear in the groupnames arg. Supports matplotlib named colors (https://matplotlib.org/stable/gallery/color/named_colors.html)
       - cornflowerblue
       - orange        
-    prefix: LumA_LumB_expression # Prefix to use for the output figures. For example, "expression_group1_group2" would produce "expression_group1_group2_box_plot.png" (assuming boxplot was used for plottype)
-    yaxisname: Expression # Name to use for the y-axis
+    prefix: LumA_LumB_indegree # Prefix to use for the output figures. For example, "expression_group1_group2" would produce "expression_group1_group2_box_plot.png" (assuming boxplot was used for plottype)
+    yaxisname: Indegree # Name to use for the y-axis
     outdir: ./output/plot_quantity/ # Path to directory to output file to
 
   # Use the following to create a heatmap
