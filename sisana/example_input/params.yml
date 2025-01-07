@@ -99,7 +99,7 @@ visualize:
       - LumA
       - LumB      
     prefix: LumA_LumB_expression # Prefix to use for the output file; note that the output file will automatically be generated with the suffix '_heatmap.png'
-    plotnames: False # Flag ("True" or "False") for whether to plot the names of the genes on the rows of the heatmap
+    plotnames: True # Flag ("True" or "False") for whether to plot the names of the genes on the rows of the heatmap
     outdir: ./output/plot_heatmap/ # Path to directory to output file to
 
 # Stage 5: Extract edges that connect to specified TFs or genes. Specify whether to use "genes" or "tfs" in the "sisana extract" command.
