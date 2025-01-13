@@ -73,6 +73,7 @@ visualize:
   # example: sisana visualize quantity params.yml
   quantity: 
     datafile: /storage/kuijjerarea/nolan/sisana_test_analysis_4/output/network/lioness_transformed_edges_indegree.csv # Path to file containing the expression or indegrees of each gene per sample.
+    compfile: ./output/comparison_mw_between_LumA_LumB_degree.txt
     filetype: csv # Type of input file, must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv implies tab-separated
     metadata: ./example_inputs/BRCA_TCGA_20_LumA_LumB_samps_mapping.csv # Path to the csv metadata file mapping samples to groups (groups must match names of the groupnames arg), must have a header of the format 'name,group'
     genelist: ./example_inputs/genes.txt # .txt file containing a list of genes to plot, must match the name of genes in the datafile. Recommended to not use more than 10 genes, otherwise use a heatmap.
