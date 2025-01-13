@@ -223,6 +223,7 @@ def cli():
         if args.plotchoice == "quantity":    
             plot_expression_degree(datafile=params["visualize"]["quantity"]["datafile"],
                         filetype=params["visualize"]["quantity"]["filetype"], 
+                        compfile=params["visualize"]["quantity"]["compfile"], 
                         metadata=params["visualize"]["quantity"]["metadata"],
                         genelist=params["visualize"]["quantity"]["genelist"],
                         plottype=params["visualize"]["quantity"]["plottype"],

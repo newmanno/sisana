@@ -9,18 +9,19 @@ import warnings
 from .analyze import file_to_list, NotASubsetError
 import os
 
-def plot_expression_degree(datafile: str, filetype: str, metadata: str, genelist: str, 
-                  plottype: str, groups: list, colors: list, prefix: str,
-                  yaxisname: str, outdir: str):
+def plot_expression_degree(datafile: str, filetype: str, compfile: str, metadata: str, genelist: str, 
+                  plottype: str, groups: list, colors: list, prefix: str, yaxisname: str, outdir: str):
     """
     Description:
-        This code creates either a violin plot or a box plot of 
+        This code creates either a violin plot or a box plot of gene expression or degree data. The plots are annotated using the previously
+        calculated statistics from the "sisana compare means" step
         
     Parameters:
     -----------
         - datafile: str, Path to file containing the expression or indegrees of each gene per sample.
         - filetype: str, Type of input file, must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv 
                         implies tab-separated
+        - compfile: str, Path to the file that contains the comparison output of the gene expression or degree
         - metadata: str, Path to the csv metadata file mapping samples to groups (groups must match names of the groups arg), 
                          must have a header of the format 'name,group'
         - genelist: str, .txt file containing a list of genes to plot, must match the name of genes in the datafile. Recommended 
@@ -130,18 +131,62 @@ def plot_expression_degree(datafile: str, filetype: str, metadata: str, genelist
     # Create plots
     plt.figure(figsize=(6, 6), dpi = 600) 
     plt.xticks(rotation=45)
-         
+
+    print(subdata_melt)
+
+    # Add statistical annotations to plot    
+    hue_plot_params = {
+    'data': subdata_melt,
+    'x': 'gene',
+    'y': 'value',
+    "hue": "group",
+    }
+    
+    # Create the nested list (i.e. "[[('gene1', 'group1'), ('gene1', 'group2')], [('gene2', 'group1'), ('gene2', 'group2')], etc.] 
+    # for telling the Annotator how to structure the plots. Note that the Annotator does not do the comparison itself, however, since 
+    # the FDRs have already been calculated previously, using all genes for the FDR calculation
+    stat_annotation_pairs = []
+    for i in user_gene_list:
+        num = 0
+        temp_list = []
+        for j in subdata_melt['group'].unique():
+            comparison = (i,j)
+            temp_list.append(comparison)
+            
+            if num == 0:
+                num +=1
+            else:
+                stat_annotation_pairs.append(temp_list)
+                temp_list = []
+
+    print(stat_annotation_pairs)
+    
+    from statannotations.Annotator import Annotator
+    
     if plottype == "violin":
-        sns.violinplot(data = subdata_melt, x = "gene", y = "value", hue = "group")
-        plt.ylabel(yaxisname)
-        plt.tight_layout()
+        ax = sns.violinplot(**hue_plot_params, inner = None)
+        # plt.ylabel(yaxisname)
+        # plt.tight_layout()
         outname = os.path.join(outdir, f"{prefix}_violin_plot.png")
-        plt.savefig(outname)
-        print(f"\nFile saved: {outname}\n")
+        annotator = Annotator(ax, stat_annotation_pairs, **hue_plot_params, plot="violinplot", hide_non_significant = True)
+
+
     elif plottype == "boxplot":
-        sns.boxplot(data = subdata_melt, x = "gene", y = "value", hue = "group", fliersize = 2)
-        plt.ylabel(yaxisname)
-        plt.tight_layout()
+        ax = sns.boxplot(**hue_plot_params, fliersize = 2)
+        # plt.ylabel(yaxisname)
+        # plt.tight_layout()
         outname = os.path.join(outdir, f"{prefix}_box_plot.png")
-        plt.savefig(outname)
-        print(f"\nFile saved: {outname}\n")
+        annotator = Annotator(ax, stat_annotation_pairs, **hue_plot_params, hide_non_significant = True)
+            
+    # Annotate with the FDRs that were calculated previously
+    compare_df = pd.read_csv("/storage/kuijjerarea/nolan/sisana/example_analysis/20_LumALumB_samps/output/compare_means/comparison_mw_between_LumA_LumB_expression.txt", sep = "\t", index_col=0)
+    print(compare_df.loc["NFKB1", "FDR"])
+    pval_list = [compare_df.loc[gene, "FDR"] for gene in user_gene_list]
+    annotator.configure(hide_non_significant=True)
+    annotator.set_pvalues_and_annotate(pvalues = pval_list)    
+    
+    plt.figtext(0.5, 0.01, '* p < 0.05, ** p < 0.01, *** p < 0.001, **** p < 0.0001', horizontalalignment='center')
+    plt.tight_layout()
+    plt.subplots_adjust(bottom=0.18) 
+    plt.savefig(outname)
+    print(f"\nFile saved: {outname}\n")
