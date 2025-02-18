@@ -1,5 +1,5 @@
 # Stage 1: Preprocess data to format for next stage
-# example: sisana preprocess -p params.yml
+# example: sisana preprocess params.yml
 preprocess:
   exp_file: ./example_inputs/BRCA_TCGA_20_LumA_LumB_samps_5000_genes_exp.tsv # Path to expression file, which MUST CONTAIN A HEADER
   motif_file: ./example_inputs/motif_tcga_brca.tsv # path to motif file
@@ -8,7 +8,7 @@ preprocess:
   outdir: ./output/preprocess # The directory to save the output to
 
 # Stage 2: Reconstruct networks and calculate degrees
-# example: sisana generate -p params.yml
+# example: sisana generate params.yml
 generate:
   processed_paths: ./tmp/processed_data_paths.yml # Path to yaml file containing the location of the processed data files
   method: lioness # Which method to use, either "panda" to run just PANDA or "lioness", which runs PANDA first, then LIONESS
@@ -35,7 +35,7 @@ compare:
     outdir: ./output/compare_means/ # The directory to save the output to
 
   # Use the following if you wish to perform a survival analysis between two sample groups
-  # example: sisana compare survival -p params.yml
+  # example: sisana compare survival params.yml
   survival:
     metadata: ./example_inputs/BRCA_TCGA_20_LumA_LumB_samps_survival_data.csv # Path to mapping file ("csv" or "txt") that maps samples to groups. Must also contain a column describing the survival status (see alivestatus_colname param)
     filetype: csv # Type of file, used to indicate the delimiter to use for metadata. Enter "csv" or "txt" for this.
