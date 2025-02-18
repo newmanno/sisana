@@ -5,7 +5,6 @@ from netZooPy.lioness.lioness import Lioness
 from sisana.preprocessing import preprocess_data
 from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes
 from sisana.analyze_networks import calculate_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap
-from sisana.analyze_networks.analyze import transform_edge_to_positive_val
 from sisana.example_input import find_example_paths
 import sisana.docs
 import os 
@@ -34,7 +33,8 @@ def cli():
     
     # create the top-level parser
     parser = argparse.ArgumentParser(prog='sisana.py', description=DESCRIPTION, epilog=EPILOG)    
-    parser.add_argument('-e', '--example', action='store_true', help='Copies the example input files into a directory called "./example_inputs"')    
+    parser.add_argument('-e', '--example', action='store_true', help='Flag; Copies the example input files into a directory called "./example_inputs"')    
+    parser.add_argument('-s', '--setAndForget', action='store_true', help='Flag; Will attempt to run ALL STEPS of SiSaNA at once. Warning: This requires a very well-formatted params file and should not be used by first-time users. Most users will want to run each of the steps individually."')    
 
     # Add subcommands
     subparsers = parser.add_subparsers(title='Subcommands', dest='command')
@@ -60,11 +60,11 @@ def cli():
     comp.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
     # options for visualize subcommand
-    vis.add_argument("plotchoice", type=str, choices = ["volcano", "quantity", "heatmap"], help="The type of plot to create")   
+    vis.add_argument("plotchoice", type=str, choices = ["all", "quantity", "heatmap", "volcano"], nargs='?', default="all", help="The type of plot to create")   
     vis.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
     args = parser.parse_args()
-        
+      
     # If user wants example files, retrieve them from their installed paths
     if args.example:
         print("Copying example files. Please wait...")
@@ -139,41 +139,41 @@ def cli():
                            ncores=params['generate']['ncores'], 
                            save_dir=params['generate']['outdir'], 
                            save_fmt="npy")
-        
-        lion_loc = params['generate']['outdir'] + "lioness.npy"
-        liondf = pd.DataFrame(np.load(lion_loc))            
             
-        # To make the edges positive values for log2FC calculation later on, first need to transform 
-        # edges by doing ln(e^w + 1), then calculate degrees. Then you can do the log2FC of degrees
-        # in next step
-        # 
-        # This transformation is described in the paper "Regulatory Network of PD1 Signaling Is Associated 
-        # with Prognosis in Glioblastoma Multiforme"
-        print("Now transforming edges...")
+            lion_loc = params['generate']['outdir'] + "lioness.npy"
+            liondf = pd.DataFrame(np.load(lion_loc))            
+                
+            # To make the edges positive values for log2FC calculation later on, first need to transform 
+            # edges by doing ln(e^w + 1), then calculate degrees. Then you can do the log2FC of degrees
+            # in next step
+            # 
+            # This transformation is described in the paper "Regulatory Network of PD1 Signaling Is Associated 
+            # with Prognosis in Glioblastoma Multiforme"
+            # print("Now transforming edges...")
 
-        print("Datafile before transformation")
-        print(liondf.head(n=20))
-        
-        lion_transformed = liondf.apply(np.vectorize(transform_edge_to_positive_val))
-        
-        print("Datafile after transformation")
-        print(lion_transformed.head(n=20))        
-        
-        print("PANDA network saved to " + os.path.join(params['generate']['outdir'], "panda_output.txt"))
-        print("LIONESS network saved to " + os.path.join(params['generate']['outdir'], "lioness.npy"))
-        print("LIONESS network with transformed edge values saved to " + os.path.join(params['generate']['outdir'], "lioness_transformed_edges.npy"))
-        
-        pickle_path = './tmp/lioness_transformed_edges.pickle'
-        convert_lion_to_pickle(os.path.join(params['generate']['outdir'], 'panda_output.txt'),
-                               lion_transformed,
-                               "npy", 
-                               './tmp/samples.txt',  
-                               pickle_path)
-        
-        print("Now calculating degrees...")
-        calculate_degree(inputfile=pickle_path,
-                         datatype="pickle",
-                         outdir=params['generate']['outdir'])
+            # print("Datafile before transformation")
+            # print(liondf.head(n=20))
+            
+            # lion_transformed = liondf.apply(np.vectorize(transform_edge_to_positive_val))
+            
+            # print("Datafile after transformation")
+            # print(lion_transformed.head(n=20))        
+            
+            print("PANDA network saved to " + os.path.join(params['generate']['outdir'], "panda_output.txt"))
+            print("LIONESS network saved to " + os.path.join(params['generate']['outdir'], "lioness.npy"))
+            # print("LIONESS network with transformed edge values saved to " + os.path.join(params['generate']['outdir'], "lioness_transformed_edges.npy"))
+            
+            pickle_path = './tmp/lioness.pickle'
+            convert_lion_to_pickle(os.path.join(params['generate']['outdir'], 'panda_output.txt'),
+                                liondf,
+                                "npy", 
+                                './tmp/samples.txt',  
+                                pickle_path)
+            
+            print("Now calculating degrees...")
+            calculate_degree(inputfile=pickle_path,
+                            datatype="pickle",
+                            outdir=params['generate']['outdir'])
 
     ########################################################
     # 3) Compare between sample groups
@@ -211,19 +211,54 @@ def cli():
 
     elif args.command == "visualize":
 
+        if args.plotchoice == "all":
+            # # plot top genes in each visualization mode
+            # plot_volcano(statsfile=params["visualize"]["volcano"]["statsfile"],
+            #              diffcol=params["visualize"]["volcano"]["diffcol"],
+            #              adjpcol=params["visualize"]["volcano"]["adjpcol"],
+            #              adjpvalthreshold=params["visualize"]["volcano"]["adjpvalthreshold"],
+            #              outdir=params["visualize"]["volcano"]["outdir"],
+            #              top=True,
+            #              numlabels=25)   
+
+            # plot_expression_degree(datafile=params["visualize"]["quantity"]["datafile"],
+            #             filetype=params["visualize"]["quantity"]["filetype"], 
+            #             statsfile=params["visualize"]["quantity"]["statsfile"],                         
+            #             metadata=params["visualize"]["quantity"]["metadata"],
+            #             genelist=params["visualize"]["quantity"]["genelist"],
+            #             plottype=params["visualize"]["quantity"]["plottype"],
+            #             groups=params["visualize"]["quantity"]["groups"],
+            #             colors=params["visualize"]["quantity"]["colors"],
+            #             prefix=params["visualize"]["quantity"]["prefix"],
+            #             yaxisname=params["visualize"]["quantity"]["yaxisname"],
+            #             outdir=params["visualize"]["quantity"]["outdir"],
+            #             top=True)   
+            
+            plot_heatmap(datafile=params["visualize"]["heatmap"]["datafile"],
+                        filetype=params["visualize"]["heatmap"]["filetype"], 
+                        statsfile=params["visualize"]["heatmap"]["statsfile"],
+                        metadata=params["visualize"]["heatmap"]["metadata"],
+                        genelist=params["visualize"]["heatmap"]["genelist"],
+                        hierarchicalcluster=params["visualize"]["heatmap"]["hierarchicalcluster"],
+                        groups=params["visualize"]["heatmap"]["groups"],
+                        prefix=params["visualize"]["heatmap"]["prefix"],
+                        plotnames=params["visualize"]["heatmap"]["plotnames"],
+                        outdir=params["visualize"]["heatmap"]["outdir"],
+                        top=True)                           
+
         if args.plotchoice == "volcano":    
-            plot_volcano(datafile=params["visualize"]["volcano"]["datafile"],
-                         fccol=params["visualize"]["volcano"]["FCcol"],
+            plot_volcano(statsfile=params["visualize"]["volcano"]["statsfile"],
+                         diffcol=params["visualize"]["volcano"]["diffcol"],
                          adjpcol=params["visualize"]["volcano"]["adjpcol"],
-                         fcthreshold=params["visualize"]["volcano"]["fcthreshold"], 
                          adjpvalthreshold=params["visualize"]["volcano"]["adjpvalthreshold"],
-                         numlabels=params["visualize"]["volcano"]["numlabels"],
-                         outdir=params["visualize"]["volcano"]["outdir"])      
+                         genelist=params["visualize"]["volcano"]["genelist"],
+                         outdir=params["visualize"]["volcano"]["outdir"],
+                         top=False)      
     
         if args.plotchoice == "quantity":    
             plot_expression_degree(datafile=params["visualize"]["quantity"]["datafile"],
                         filetype=params["visualize"]["quantity"]["filetype"], 
-                        compfile=params["visualize"]["quantity"]["compfile"], 
+                        statsfile=params["visualize"]["quantity"]["statsfile"], 
                         metadata=params["visualize"]["quantity"]["metadata"],
                         genelist=params["visualize"]["quantity"]["genelist"],
                         plottype=params["visualize"]["quantity"]["plottype"],
@@ -231,18 +266,21 @@ def cli():
                         colors=params["visualize"]["quantity"]["colors"],
                         prefix=params["visualize"]["quantity"]["prefix"],
                         yaxisname=params["visualize"]["quantity"]["yaxisname"],
-                        outdir=params["visualize"]["quantity"]["outdir"])   
+                        outdir=params["visualize"]["quantity"]["outdir"],
+                        top=False)   
             
         if args.plotchoice == "heatmap":    
             plot_heatmap(datafile=params["visualize"]["heatmap"]["datafile"],
                         filetype=params["visualize"]["heatmap"]["filetype"], 
+                        statsfile=params["visualize"]["heatmap"]["statsfile"],
                         metadata=params["visualize"]["heatmap"]["metadata"],
                         genelist=params["visualize"]["heatmap"]["genelist"],
                         hierarchicalcluster=params["visualize"]["heatmap"]["hierarchicalcluster"],
                         groups=params["visualize"]["heatmap"]["groups"],
                         prefix=params["visualize"]["heatmap"]["prefix"],
                         plotnames=params["visualize"]["heatmap"]["plotnames"],
-                        outdir=params["visualize"]["heatmap"]["outdir"])   
+                        outdir=params["visualize"]["heatmap"]["outdir"],
+                        top=False)   
             
     ########################################################
     # 5) Optional, extract edges that connect to specific TFs/genes
