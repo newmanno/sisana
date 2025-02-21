@@ -6,7 +6,7 @@ from pathlib import Path
 import time
 import csv
 from scipy import stats
-from .analyze import file_to_list, map_samples, calc_tt, calc_log2_fc, transform_edge_to_positive_val
+from .analyze import file_to_list, map_samples, calc_tt, calc_group_difference
 import sys
 # from statistics import mean
 
@@ -70,7 +70,7 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     #     datadf.columns = namelist 
         
     print("Performing calculations, please wait...")
-    
+        
     if testtype == "tt" or testtype == "mw":
           
         # Assign samples from mapping file to groups
@@ -96,15 +96,17 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     del datadf
 
     # Calculate p-value/FDR
-    if testtype == "tt" or testtype == "mw":
-        pval = compdf.apply(lambda row : calc_tt(row[sampdict[groups[1]]], row[sampdict[groups[0]]], testtype), axis = 1)
-    elif testtype == "paired_tt" or testtype == "wilcoxon":
-        # print("Comparing the following samples with a paired t-test:\n")
-        # print(f"Samnples in group 1:\n{groups["group1"]})")
-        # print(f"\nSamples in group 2:\n{groups["group2"]})")
-        
-        pval = compdf.apply(lambda row : calc_tt(row[groups["group1"]], row[groups["group2"]], testtype), axis = 1) 
-       
+    if testtype != "mw":
+        if testtype == "tt": 
+            pval = compdf.apply(lambda row : calc_tt(row[sampdict[groups[1]]], row[sampdict[groups[0]]], testtype), axis = 1)
+        elif testtype == "paired_tt" or testtype == "wilcoxon":
+            # print("Comparing the following samples with a paired t-test:\n")
+            # print(f"Samnples in group 1:\n{groups["group1"]})")
+            # print(f"\nSamples in group 2:\n{groups["group2"]})")
+            
+            pval = compdf.apply(lambda row : calc_tt(row[groups["group1"]], row[groups["group2"]], testtype), axis = 1) 
+    else:
+        mwu_uval, mwu_pval, mwu_cles = compdf.apply(lambda row : calc_tt(row[sampdict[groups[1]]], row[sampdict[groups[0]]], testtype), axis = 1)
     # For expression, do regular log2FC
     # For degrees, first need to transform the edge value by doing ln(e^w + 1),
     # then calculate degrees. Then you can do the log2FC of degrees
@@ -115,8 +117,11 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     #     fc = compdf.apply(lambda row : calc_log2_fc(row[sampdict[groups[1]]], row[sampdict[groups[0]]]), axis = 1)
 
     # if datatype == "degree":
-    
-    fc = compdf.apply(lambda row : calc_log2_fc(row[sampdict[groups[0]]], row[sampdict[groups[1]]]), axis = 1)
+    print(mwu_uval)
+    sys.exit(1)
+   
+    mean_diff = compdf.apply(lambda row : calc_group_difference(row[sampdict[groups[0]]], row[sampdict[groups[1]]], difftype="mean"), axis = 1)
+    median_diff = compdf.apply(lambda row : calc_group_difference(row[sampdict[groups[0]]], row[sampdict[groups[1]]], difftype="median"), axis = 1)
 
     print("Comparisons finished...")
     
@@ -124,7 +129,9 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     pval_colname = testtype + "_pvalue"
 
     pvaldf = pd.DataFrame({'Target':pval.index, pval_colname:pval.values})
+
     newpvaldf = pd.DataFrame(pvaldf[pval_colname].to_list(), columns=['test_statistic',pval_colname])
+
     newpvaldf['Target'] = pval.index
     newpvaldf = newpvaldf.set_index('Target')  
     
@@ -135,9 +142,14 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     newpvaldf[mean_g2_colname] = compdf[sampdict[groups[1]]].mean(axis=1)
     newpvaldf[mean_g1_colname] = compdf[sampdict[groups[0]]].mean(axis=1)
     
-    fc_colname = f"mean_log2FC_{groups[1]}/{groups[0]}"      
-    newpvaldf[fc_colname] = fc
-        
+    meandiff_colname = f"difference_of_means_({groups[1]}-{groups[0]})"      
+    newpvaldf[meandiff_colname] = mean_diff
+    newpvaldf["abs(difference_of_means)"] = abs(mean_diff)
+    
+    mediandiff_colname = f"difference_of_means_({groups[1]}-{groups[0]})"      
+    newpvaldf[mediandiff_colname] = median_diff
+    newpvaldf["abs(difference_of_medians)"] = abs(median_diff)
+
     # Perform multiple test correction
     newpvaldf['FDR'] = stats.false_discovery_control(newpvaldf[pval_colname])
     newpvaldf = newpvaldf.sort_values(pval_colname, ascending = True)
@@ -146,7 +158,10 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     ranked = newpvaldf.sort_values('test_statistic', ascending = False)
     ranked.drop([pval_colname, 'FDR'], inplace=True, axis=1)
     ranked = ranked["test_statistic"]
-            
+    
+    if testtype == "mw":
+        newpvaldf.rename(columns={"test_statistic": "U-val"})
+    
     # Write to disk
     if testtype == "tt" or testtype == "mw":
         save_file_path = os.path.join(outdir, f"comparison_{testtype}_between_{groups[0]}_{groups[1]}_{datatype}.txt")
