@@ -7,7 +7,7 @@ name = "sisana"
 authors = [
     {name = "Nolan Newman", email = "nolan.newman@ncmm.uio.no"},
 ]
-version = "0.0.5"
+version = "0.0.7"
 description = "A command line interface tool to reconstruct and analyze single sample networks."
 readme = "README.md"
 requires-python = ">=3.9.0"
