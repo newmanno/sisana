@@ -6,11 +6,12 @@ import pickle
 from pathlib import Path
 import matplotlib.pyplot as plt
 import warnings
-from .analyze import file_to_list, NotASubsetError
+from .analyze import file_to_list, NotASubsetError, filter_for_top_genes, filter_for_user_defined_genes, IncorrectHeaderError
 import os
 
-def plot_expression_degree(datafile: str, filetype: str, compfile: str, metadata: str, genelist: str, 
-                  plottype: str, groups: list, colors: list, prefix: str, yaxisname: str, outdir: str):
+def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadata: str, genelist: str, 
+                  plottype: str, groups: list, colors: list, prefix: str, yaxisname: str, outdir: str,
+                  top: bool=True):
     """
     Description:
         This code creates either a violin plot or a box plot of gene expression or degree data. The plots are annotated using the previously
@@ -21,18 +22,20 @@ def plot_expression_degree(datafile: str, filetype: str, compfile: str, metadata
         - datafile: str, Path to file containing the expression or indegrees of each gene per sample.
         - filetype: str, Type of input file, must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv 
                         implies tab-separated
-        - compfile: str, Path to the file that contains the comparison output of the gene expression or degree
+        - statsfile: str, Path to the file that contains the comparison output of the gene expression or degree
         - metadata: str, Path to the csv metadata file mapping samples to groups (groups must match names of the groups arg), 
-                         must have a header of the format 'name,group'
+                        must have a header of the format 'name,group'
         - genelist: str, .txt file containing a list of genes to plot, must match the name of genes in the datafile. Recommended 
-                         to not use more than 10 genes, otherwise use a heatmap.
+                        to not use more than 10 genes, otherwise use a heatmap.
         - plottype: str, The type of plot to create. Choices are "boxplot" or "violin"
-        - groups: str, The names of the groups to plot, should ideally be a list of 5 names or less. Groups will be plotted 
-                           in the order they are written in this argument
+        - groups: list(str), The names of the groups to plot, should ideally be a list of 5 names or less. Groups will be plotted 
+                        in the order they are written in this argument
         - colors: str, The colors for each group, in the same order the groups appear in the groups arg
         - prefix: str, Prefix to use for the output figures
         - yaxisname: str, Name to use for the y-axis
         - outdir: str, Path to directory to output file to
+        - top: Flag for whether to automatically plot the top 10 values. Does not use the genelist in this case, but rather finds the top genes
+                        based on FDR and fold change.
         
     Returns:
     -----------
@@ -58,8 +61,8 @@ def plot_expression_degree(datafile: str, filetype: str, compfile: str, metadata
     # args = parser.parse_args()
     
     # Check that there are no more than 5 group names, otherwise warn user
-    if len(groups) > 5:
-        warnings.warn("Warning: Supplying more than 5 groups at once may cause the created graphs to be unreadable. Consider reducing the number of groups.")
+    if len(groups) > 10:
+        warnings.warn("Warning: Supplying more than 10 groups at once may cause the created graphs to be unreadable. Consider reducing the number of groups.")
     
     # Get data and metadata
     if filetype == "csv":
@@ -70,54 +73,89 @@ def plot_expression_degree(datafile: str, filetype: str, compfile: str, metadata
         indata = pd.read_csv(datafile, sep='\t', engine = "python", index_col=[0])
         
     # meta = pd.read_csv(metadata, engine = "pyarrow", index_col=[0])
-    meta = pd.read_csv(metadata, engine = "python", index_col=[0])
+    meta = pd.read_csv(metadata, engine = "python")
+    if meta.columns[0] != "name":
+        raise IncorrectHeaderError(meta)
+    else:
+        meta = meta.set_index('name')
 
     # Create list of genes
-    user_gene_list = file_to_list(genelist)
-    
-    # # If the input file does not have a header, then assign the data table a header based on the list of sample names supplied by the user
-    # if not fileheader:
-    #     samps = file_to_list(sampleorder)
-    #     indata.columns = samps  
+    if not top:
+        user_gene_list = file_to_list(genelist)
 
-    print(f"There are {len(user_gene_list)} genes to be plotted.")
-    print(f"There are {len(indata.columns)} samples in the input file. Only those belonging to the supplied group names in the 'groups' argument will be plotted.")
-    
-    # Check if the user-supplied gene list is a subset of the genes in the data
-    data_genes = list(indata.index)
-    
-    if not set(user_gene_list).issubset(set(data_genes)):
-        raise NotASubsetError(user_gene_list, data_genes, "genes")
+        # Check if the user-supplied gene list is a subset of the genes in the data
+        data_genes = list(indata.index)
+        
+        if not set(user_gene_list).issubset(set(data_genes)):
+            raise NotASubsetError(user_gene_list, data_genes, "genes")
 
     indata = indata.T
     indata.index.name = "name"
+    indata = indata.T
 
-    # Filter the data frame containing the degree/expression values for just the genes in the supplied gene list
-    filtered_indata_genelist = indata.loc[:,user_gene_list]
+    compare_df = pd.read_csv(statsfile, sep = "\t", index_col=0)
+    
+    # If the user has supplied the gene list, plot just the genes they supplied. Otherwise, plot the top genes based on FDR and fold change
+    if not top:
+        # Filter the data frame containing the degree/expression values for just the genes in the supplied gene list
+        filtered_indata_genelist = filter_for_user_defined_genes(datafile=indata, genes=user_gene_list)
+        # filtered_indata_genelist = indata.loc[:,user_gene_list]
+        filtered_indata_genelist = filtered_indata_genelist # Need to transform here, do not remove without testing
+
+    else:
+        
+        filtered_indata_genelist = filter_for_top_genes(datafile=indata, 
+                statsfile=compare_df,                     
+                number=10)
+        topgenes = filtered_indata_genelist.index
+
+        # # Find top genes
+        # sorted_indata = compare_df.sort_values(['abs(difference_of_means)', 'FDR'], ascending=[False, True])
+        # topgenes = sorted_indata.index[0:10]
+        
+        # try:
+        #     # filter the compfile for just the topgenes
+        #     filtered_indata_genelist = indata.loc[:,topgenes]
+        # except KeyError:
+        #     topgenes = list(set(indata.columns) & set(topgenes))
+        #     filtered_indata_genelist = indata.loc[:,topgenes]
+
+        
+        # # Filter the data frame containing the degree/expression values for just the top genes 
+
+    filtered_indata_genelist = filtered_indata_genelist.T
 
     # Remove samples that are not part of the user supplied groups to be plotted
     filtered_indata_genelist['dupename'] = list(filtered_indata_genelist.index)
-    meta['dupename'] = list(meta.index)    
-        
+
+    meta['dupename'] = list(meta.index)  
+
     filtered_indata_genelist['group'] = filtered_indata_genelist['dupename'].map(meta.set_index('dupename')['group'])
+
     subdata = filtered_indata_genelist[filtered_indata_genelist['group'].notnull()] 
     subdata = subdata.drop(['dupename','group'], axis=1) # Remove columns for the melt    
-    
+
     # Melt to get into long format, which is required for plotting
     subdata_melt = subdata.melt(ignore_index=False).reset_index()
     subdata_melt.columns.values[1] = "gene"
-    
+
     # Add group names to the melted data frame for plotting
-    subdata_melt['dupename'] = list(subdata_melt.name)
+    subdata_melt['dupename'] = list(subdata_melt['name'])
     subdata_melt['group'] = subdata_melt['dupename'].map(meta.set_index('dupename')['group'])
     subdata_melt = subdata_melt.drop('dupename', axis=1)
-
+    
     # Sort group names based on the order that they appear in groups arg so the user can control the order the groups are plotted in
     subdata_melt['group'] = pd.Categorical(subdata_melt.group, ordered=True, categories=groups)
-    subdata_melt = subdata_melt.sort_values('group')
-    
-    subdata_melt['gene'] = pd.Categorical(subdata_melt.gene, ordered=True, categories=user_gene_list)
+    subdata_melt = subdata_melt.sort_values('group')   
+   
+    # Group samples by gene in the melted data frame, required for plotting
+    if not top:
+        subdata_melt['gene'] = pd.Categorical(subdata_melt.gene, ordered=True, categories=user_gene_list)
+    else:
+        subdata_melt['gene'] = pd.Categorical(subdata_melt.gene, ordered=True, categories=topgenes)
+        
     subdata_melt = subdata_melt.sort_values(['group','gene'])
+    subdata_melt.set_index('name')
     
     # Set colors for plotting if the user has specified colors      
     if colors is not None:
@@ -132,8 +170,6 @@ def plot_expression_degree(datafile: str, filetype: str, compfile: str, metadata
     plt.figure(figsize=(6, 6), dpi = 600) 
     plt.xticks(rotation=45)
 
-    print(subdata_melt)
-
     # Add statistical annotations to plot    
     hue_plot_params = {
     'data': subdata_melt,
@@ -141,23 +177,34 @@ def plot_expression_degree(datafile: str, filetype: str, compfile: str, metadata
     'y': 'value',
     "hue": "group",
     }
-    
+            
     # Create the nested list (i.e. "[[('gene1', 'group1'), ('gene1', 'group2')], [('gene2', 'group1'), ('gene2', 'group2')], etc.] 
     # for telling the Annotator how to structure the plots. Note that the Annotator does not do the comparison itself, however, since 
     # the FDRs have already been calculated previously, using all genes for the FDR calculation
-    stat_annotation_pairs = []
-    for i in user_gene_list:
-        num = 0
-        temp_list = []
-        for j in subdata_melt['group'].unique():
-            comparison = (i,j)
-            temp_list.append(comparison)
-            
-            if num == 0:
-                num +=1
-            else:
-                stat_annotation_pairs.append(temp_list)
-                temp_list = []
+    def _create_comparison_list(genelist: list):
+        pairs = []
+        
+        for i in genelist:
+            num = 0
+            temp_list = []
+            for j in subdata_melt['group'].unique():
+                comparison = (i,j)
+                temp_list.append(comparison)
+                
+                if num == 0:
+                    num +=1
+                else:
+                    pairs.append(temp_list)
+                    temp_list = []
+        return(pairs)
+
+    # Subset the data frame for just the samples belonging to the user-defined groups
+    subdata_melt = subdata_melt[subdata_melt['group'].isin(groups)]
+
+    if not top:
+        stat_annotation_pairs = _create_comparison_list(user_gene_list)
+    else:
+        stat_annotation_pairs = _create_comparison_list(topgenes)
 
     print(stat_annotation_pairs)
     
@@ -165,23 +212,26 @@ def plot_expression_degree(datafile: str, filetype: str, compfile: str, metadata
     
     if plottype == "violin":
         ax = sns.violinplot(**hue_plot_params, inner = None)
-        # plt.ylabel(yaxisname)
+        plt.ylabel(yaxisname)
         # plt.tight_layout()
         outname = os.path.join(outdir, f"{prefix}_violin_plot.png")
         annotator = Annotator(ax, stat_annotation_pairs, **hue_plot_params, plot="violinplot", hide_non_significant = True)
 
-
     elif plottype == "boxplot":
         ax = sns.boxplot(**hue_plot_params, fliersize = 2)
-        # plt.ylabel(yaxisname)
+        plt.ylabel(yaxisname)
         # plt.tight_layout()
         outname = os.path.join(outdir, f"{prefix}_box_plot.png")
         annotator = Annotator(ax, stat_annotation_pairs, **hue_plot_params, hide_non_significant = True)
-            
+    
+    ax.set(xlabel=None)
+        
     # Annotate with the FDRs that were calculated previously
-    compare_df = pd.read_csv("/storage/kuijjerarea/nolan/sisana/example_analysis/20_LumALumB_samps/output/compare_means/comparison_mw_between_LumA_LumB_expression.txt", sep = "\t", index_col=0)
-    print(compare_df.loc["NFKB1", "FDR"])
-    pval_list = [compare_df.loc[gene, "FDR"] for gene in user_gene_list]
+    if not top:
+        pval_list = [compare_df.loc[gene, "FDR"] for gene in user_gene_list]
+    else:
+        pval_list = [compare_df.loc[gene, "FDR"] for gene in topgenes]
+        
     annotator.configure(hide_non_significant=True)
     annotator.set_pvalues_and_annotate(pvalues = pval_list)    
     
