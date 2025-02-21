@@ -6,10 +6,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from adjustText import adjust_text
 import os
-from .analyze import file_to_list
+from .analyze import file_to_list, filter_for_top_genes, filter_for_user_defined_genes, create_label_list
+import warnings
 
-
-def plot_volcano(datafile: str, fccol: str, adjpcol: str, fcthreshold: str, adjpvalthreshold: str, numlabels: str, outdir: str):
+def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: str,
+                 outdir: str, genelist: list=[], difftype: str="mean", top: bool=True, numlabels: int=15):
     """
     Description:
         This code performs a survival analysis between two user-defined groups and outputs
@@ -17,25 +18,28 @@ def plot_volcano(datafile: str, fccol: str, adjpcol: str, fcthreshold: str, adjp
         
     Parameters:
     -----------
-        - datafile: str, Path to tab delimited file containing the fold change, p-value, FDR, and mean 
-                         degree/expression for each gene. This is reported with the compare_groups.py script
-        - fccol: str, The name of the column containing the log2 fold change values
+        - statsfile: str, Path to tab delimited file containing the fold change, p-value, FDR, and mean 
+          degree/statsression for each gene. This is reported with the compare_groups.py script
+        - fccol: str, The name of the column containing the difference in medians or means
         - adjpcol: str, The name of the column containing the adj. p-value
-        - fcthreshold: str, Fold change threshold to use (value will also be applied to the negative end of the 
-                            fold change axis, meaning a value of 1.5 really means +/- 1.5)
         - adjpvalthreshold: str, Threshold to use for the adjusted p-value
-        - numlabels: str, Number of top values to label
+        - genelist: str, List of genes to plot. Alternatively, the top X genes can be plotted instead if top=True.
         - outdir: str, Path to directory to output file to
+        - difftype: str, The type of difference to use for the x-axis. "mean" will be difference in means and "median"
+          refers to difference in medians
+        - top: Flag for whether to automatically label the top 10 values. Does not use the genelist in this case, but rather finds the top genes
+          based on FDR and fold change.
+        - numlabels: int, Number of top values to label. Can only be used if top=True.
         
     Returns:
     -----------
-        - Nothing
+        - Nothing 
     """
     
     # parser = argparse.ArgumentParser(description="Example command: python volcano_plot.py -d indegree.csv -f csv -m metadata.csv -g genelist.txt -s samporder.txt -p violin -n group1 group2 -o ./output/")
     # ArgGroup = parser.add_argument_group('Required arguments')  
     
-    # ArgGroup.add_argument("-d", "--datafile", type=str, help="Path to file containing the fold change, p-value, FDR, and mean degree/expression for each gene. This is reported with the compare_groups.py script.", required=True)
+    # ArgGroup.add_argument("-d", "--datafile", type=str, help="Path to file containing the fold change, p-value, FDR, and mean degree/statsression for each gene. This is reported with the compare_groups.py script.", required=True)
     # ArgGroup.add_argument("-f", "--fcthreshold", type=float, help="Fold change threshold to use (value will also be applied to the negative end of the fold change axis, meaning a value of 1.5 really means +/- 1.5)", required=True)
     # ArgGroup.add_argument("-p", "--adjpvalthreshold", type=float, help="Threshold to use for the adjusted p-value", required=True)    
     # ArgGroup.add_argument("-t", "--topvalstoplot", type=int, help="Number of top values to label", required=True)   
@@ -45,61 +49,79 @@ def plot_volcano(datafile: str, fccol: str, adjpcol: str, fcthreshold: str, adjp
     os.makedirs(outdir, exist_ok=True)
     
     # args = parser.parse_args()
-    exp = pd.read_csv(datafile, index_col = 0, sep = "\t")
-    print(exp)
-
-    # plot 
+    stats = pd.read_csv(statsfile, index_col = 0, sep = "\t")    
+    
+    # Create initial plot 
     plt.figure(figsize=(6, 6), dpi = 1200) 
-    plt.scatter(x=exp[fccol],y=exp[adjpcol].apply(lambda x:-np.log10(x)), s=1)
+    plt.scatter(x=stats[diffcol],y=stats[adjpcol].apply(lambda x:-np.log10(x)), s=1)
+
+    down = stats[(stats[diffcol] <= 0) & (stats[adjpcol] <= adjpvalthreshold)]
+    up = stats[(stats[diffcol] > 0) & (stats[adjpcol] <= adjpvalthreshold)]
+    # not_down_or_up = stats[(stats[diffcol] < fcthreshold) & (stats[fccol] > -1 * fcthreshold) & (stats[adjpcol] < adjpvalthreshold)]
+    notsig = stats[stats[adjpcol] > adjpvalthreshold]
     
-    down = exp[(exp[fccol] <= -1 * fcthreshold) & (exp[adjpcol] <= adjpvalthreshold)]
-    up = exp[(exp[fccol] >= fcthreshold) & (exp[adjpcol] <= adjpvalthreshold)]
-    not_down_or_up = exp[(exp[fccol] < fcthreshold) & (exp[fccol] > -1 * fcthreshold) & (exp[adjpcol] < adjpvalthreshold)]
-    notsig = exp[exp[adjpcol] > adjpvalthreshold]
+    if len(down) + len(up) == 0:
+        raise Exception("Error: No significant values found to plot.")
 
-    plt.scatter(x=down[fccol], y=down[adjpcol].apply(lambda x:-np.log10(x)), s=3, label="Down-regulated",color="blue")
-    plt.scatter(x=up[fccol], y=up[adjpcol].apply(lambda x:-np.log10(x)), s=3, label="Up-regulated",color="orange")
-    plt.scatter(x=notsig[fccol], y=notsig[adjpcol].apply(lambda x:-np.log10(x)), s=3, label="Not significant",color="gainsboro")
-    plt.scatter(x=not_down_or_up[fccol], y=not_down_or_up[adjpcol].apply(lambda x:-np.log10(x)), s=3, color="darkgrey")
+    plt.scatter(x=down[diffcol], y=down[adjpcol].apply(lambda x:-np.log10(x)), s=3, label="Down-regulated",color="blue")
+    plt.scatter(x=up[diffcol], y=up[adjpcol].apply(lambda x:-np.log10(x)), s=3, label="Up-regulated",color="orange")
+    plt.scatter(x=notsig[diffcol], y=notsig[adjpcol].apply(lambda x:-np.log10(x)), s=3, label="Not significant",color="gainsboro")
+    # plt.scatter(x=not_down_or_up[diffcol], y=not_down_or_up[adjpcol].apply(lambda x:-np.log10(x)), s=3, color="darkgrey")
 
-    uptexts=[]
-    if len(up) >= numlabels:
-        up_subset = up.sort_values(adjpcol, ascending=True).head(numlabels)
-        
-        for i,r in up_subset.iterrows():
-            uptexts.append(plt.text(x=r[fccol],y=-np.log10(r[adjpcol]),s=i))
+    # Label the user-defined genes if given, otherwise plot just the top genes
+    if not top:
+            # Find the overlap in the user gene list and the up/down genes 
+            genelist = file_to_list(genelist)
             
-    else:
-        up_subset = up.sort_values(adjpcol, ascending=True).head(len(up))
-
-        for i,r in up.iterrows():
-            uptexts.append(plt.text(x=r[fccol],y=-np.log10(r[adjpcol]),s=i))
-        
-    adjust_text(uptexts,arrowprops=dict(arrowstyle="-", color='black', lw=0.5))
-
-    dntexts=[]
-    if len(down) >= numlabels:
-        dn_subset = down.sort_values(adjpcol, ascending=True).head(numlabels)
-        
-        for i,r in dn_subset.iterrows():
-            dntexts.append(plt.text(x=r[fccol],y=-np.log10(r[adjpcol]),s=i))
+            user_defined_upgenes = list(set(genelist).intersection(up.index))
+            user_defined_dngenes = list(set(genelist).intersection(down.index))
             
-    else:
-        dn_subset = down.sort_values(adjpcol, ascending=True).head(len(up))
+            if len(user_defined_upgenes) + len(user_defined_dngenes) != len(genelist):
+                warnings.warn("\nWarning: Some genes in the input list are not significant and will not be labeled.")
 
-        for i,r in dn_subset.iterrows():
-            dntexts.append(plt.text(x=r[fccol],y=-np.log10(r[adjpcol]),s=i))
-        
+            up_subset = filter_for_user_defined_genes(datafile=up, genes=user_defined_upgenes, verbose=False)
+            dn_subset = filter_for_user_defined_genes(datafile=down, genes=user_defined_dngenes, verbose=False)
+            
+            uptexts = create_label_list(statsfile=up_subset, difference_column=diffcol, adjp_column=adjpcol)
+            dntexts = create_label_list(statsfile=dn_subset, difference_column=diffcol, adjp_column=adjpcol)
+
+    else:
+        if len(up) >= numlabels:
+            up_subset = up.sort_values(adjpcol, ascending=True).head(numlabels)
+        else:
+            warnings.warn("Warning: There are not enough significant 'up' values that pass the threshold. Only those that pass will be labeled.")
+            up_subset = up.sort_values(adjpcol, ascending=True).head(len(up))
+
+        uptexts = create_label_list(statsfile=up_subset, difference_column=diffcol, adjp_column=adjpcol)
+
+        if len(down) >= numlabels:
+            dn_subset = down.sort_values(adjpcol, ascending=True).head(numlabels)   
+        else:
+            warnings.warn("Warning: There are not enough significant 'down' values that pass the threshold. Only those that pass will be labeled.")
+            dn_subset = down.sort_values(adjpcol, ascending=True).head(len(up))
+            
+        dntexts = create_label_list(statsfile=dn_subset, difference_column=diffcol, adjp_column=adjpcol)
+
+    # Add labels to plot
+    adjust_text(uptexts,arrowprops=dict(arrowstyle="-", color='black', lw=0.5))        
     adjust_text(dntexts,arrowprops=dict(arrowstyle="-", color='black', lw=0.5))
-
-    plt.xlabel("log(FC)")
-    plt.ylabel("-log10(FDR)")
-    plt.axvline(-1 * fcthreshold, color="grey", linestyle="--")
-    plt.axvline(fcthreshold, color="grey", linestyle="--")
-    plt.axhline(-np.log10(adjpvalthreshold), color="grey", linestyle="--")
-    #plt.legend()
     
-    outname = os.path.join(outdir, f"volcano_plot_FC_{fcthreshold}_adjp_{adjpvalthreshold}_top_{numlabels}.png")
+    difftype= "median"
+    if difftype == "mean":
+        plt.xlabel("Difference in means")
+    elif difftype == "median":
+        plt.xlabel("Difference in medians")
+
+    plt.ylabel("-log10(FDR)")
+    # plt.axvline(-1 * fcthreshold, color="grey", linestyle="--")
+    # plt.axvline(fcthreshold, color="grey", linestyle="--")
+    plt.axhline(-np.log10(adjpvalthreshold), color="grey", linestyle="--")
+    plt.legend()
+    
+    if not top:
+        outname = os.path.join(outdir, f"volcano_plot_adjp_{adjpvalthreshold}.png")
+    else:
+        outname = os.path.join(outdir, f"volcano_plot_adjp_{adjpvalthreshold}_top_{numlabels}.png")
     plt.savefig(outname)
         
     print(f"File saved: {outname}")     
