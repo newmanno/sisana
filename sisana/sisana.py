@@ -4,13 +4,14 @@ from netZooPy.panda.panda import Panda
 from netZooPy.lioness.lioness import Lioness
 from sisana.preprocessing import preprocess_data
 from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes
-from sisana.analyze_networks import calculate_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap
+from sisana.analyze_networks import calculate_panda_degree, calculate_lioness_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap
 from sisana.example_input import find_example_paths
 import sisana.docs
 import os 
 import pandas as pd
 import sys
 import numpy as np
+from pathlib import Path
 
 def cli():
     """
@@ -113,34 +114,53 @@ def cli():
 
     elif args.command == 'generate':
         
-        # gen_params = yaml.load(open(args.params), Loader=yaml.FullLoader)
-        # data_paths = yaml.load(open(params['generate']['processed_paths']), Loader=yaml.FullLoader)    
-        data_paths = yaml.load(open('./tmp/processed_data_paths.yml'), Loader=yaml.FullLoader)
-        
-        # Create output dir if one does not already exist
-        os.makedirs(params['generate']['outdir'], exist_ok=True)
+        if params['generate']['method'].lower() == 'panda' or params['generate']['method'].lower() == 'lioness':
 
-        panda_obj = Panda(expression_file=data_paths['exp'], 
-                          motif_file=data_paths['motif'], 
-                          ppi_file=data_paths['ppi'], 
-                          save_tmp=False, 
-                          remove_missing=False, 
-                          keep_expression_matrix=True, 
-                          save_memory=False)
+            # gen_params = yaml.load(open(args.params), Loader=yaml.FullLoader)
+            # data_paths = yaml.load(open(params['generate']['processed_paths']), Loader=yaml.FullLoader)    
+            data_paths = yaml.load(open('./tmp/processed_data_paths.yml'), Loader=yaml.FullLoader)
+            
+            # Create output dir if one does not already exist
+            panda_output_location = params['generate']['pandafilepath']
 
-        panda_obj.save_panda_results(params['generate']['outdir'] + "panda_output.txt")
-        
-        print("PANDA network saved to " + params['generate']['outdir'])
-        
-        if params['generate']['method'] == 'lioness':
+            pandapath = Path(panda_output_location)
+            if str(pandapath)[-4:] != ".txt":
+                print(str(pandapath)[-4:])
+                raise Exception("Error: Panda output file must have a .txt extension. Please edit your pandafilepath variable in your params file")
+            os.makedirs(pandapath.parent, exist_ok=True)
+
+            panda_obj = Panda(expression_file=data_paths['exp'], 
+                            motif_file=data_paths['motif'], 
+                            ppi_file=data_paths['ppi'], 
+                            save_tmp=False, 
+                            remove_missing=False, 
+                            keep_expression_matrix=True, 
+                            save_memory=False)
+
+            panda_obj.save_panda_results(panda_output_location)     
+            
+            print("Now calculating PANDA degrees...")
+            calculate_panda_degree(inputfile=panda_output_location)
+               
+        if params['generate']['method'].lower() == 'lioness':
+            lioness_output_location = params['generate']['lionessfilepath']
+            if lioness_output_location[-4:] != ".npy":
+                raise Exception("Error: Lioness output file must have a .npy extension. Please edit your lionessfilepath variable in your params file.")
+            
+            lionesspath = Path(lioness_output_location)
+
             lion = Lioness(panda_obj, 
                            computing=params['generate']['compute'], 
                            precision="double",
                            ncores=params['generate']['ncores'], 
-                           save_dir=params['generate']['outdir'], 
+                           save_dir=lionesspath.parent, 
                            save_fmt="npy")
             
-            lion_loc = params['generate']['outdir'] + "lioness.npy"
+            # Rename the default name of the lioness output file, which is not an option of the current Lioness NetZooPy cli
+            os.rename(os.path.join(lionesspath.parent, "lioness.npy"), lioness_output_location)
+
+            #lion_loc = params['generate']['outdir'] + "lioness.npy"
+            lion_loc = lioness_output_location
             liondf = pd.DataFrame(np.load(lion_loc))            
                 
             # To make the edges positive values for log2FC calculation later on, first need to transform 
@@ -159,21 +179,34 @@ def cli():
             # print("Datafile after transformation")
             # print(lion_transformed.head(n=20))        
             
-            print("PANDA network saved to " + os.path.join(params['generate']['outdir'], "panda_output.txt"))
-            print("LIONESS network saved to " + os.path.join(params['generate']['outdir'], "lioness.npy"))
             # print("LIONESS network with transformed edge values saved to " + os.path.join(params['generate']['outdir'], "lioness_transformed_edges.npy"))
-            
+                        
             pickle_path = './tmp/lioness.pickle'
-            convert_lion_to_pickle(os.path.join(params['generate']['outdir'], 'panda_output.txt'),
+            convert_lion_to_pickle(panda_output_location,
                                 liondf,
                                 "npy", 
                                 './tmp/samples.txt',  
                                 pickle_path)
             
-            print("Now calculating degrees...")
-            calculate_degree(inputfile=pickle_path,
-                            datatype="pickle",
-                            outdir=params['generate']['outdir'])
+            print("\nLIONESS networks created. Now calculating LIONESS degrees...")
+            calculate_lioness_degree(inputfile=pickle_path,
+                            datatype="pickle")
+            print("LIONESS degrees have now been calculated.")
+
+        # Move degree files from .tmp to user's output location
+        Path("./tmp/lioness_indegree.csv").rename(f"{Path(lioness_output_location).parent}/lioness_indegree.csv")
+        Path("./tmp/lioness_outdegree.csv").rename(f"{Path(lioness_output_location).parent}/lioness_outdegree.csv")
+                
+        print(f"\nPANDA network saved to {panda_output_location}")
+        print(f"PANDA degrees saved to:") 
+        print(f"{str(panda_output_location)[:-4]}_outdegree.csv")
+        print(f"{str(panda_output_location)[:-4]}_indegree.csv")
+        
+        if params['generate']['method'].lower() == 'lioness':        
+            print("\nLIONESS network saved to " + lioness_output_location)
+            print(f"LIONESS degrees saved to:")
+            print(f"{os.path.splitext(lioness_output_location)[0]}_outdegree.csv")
+            print(f"{os.path.splitext(lioness_output_location)[0]}_indegree.csv")
 
     ########################################################
     # 3) Compare between sample groups
