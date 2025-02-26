@@ -1,4 +1,5 @@
 import argparse
+import sys
 import os
 import pandas as pd
 import pickle
@@ -11,7 +12,8 @@ from pathlib import Path
 __author__ = 'Nolan Newman'
 __contact__ = 'nolankn@uio.no'
     
-def survival_analysis(metadata: str, filetype: str, sampgroup_colname: str, alivestatus_colname: str, days_colname: str, groups: list, outdir: str):
+def survival_analysis(metadata, filetype: str, sampgroup_colname: str, alivestatus_colname: str, 
+                      days_colname: str, groups: list, outdir: str, appendname=""):
     """
     Description:
         This code performs a survival analysis between two user-defined groups and outputs
@@ -26,6 +28,7 @@ def survival_analysis(metadata: str, filetype: str, sampgroup_colname: str, aliv
         - days_colname: str, Name of column containing either the number of days an individual survived or the number of days to the last follow up.
         - groups: str, The names of the two groups (from the metadata file) to compare
         - outdir: str, The directory to save the output to
+        - appendname: str, Optional; A name to append to the end of the base file name of the output file. Example: group1_v_group2_survival_plot_{appendname}.png
         
     Returns:
     -----------
@@ -71,12 +74,10 @@ def survival_analysis(metadata: str, filetype: str, sampgroup_colname: str, aliv
 
     # Take just the survival status and the time columns and create a structured array for the survival analysis
     small_meta = meta[meta[sampgroup_colname].isin(groups)]
+
     meta_for_array = small_meta.loc[:,[alivestatus_colname, days_colname]]   
     meta_array = meta_for_array.to_records(index=False)
-    group_list = np.array(small_meta[alivestatus_colname])
-
-    print(meta_array)
-
+    group_list = np.array(small_meta[sampgroup_colname])
     surv = compare_survival(meta_array, group_list, return_stats = True)
   
     plt.ylim(0, 1)
@@ -87,7 +88,7 @@ def survival_analysis(metadata: str, filetype: str, sampgroup_colname: str, aliv
     
     print(f"\nSurvival analysis results:")
     print(f"chi-square test-statistic: {surv[0]:.2E}")
-    print(f"p-value: {surv[1]:.2E}")
+    print(f"p-value: {surv[1]:.1E}")
     
     print(f"\nSurvival analysis statistics:")
     print(surv[2])
@@ -96,8 +97,15 @@ def survival_analysis(metadata: str, filetype: str, sampgroup_colname: str, aliv
     print(surv[3])
 
     outdir_path = Path(outdir)
-    plt.savefig(f"{outdir_path}/{groups[0]}_v_{groups[1]}_survival_plot.png")
-    print(f"\nFile saved: {outdir_path}/{groups[0]}_v_{groups[1]}_survival_plot.png")     
+    
+    if appendname != "":
+        plt.savefig(f"{outdir_path}/{groups[0]}_v_{groups[1]}_survival_plot_{appendname}.png")
+        print(f"\nFile saved: {outdir_path}/{groups[0]}_v_{groups[1]}_survival_plot_{appendname}.png")     
+    else:
+        plt.savefig(f"{outdir_path}/{groups[0]}_v_{groups[1]}_survival_plot.png")
+        print(f"\nFile saved: {outdir_path}/{groups[0]}_v_{groups[1]}_survival_plot.png")
+            
+    plt.close()
   
 
 

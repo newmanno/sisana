@@ -224,13 +224,23 @@ def cli():
                               outdir=params["compare"]["means"]["outdir"])
         
         if args.compchoice == "survival":     
-            survival_analysis(metadata=params["compare"]["survival"]["metadata"],
-                              filetype=params["compare"]["survival"]["filetype"], 
-                              sampgroup_colname=params["compare"]["survival"]["sampgroup_colname"],
-                              alivestatus_colname=params["compare"]["survival"]["alivestatus_colname"],
-                              days_colname=params["compare"]["survival"]["days_colname"],
-                              groups=params["compare"]["survival"]["groups"],
-                              outdir=params["compare"]["survival"]["outdir"])
+            try:
+                survival_analysis(metadata=params["compare"]["survival"]["metadata"],
+                                filetype=params["compare"]["survival"]["filetype"], 
+                                sampgroup_colname=params["compare"]["survival"]["sampgroup_colname"],
+                                alivestatus_colname=params["compare"]["survival"]["alivestatus_colname"],
+                                days_colname=params["compare"]["survival"]["days_colname"],
+                                groups=params["compare"]["survival"]["groups"],
+                                outdir=params["compare"]["survival"]["outdir"],
+                                appendname=params["compare"]["survival"]["appendname"])
+            except:
+                survival_analysis(metadata=params["compare"]["survival"]["metadata"],
+                                filetype=params["compare"]["survival"]["filetype"], 
+                                sampgroup_colname=params["compare"]["survival"]["sampgroup_colname"],
+                                alivestatus_colname=params["compare"]["survival"]["alivestatus_colname"],
+                                days_colname=params["compare"]["survival"]["days_colname"],
+                                groups=params["compare"]["survival"]["groups"],
+                                outdir=params["compare"]["survival"]["outdir"])
         
         if args.compchoice == "gsea":    
             perform_gsea(genefile=params["compare"]["gsea"]["genefile"], 
