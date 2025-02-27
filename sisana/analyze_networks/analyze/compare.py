@@ -141,15 +141,18 @@ def calc_tt(group1, group2, ttype):
         mw_results = mw_results.iloc[0, :].values.tolist()
         mw_results_flipped = mwu(group2, group1)
         mw_results_flipped = mw_results_flipped.iloc[0, :].values.tolist()
-        statistic_group1, pval, cles = mw_results[0], mw_results[2], mw_results[4]    
+        statistic_group1, pval, cles = mw_results[0], mw_results[2], mw_results[4]
         statistic_group2 = mw_results_flipped[0]
         
         mwu_min_ustat = min(statistic_group1, statistic_group2)
 
-        # if median(group1) < median(group2):
-        #     statistic = statistic * -1            
+        # Calculate the -log(pval) for ranking of genes and GSEA
+        neglog_pval = -1 * math.log(pval)
 
-        return(mwu_min_ustat, pval, cles)       
+        if median(group1) < median(group2):
+            neglog_pval = neglog_pval * -1            
+
+        return(mwu_min_ustat, pval, neglog_pval, cles)       
         
     
 def calc_group_difference(group1, group2, difftype=["mean", "median"]):

@@ -32,7 +32,6 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     -----------
         - Nothing
     '''
-    start = time.time()    
 
     # parser = argparse.ArgumentParser(description="Example command: python compare_groups.py -m map.csv -p lioness.pickle -d degree -c high low -t mw -o ./output/")
     # ArgGroup = parser.add_argument_group('Required arguments')  
@@ -60,14 +59,6 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
         datadf = pd.read_csv(datafile, index_col = 0)
     else:
         datadf = pd.read_csv(datafile, index_col = 0, sep = "\t")
-        
-    # if args.sampnames is not None:        
-    #     sampsfile = open(args.sampnames, "r")
-    #     fileread = sampsfile.read()
-    #     namelist = fileread.split("\n") 
-    #     namelist = list(filter(None, namelist))
-        
-    #     datadf.columns = namelist 
         
     print("Performing calculations, please wait...")
         
@@ -100,16 +91,12 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
         if testtype == "tt": 
             pval = compdf.apply(lambda row : calc_tt(row[sampdict[groups[1]]], row[sampdict[groups[0]]], testtype), axis = 1)
         elif testtype == "paired_tt" or testtype == "wilcoxon":
-            # print("Comparing the following samples with a paired t-test:\n")
-            # print(f"Samnples in group 1:\n{groups["group1"]})")
-            # print(f"\nSamples in group 2:\n{groups["group2"]})")
-            
             pval = compdf.apply(lambda row : calc_tt(row[groups["group1"]], row[groups["group2"]], testtype), axis = 1) 
             
         # Format the output data frame
-        pval_colname = testtype + "_pvalue"
-        pvaldf = pd.DataFrame({'Target':pval.index, pval_colname:pval.values})
-        newpvaldf = pd.DataFrame(pvaldf[pval_colname].to_list(), columns=['test_statistic',pval_colname])
+        pval_column = testtype + "_pvalue"
+        pvaldf = pd.DataFrame({'Target':pval.index, pval_column:pval.values})
+        newpvaldf = pd.DataFrame(pvaldf[pval_column].to_list(), columns=['test_statistic',pval_column])
         newpvaldf['Target'] = pval.index
         newpvaldf = newpvaldf.set_index('Target')
         test_stat_column = "test_statistic"
@@ -120,13 +107,15 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
         mwu_calculations = compdf.apply(lambda row : calc_tt(row[sampdict[groups[1]]], row[sampdict[groups[0]]], testtype), axis = 1)
     
         # Format the output data frame
-        pval_colname = testtype + "_pvalue"
-        pvaldf = pd.DataFrame({'Target':mwu_calculations.index, pval_colname:mwu_calculations})
-        newpvaldf = pd.DataFrame(pvaldf[pval_colname].to_list(), columns=['mw_uvalue', 'mw_pvalue', 'mw_CLES'])
+        pval_column = testtype + "_pvalue"
+        test_stat_column = "mw_uvalue"
+        neglogp_column = "mw_-log(pvalue)"
+        cles_column = "mw_CLES"
+        
+        pvaldf = pd.DataFrame({'Target':mwu_calculations.index, pval_column:mwu_calculations})
+        newpvaldf = pd.DataFrame(pvaldf[pval_column].to_list(), columns=[test_stat_column, pval_column, neglogp_column, cles_column])
         newpvaldf['Target'] = mwu_calculations.index
         newpvaldf = newpvaldf.set_index('Target')
-        pval_colname = "mw_pvalue"
-        test_stat_column = "mw_uvalue"
 
     # For expression, do regular log2FC
     # For degrees, first need to transform the edge value by doing ln(e^w + 1),
@@ -137,16 +126,12 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     # if datatype == "expression":
     #     fc = compdf.apply(lambda row : calc_log2_fc(row[sampdict[groups[1]]], row[sampdict[groups[0]]]), axis = 1)
 
-    # if datatype == "degree":
-    # print(mwu_uval)
-   
     mean_diff = compdf.apply(lambda row : calc_group_difference(row[sampdict[groups[0]]], row[sampdict[groups[1]]], difftype="mean"), axis = 1)
     median_diff = compdf.apply(lambda row : calc_group_difference(row[sampdict[groups[0]]], row[sampdict[groups[1]]], difftype="median"), axis = 1)
 
     print("Comparisons finished...") 
     
     # Calcuate means per group
-    # if args.datatype == "expression":            
     mean_g2_colname = f"mean_{groups[1]}"    
     mean_g1_colname = f"mean_{groups[0]}"      
     newpvaldf[mean_g2_colname] = compdf[sampdict[groups[1]]].mean(axis=1)
@@ -165,22 +150,33 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     newpvaldf["abs(difference_of_medians)"] = abs(median_diff)
 
     # Perform multiple test correction
+    FDR_colname = "FDR"
+    newpvaldf[FDR_colname] = stats.false_discovery_control(newpvaldf[pval_column])
+    newpvaldf = newpvaldf.sort_values(pval_column, ascending = True)
     
-    newpvaldf['FDR'] = stats.false_discovery_control(newpvaldf[pval_colname])
-    newpvaldf = newpvaldf.sort_values(pval_colname, ascending = True)
-    print(newpvaldf)
-
     # Create new df without pval, ranked on test statistic
-    ranked = newpvaldf.sort_values(test_stat_column, ascending = False)
-    ranked.drop([pval_colname, 'FDR'], inplace=True, axis=1)
-    ranked = ranked[test_stat_column]
+    if testtype != "mw":
+        ranked = newpvaldf.sort_values(test_stat_column, ascending = False)
+        ranked.drop([pval_column, FDR_colname], inplace=True, axis=1)
+        ranked = ranked[test_stat_column]
+    else:
+        ranked = newpvaldf.sort_values(neglogp_column, ascending = False)
+        ranked.drop([pval_column, FDR_colname], inplace=True, axis=1)
+        ranked = ranked[neglogp_column]        
     
     # Rearrange column order so that FDR calculations comes after p-value
-    newpvaldf = newpvaldf.iloc[:, [0, 1, 11, 2, 3, 4, 5, 6, 7, 8, 9, 10]]
-    print(newpvaldf)
-
-    # if testtype == "mw":
-    #     newpvaldf.rename(columns={"test_statistic": "U-val"})
+    if testtype != "mw":
+        colorder = [test_stat_column, pval_column, FDR_colname,
+                    mean_g2_colname, mean_g1_colname,
+                    meandiff_colname, median_g2_colname, median_g1_colname,
+                    mediandiff_colname]
+        newpvaldf = newpvaldf.loc[:, colorder] 
+    else:
+        colorder = [test_stat_column, pval_column, neglogp_column, FDR_colname,
+                    cles_column, mean_g2_colname, mean_g1_colname,
+                    meandiff_colname, median_g2_colname, median_g1_colname,
+                    mediandiff_colname]
+        newpvaldf = newpvaldf.loc[:, colorder]
     
     # Write to disk
     if testtype == "tt" or testtype == "mw":
