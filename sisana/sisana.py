@@ -193,9 +193,9 @@ def cli():
                             datatype="pickle")
             print("LIONESS degrees have now been calculated.")
 
-        # Move degree files from .tmp to user's output location
-        Path("./tmp/lioness_indegree.csv").rename(f"{Path(lioness_output_location).parent}/lioness_indegree.csv")
-        Path("./tmp/lioness_outdegree.csv").rename(f"{Path(lioness_output_location).parent}/lioness_outdegree.csv")
+            # Move degree files from .tmp to user's output location
+            Path("./tmp/lioness_indegree.csv").rename(f"{Path(lioness_output_location).parent}/lioness_indegree.csv")
+            Path("./tmp/lioness_outdegree.csv").rename(f"{Path(lioness_output_location).parent}/lioness_outdegree.csv")
                 
         print(f"\nPANDA network saved to {panda_output_location}")
         print(f"PANDA degrees saved to:") 
