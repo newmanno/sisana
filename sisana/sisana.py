@@ -4,7 +4,7 @@ from netZooPy.panda.panda import Panda
 from netZooPy.lioness.lioness import Lioness
 from sisana.preprocessing import preprocess_data
 from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes
-from sisana.analyze_networks import calculate_panda_degree, calculate_lioness_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap
+from sisana.analyze_networks import calculate_panda_degree, calculate_lioness_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap, plot_clustermap
 from sisana.example_input import find_example_paths
 import sisana.docs
 import os 
@@ -61,7 +61,7 @@ def cli():
     comp.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
     # options for visualize subcommand
-    vis.add_argument("plotchoice", type=str, choices = ["all", "quantity", "heatmap", "volcano"], nargs='?', default="all", help="The type of plot to create")   
+    vis.add_argument("plotchoice", type=str, choices = ["all", "quantity", "heatmap", "volcano", "clustermap"], nargs='?', default="all", help="The type of plot to create")   
     vis.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
     args = parser.parse_args()
@@ -287,6 +287,7 @@ def cli():
                         prefix=params["visualize"]["heatmap"]["prefix"],
                         plotnames=params["visualize"]["heatmap"]["plotnames"],
                         outdir=params["visualize"]["heatmap"]["outdir"],
+                        additional_metadata_categories=params["visualize"]["heatmap"]["additional_metadata_categories"],
                         top=True)                           
 
         if args.plotchoice == "volcano":    
@@ -318,11 +319,26 @@ def cli():
                         statsfile=params["visualize"]["heatmap"]["statsfile"],
                         metadata=params["visualize"]["heatmap"]["metadata"],
                         genelist=params["visualize"]["heatmap"]["genelist"],
-                        hierarchicalcluster=params["visualize"]["heatmap"]["hierarchicalcluster"],
                         groups=params["visualize"]["heatmap"]["groups"],
                         prefix=params["visualize"]["heatmap"]["prefix"],
                         plotnames=params["visualize"]["heatmap"]["plotnames"],
                         outdir=params["visualize"]["heatmap"]["outdir"],
+                        top=False)  
+            
+        if args.plotchoice == "clustermap":    
+            plot_clustermap(datafile=params["visualize"]["clustermap"]["datafile"],
+                        filetype=params["visualize"]["clustermap"]["filetype"], 
+                        statsfile=params["visualize"]["clustermap"]["statsfile"],
+                        metadata=params["visualize"]["clustermap"]["metadata"],
+                        genelist=params["visualize"]["clustermap"]["genelist"],
+                        column_cluster=params["visualize"]["clustermap"]["column_cluster"],
+                        row_cluster=params["visualize"]["clustermap"]["row_cluster"],
+                        prefix=params["visualize"]["clustermap"]["prefix"],
+                        outdir=params["visualize"]["clustermap"]["outdir"],
+                        plot_gene_names=params["visualize"]["clustermap"]["plot_gene_names"],
+                        plot_sample_names=params["visualize"]["clustermap"]["plot_sample_names"],
+                        category_label_columns=params["visualize"]["clustermap"]["category_label_columns"],
+                        category_column_colors=params["visualize"]["clustermap"]["category_column_colors"],                       
                         top=False)   
             
     ########################################################
