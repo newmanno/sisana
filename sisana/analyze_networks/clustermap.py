@@ -198,7 +198,7 @@ def plot_clustermap(datafile: str, filetype: str, statsfile: str, metadata: str,
 
     for label in samp_meta_file[category_label_columns[0]].unique(): #group1, group2, etc
         sns_plot.ax_col_dendrogram.bar(0, 0, color=luts[category_label_columns[0]][label], label=label, linewidth=0)
-        legend = sns_plot.ax_col_dendrogram.legend(title=category_label_columns[0], loc="upper center", ncol=2, bbox_to_anchor=(x_positions[0], 1.05), bbox_transform=plt.gcf().transFigure)
+        legend = sns_plot.ax_col_dendrogram.legend(title=category_label_columns[0], loc="center", ncol=2, bbox_to_anchor=(x_positions[0], 1), bbox_transform=plt.gcf().transFigure)
     
     xpos_counter = 1
     # legend_counter = 1
@@ -207,7 +207,7 @@ def plot_clustermap(datafile: str, filetype: str, statsfile: str, metadata: str,
         for label in samp_meta_file[category].unique(): #group1, group2, etc
             x = sns_plot.ax_col_dendrogram.bar(0, 0, color=luts[category][label], label=label, linewidth=0)
             xx.append(x)
-        legend = plt.legend(xx, samp_meta_file[category].unique(), loc="upper center", ncol=2, title=category, bbox_to_anchor=(x_positions[xpos_counter], 1.05), bbox_transform=plt.gcf().transFigure)
+        legend = plt.legend(xx, samp_meta_file[category].unique(), loc="center", ncol=2, title=category, bbox_to_anchor=(x_positions[xpos_counter], 1), bbox_transform=plt.gcf().transFigure)
 
         plt.gca().add_artist(legend)
         xpos_counter += 1
