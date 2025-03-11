@@ -43,19 +43,19 @@ class IncorrectHeaderError(Exception):
         self.message = message 
         super().__init__(self.message)
 
-class NotEnoughColorsError(Exception):
+class WrongAmountOfColorsError(Exception):
     """
-    Raise when the user does not supply enough colors for their given sub-categories (e.g. only one color was given for the category "Sex" that contained "male" and "female" for subcategories)
+    Raise when the user does not supply the correct number of colors for their given sub-categories (e.g. only one color was given for the category "Sex" that contained "male" and "female" for subcategories)
 
     Attributes:
         category: str, Name of the category 
-        unique_categories: 
-        unique_subcategories: list, list of the color codes for the given category 
+        unique_categories: list
+        unique_subcategories: int, number of given color codes for the given category 
     """
-    def __init__(self, category: str, unique_subcategories: list, unique_color_codes: str, message="Error: You have not supplied enough colors for your subcategory."):
+    def __init__(self, category: str, num_unique_subcategories: int, num_unique_color_codes: str, message="Error: You have not supplied the correct number of colors for a category."):
         self.category = category
-        self.unique_subcategories = unique_subcategories
-        self.unique_color_codes = unique_color_codes
-        print(f"\nError: You have not entered enough colors for your '{self.category}' category. Only {len(self.unique_color_codes)} colors have been entered and you have specified {len(self.unique_subcategories)} sub-categories\n")
+        self.num_unique_subcategories = num_unique_subcategories
+        self.num_unique_color_codes = num_unique_color_codes
+        print(f"\nError: The number of colors specified in your category_column_colors parameter in the params.yml file ({self.num_unique_color_codes}) does not match the number of unique subcategories found for the {category} category ({self.num_unique_subcategories}). Please fix and try running this script again.\n")
         self.message = message 
         super().__init__(self.message)

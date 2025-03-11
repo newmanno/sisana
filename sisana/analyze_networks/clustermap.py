@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib 
 import warnings
-from .analyze import NotEnoughColorsError
+from .analyze import WrongAmountOfColorsError
 def pnq(obj):
         print(obj)
         sys.exit(0)
@@ -117,7 +117,7 @@ def plot_clustermap(datafile: str, filetype: str, statsfile: str, metadata: str,
             
             - cat_label_columns: list, Name of the columns in the metadata_df containing the addational sub-categories for classification 
               of samples
-            - column_colors: list, List of lists of the colors wished to use for each sub-category, as defined in the params.yml file
+            - column_colors: list, List of dictionaries of the colors wished to use for each sub-category, as defined in the params.yml file
          
         Returns:
         -----------   
@@ -134,15 +134,15 @@ def plot_clustermap(datafile: str, filetype: str, statsfile: str, metadata: str,
         # loop through column names ("Cancer_subtype", "Tumor_grade", etc.) and create a pandas series for each category to map the 
         # sample name to the column color in the resulting clustermap
         for category in cat_label_columns: 
-            unique_subcategories = metadata_df[category].unique() 
-            unique_color_codes = np.unique(column_colors[column_cat_level])
-            if len(unique_subcategories) > len(unique_color_codes):
-                raise NotEnoughColorsError(category, unique_subcategories, unique_color_codes)
-            elif len(unique_subcategories) < len(unique_color_codes):
-                warnings.warn(f"\nWarning: For your '{category}' category, you have entered more colors ({len(unique_color_codes)}) than sub-categories ({len(unique_subcategories)}). Only the first {len(unique_subcategories)} colors given will be used.\n")
+            num_unique_subcategories = len(metadata_df[category].unique())
+            num_unique_color_codes = len(column_colors[column_cat_level])
+            if num_unique_subcategories != num_unique_color_codes:
+                raise WrongAmountOfColorsError(category, num_unique_subcategories, num_unique_color_codes)
+            # elif num_unique_subcategories < num_unique_color_codes:
+            #     warnings.warn(f"\nWarning: For your '{category}' category, you have entered more colors ({num_unique_color_codes}) than sub-categories ({num_unique_subcategories}). Only the first {num_unique_subcategories} colors given will be used.\n")
 
-            lut = dict(zip(unique_subcategories, column_colors[column_cat_level]))
-            luts_dict[category] = lut
+            lut = column_colors[column_cat_level]
+            luts_dict[category] = column_colors[column_cat_level]
             metadata_df['col_colors'] = metadata_df[category].map(lut)
             
             # column_cat_level is the counter. This code checks if we are looking at the first category the user gives in the params.yml 
@@ -210,7 +210,12 @@ def plot_clustermap(datafile: str, filetype: str, statsfile: str, metadata: str,
         legend = plt.legend(xx, samp_meta_file[category].unique(), loc="center", ncol=2, title=category, bbox_to_anchor=(x_positions[xpos_counter], 1), bbox_transform=plt.gcf().transFigure)
 
         plt.gca().add_artist(legend)
+        
         xpos_counter += 1
+    
+        handles, labels = plt.gca().get_legend_handles_labels()
+        print(handles)
+        print(labels)
             
     outname = os.path.join(outdir, f"{prefix}_clustermap.png")
     sns_plot.savefig(outname, dpi = 600, bbox_inches='tight')
