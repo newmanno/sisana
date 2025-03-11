@@ -46,8 +46,6 @@ def plot_clustermap(datafile: str, filetype: str, statsfile: str, metadata: str,
         - Nothing
     '''
     
-    networks = sns.load_dataset("brain_networks", index_col=0, header=[0, 1, 2])
-
     if filetype == "csv":
         datadf = pd.read_csv(datafile, index_col = 0)
     elif filetype == "txt" or filetype == "tsv":
