@@ -212,10 +212,6 @@ def plot_clustermap(datafile: str, filetype: str, statsfile: str, metadata: str,
         plt.gca().add_artist(legend)
         
         xpos_counter += 1
-    
-        handles, labels = plt.gca().get_legend_handles_labels()
-        print(handles)
-        print(labels)
             
     outname = os.path.join(outdir, f"{prefix}_clustermap.png")
     sns_plot.savefig(outname, dpi = 600, bbox_inches='tight')
