@@ -31,7 +31,7 @@ mkdir sisana
 cd sisana
 ```
 
-## Pipeline overview
+## Pipeline overview 
 ![Pipeline overview](docs/sisana_pipeline_overview_v2.png)
 
 ## Example input files
