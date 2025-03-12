@@ -103,10 +103,15 @@ For performing survival analyses, you can use a command like this:
 ```
 sisana compare survival ./example_inputs/params.yml
 ```
+<br />
 
-...and for gene set enrichment:
+
+## Perform gene set enrichment analysis (GSEA) between two groups 
+"sisana gsea" is used to perform gene set enrichment analysis (GSEA) to identify pathways that are differentially regulated based on the gene targeting scores. It uses the ranks of genes found in the previous step (sisana compare means) as input.
+
+#### Example commands
 ```
-sisana compare gsea ./example_inputs/params.yml
+sisana gsea ./example_inputs/params.yml
 ```
 <br />
 
