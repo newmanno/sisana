@@ -20,16 +20,16 @@ def cli():
 
     DESCRIPTION = """
     SiSaNA - Single Sample Network Analysis
-    A sommand line interface tool used to generate and analyze 
+    A command line interface tool used to generate and analyze 
     PANDA and LIONESS networks. It works through subcommands. 
     The command 'sisana generate -p params.yaml', for example,
-    will reconstruct a panda or lioness network, using the parameters 
+    will reconstruct a PANDA or LIONESS network, using the parameters 
     set in the params.yaml file.
     Developed by Nolan Newman (nolan.newman@ncmm.uio.no).
     """
     EPILOG = """
     Code available under MIT license:
-    https://github.com/newmanno/sisana
+    https://github.com/kuijjerlab/sisana
     """
     
     # create the top-level parser
