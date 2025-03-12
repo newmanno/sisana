@@ -32,7 +32,7 @@ cd sisana
 ```
 
 ## Pipeline overview 
-![Pipeline overview](docs/sisana_pipeline_overview_v3.png)
+<img src="https://github.com/kuijjerlab/sisana/blob/main/docs/sisana_pipeline_overview_v3.png" width="500" />
 
 ## Example input files
 Example input files can be obtained using the command
