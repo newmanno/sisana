@@ -98,11 +98,20 @@ in a number of different ways.
     
     - Output files:
       - *survival_plot.png: A Kaplan-Meier plot with the two-sided p-value calculated with sksurv.compare.compare_survival
-                
-  ----- Option 3: gsea -----
-  Performs gene set enrichment analysis (GSEA) to find enriched pathways between two groups
+  
+"""
 
-    Example: sisana compare gsea params.yml
+
+
+
+gsea_desc = """
+-----------------------------------
+Step 4 - GSEA
+-----------------------------------
+
+  Perform gene set enrichment analysis (GSEA) to find enriched pathways between two groups
+
+    Example: sisana gsea params.yml
 
     - Input files:
       - genefile: File (.rnk format, which is two column, tab delimited, no header) containing the 
@@ -116,9 +125,9 @@ in a number of different ways.
       - GSEA_*_basic_enrichment_plot.png: GSEA basic enrichment plot, displaying the top 5 enriched terms
       - GSEA_*_basic_enrichment_dotplot.png: GSEA basic enrichment dotplot, displaying the top 10 enriched terms
       - Plus some additional files automatically created with the gseapy module
-  
-"""
 
+"""
+      
 visualize_desc = """
 -----------------------------------
 Step 4 - Visualize

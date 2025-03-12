@@ -43,6 +43,7 @@ def cli():
     gen = subparsers.add_parser('generate', help='Generates PANDA and LIONESS networks', epilog=sisana.docs.generate_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     ext = subparsers.add_parser('extract', help='Extract edges connected to specified TFs/genes', epilog=sisana.docs.extract_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     comp = subparsers.add_parser('compare', help='Compare networks between sample groups', epilog=sisana.docs.compare_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
+    gsea = subparsers.add_parser('gsea', help='Perform gene set enrichment analysis between sample groups', epilog=sisana.docs.gsea_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     vis = subparsers.add_parser('visualize', help='Visualize the calculated degrees of each sample group', epilog=sisana.docs.visualize_desc, formatter_class=argparse.RawDescriptionHelpFormatter)
 
     # options for preprocess subcommand
@@ -57,8 +58,11 @@ def cli():
     ext.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
     # options for compare subcommand
-    comp.add_argument("compchoice", type=str, choices = ["means", "survival", "gsea"], help="The type of comparison to do")   
+    comp.add_argument("compchoice", type=str, choices = ["means", "survival"], help="The type of comparison to do")   
     comp.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
+
+    # options for gsea subcommand    
+    gsea.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
     # options for visualize subcommand
     vis.add_argument("plotchoice", type=str, choices = ["all", "quantity", "heatmap", "volcano", "clustermap"], nargs='?', default="all", help="The type of plot to create")   
@@ -241,15 +245,19 @@ def cli():
                                 days_colname=params["compare"]["survival"]["days_colname"],
                                 groups=params["compare"]["survival"]["groups"],
                                 outdir=params["compare"]["survival"]["outdir"])
+
+    ########################################################
+    # 4) Perform gene set enrichment analysis
+    ########################################################   
         
-        if args.compchoice == "gsea":    
-            perform_gsea(genefile=params["compare"]["gsea"]["genefile"], 
-                         gmtfile=params["compare"]["gsea"]["gmtfile"], 
-                         geneset=params["compare"]["gsea"]["geneset"], 
-                         outdir=params["compare"]["gsea"]["outdir"])
+    elif args.command == 'gsea':    
+        perform_gsea(genefile=params["gsea"]["genefile"], 
+                        gmtfile=params["gsea"]["gmtfile"], 
+                        geneset=params["gsea"]["geneset"], 
+                        outdir=params["gsea"]["outdir"])
     
     ########################################################
-    # 4) Visualize results
+    # 5) Visualize results
     ########################################################       
 
     elif args.command == "visualize":
@@ -342,7 +350,7 @@ def cli():
                         top=False)   
             
     ########################################################
-    # 5) Optional, extract edges that connect to specific TFs/genes
+    # 6) Optional, extract edges that connect to specific TFs/genes
     ########################################################
 
     elif args.command == 'extract':
