@@ -3,11 +3,12 @@ from scipy import stats
 import scipy.stats
 import csv
 import re
-import pandas 
+import pandas as pd
 from statistics import mean, median
 import math
 import numpy as np
 import sys
+from .exceptions import NotASubsetError
 
 def file_to_list(fname):
     """
@@ -40,6 +41,14 @@ def map_samples(mapfile, type1, type2):
 
     init_dict = {}
     samp_type_dict = {}
+
+    # Check if the supplied groups are a subset of the mapping column
+    mapf = pd.read_csv(mapfile, index_col = 0)
+    input_groups_set = set([type1, type2])
+    column_group_set = set(mapf[mapf.columns[0]])
+
+    if not input_groups_set.issubset(column_group_set):
+        raise NotASubsetError([type1, type2], mapf[mapf.columns[0]], "groups")
 
     # Add all node-type pairs from the input file into the node_type_dict
     with open(mapfile) as samp_file:

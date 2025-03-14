@@ -61,7 +61,7 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
         datadf = pd.read_csv(datafile, index_col = 0, sep = "\t")
         
     print("Performing calculations, please wait...")
-        
+
     if testtype == "tt" or testtype == "mw":
           
         # Assign samples from mapping file to groups
@@ -85,7 +85,7 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
         compdf = datadf
         
     del datadf
-
+        
     # Calculate p-value/FDR
     if testtype != "mw":
         if testtype == "tt": 
