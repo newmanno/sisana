@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 class NotASubsetError(Exception):
     """
@@ -14,16 +15,17 @@ class NotASubsetError(Exception):
     def __init__(self, user_list, data_list, dtype, message="Error: The genes in the supplied list are not a subset of the genes in the dataset."):
         
         self.user_list = user_list
-        self.data_list = data_list
+        self.data_list = np.unique(data_list)
         self.dtype = dtype
         
         items_missing = list(set(self.user_list).difference(self.data_list)) # Find genes/samples not in the data provided
         print(items_missing)
-        if self.dtype == "genes":
-            print("\nError: The following genes in the supplied gene list are not present in the data provided:")
-        elif self.dtype == "samples":
-            print("\nError: The following samples in the supplied sample list are not present in the data provided:")
+        print(f"\nError: The following {self.dtype} in the supplied list are not present in the data provided:")
         [print(i) for i in items_missing]
+        print(f"\nYou have provided the following {self.dtype}:")
+        [print(i) for i in self.user_list]
+        print(f"\nThe following are the {self.dtype} found in the data provided:")
+        [print(i) for i in self.data_list]
         print("\n")
 
         self.message = message 
