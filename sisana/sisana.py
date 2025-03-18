@@ -262,7 +262,7 @@ def cli():
 
     elif args.command == "visualize":
 
-        if args.plotchoice == "all":
+        # if args.plotchoice == "all":
             # # plot top genes in each visualization mode
             # plot_volcano(statsfile=params["visualize"]["volcano"]["statsfile"],
             #              diffcol=params["visualize"]["volcano"]["diffcol"],
@@ -285,24 +285,24 @@ def cli():
             #             outdir=params["visualize"]["quantity"]["outdir"],
             #             top=True)   
             
-            plot_heatmap(datafile=params["visualize"]["heatmap"]["datafile"],
-                        filetype=params["visualize"]["heatmap"]["filetype"], 
-                        statsfile=params["visualize"]["heatmap"]["statsfile"],
-                        metadata=params["visualize"]["heatmap"]["metadata"],
-                        genelist=params["visualize"]["heatmap"]["genelist"],
-                        hierarchicalcluster=params["visualize"]["heatmap"]["hierarchicalcluster"],
-                        groups=params["visualize"]["heatmap"]["groups"],
-                        prefix=params["visualize"]["heatmap"]["prefix"],
-                        plotnames=params["visualize"]["heatmap"]["plotnames"],
-                        outdir=params["visualize"]["heatmap"]["outdir"],
-                        additional_metadata_categories=params["visualize"]["heatmap"]["additional_metadata_categories"],
-                        top=True)                           
+            # plot_heatmap(datafile=params["visualize"]["heatmap"]["datafile"],
+            #             filetype=params["visualize"]["heatmap"]["filetype"], 
+            #             statsfile=params["visualize"]["heatmap"]["statsfile"],
+            #             metadata=params["visualize"]["heatmap"]["metadata"],
+            #             genelist=params["visualize"]["heatmap"]["genelist"],
+            #             hierarchicalcluster=params["visualize"]["heatmap"]["hierarchicalcluster"],
+            #             groups=params["visualize"]["heatmap"]["groups"],
+            #             prefix=params["visualize"]["heatmap"]["prefix"],
+            #             plotnames=params["visualize"]["heatmap"]["plotnames"],
+            #             outdir=params["visualize"]["heatmap"]["outdir"],
+            #             top=True)                           
 
         if args.plotchoice == "volcano":    
             plot_volcano(statsfile=params["visualize"]["volcano"]["statsfile"],
                          diffcol=params["visualize"]["volcano"]["diffcol"],
                          adjpcol=params["visualize"]["volcano"]["adjpcol"],
                          adjpvalthreshold=params["visualize"]["volcano"]["adjpvalthreshold"],
+                         xaxisthreshold=params["visualize"]["volcano"]["xaxisthreshold"],
                          genelist=params["visualize"]["volcano"]["genelist"],
                          outdir=params["visualize"]["volcano"]["outdir"],
                          top=False)      
@@ -321,22 +321,21 @@ def cli():
                         outdir=params["visualize"]["quantity"]["outdir"],
                         top=False)   
             
-        if args.plotchoice == "heatmap":    
-            plot_heatmap(datafile=params["visualize"]["heatmap"]["datafile"],
-                        filetype=params["visualize"]["heatmap"]["filetype"], 
-                        statsfile=params["visualize"]["heatmap"]["statsfile"],
-                        metadata=params["visualize"]["heatmap"]["metadata"],
-                        genelist=params["visualize"]["heatmap"]["genelist"],
-                        groups=params["visualize"]["heatmap"]["groups"],
-                        prefix=params["visualize"]["heatmap"]["prefix"],
-                        plotnames=params["visualize"]["heatmap"]["plotnames"],
-                        outdir=params["visualize"]["heatmap"]["outdir"],
-                        top=False)  
+        # if args.plotchoice == "heatmap":    
+        #     plot_heatmap(datafile=params["visualize"]["heatmap"]["datafile"],
+        #                 filetype=params["visualize"]["heatmap"]["filetype"], 
+        #                 statsfile=params["visualize"]["heatmap"]["statsfile"],
+        #                 metadata=params["visualize"]["heatmap"]["metadata"],
+        #                 genelist=params["visualize"]["heatmap"]["genelist"],
+        #                 groups=params["visualize"]["heatmap"]["groups"],
+        #                 prefix=params["visualize"]["heatmap"]["prefix"],
+        #                 plotnames=params["visualize"]["heatmap"]["plotnames"],
+        #                 outdir=params["visualize"]["heatmap"]["outdir"],
+        #                 top=False)  
             
         if args.plotchoice == "clustermap":    
             plot_clustermap(datafile=params["visualize"]["clustermap"]["datafile"],
                         filetype=params["visualize"]["clustermap"]["filetype"], 
-                        statsfile=params["visualize"]["clustermap"]["statsfile"],
                         metadata=params["visualize"]["clustermap"]["metadata"],
                         genelist=params["visualize"]["clustermap"]["genelist"],
                         column_cluster=params["visualize"]["clustermap"]["column_cluster"],

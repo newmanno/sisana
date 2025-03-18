@@ -12,9 +12,9 @@ def pnq(obj):
         print(obj)
         sys.exit(0)
       
-def plot_clustermap(datafile: str, filetype: str, statsfile: str, metadata: str, genelist: str, column_cluster: bool,
+def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, column_cluster: bool,
                  row_cluster: bool, prefix: str, outdir: str, plot_gene_names: bool, plot_sample_names: bool, top: bool=True, 
-                 category_label_columns: list=[], category_column_colors: list=[]):
+                 category_label_columns: list=[], category_column_colors: list=[], statsfile: str=""):
     '''
     Description:
         This code creates a heatmap of either the expression or degrees from LIONESS networks
@@ -167,6 +167,12 @@ def plot_clustermap(datafile: str, filetype: str, statsfile: str, metadata: str,
     # sns_plot = sns.clustermap(df_for_plotting, col_colors=col_colors_df, z_score=0, method='ward', row_cluster=True, col_cluster=False, 
     #                          dendrogram_ratio=0.05, vmin = -2, vmax = 2, cmap = matplotlib.colormaps['RdBu_r'], cbar_kws=cbar_kws)
     cbar_pos = (1, 0.5, 0.02, 0.25)
+
+    print(row_cluster)
+    print(df_for_plotting.head(10))
+    df_for_plotting = df_for_plotting.reindex(genes_to_plot).reset_index()
+    df_for_plotting = df_for_plotting.set_index('index')
+    print(df_for_plotting.head(10))
     
     sns_plot = sns.clustermap(df_for_plotting, col_colors=col_colors_df, z_score=None, row_cluster=row_cluster, col_cluster=column_cluster, 
                               dendrogram_ratio=0.05, vmin = -2, vmax = 2, cmap = matplotlib.colormaps['RdBu_r'], cbar_kws=cbar_kws, cbar_pos=cbar_pos,
@@ -194,18 +200,20 @@ def plot_clustermap(datafile: str, filetype: str, statsfile: str, metadata: str,
     # Calulate x axis position of legends based on how many categories are given by the user
     x_positions = [x/(len(category_label_columns)+1) for x in range(len(category_label_columns)+2) if x != 0 and x != len(category_label_columns)+1]
 
+    x_positions = [0.2, 0.4, 0.6, 0.85]
+
     for label in samp_meta_file[category_label_columns[0]].unique(): #group1, group2, etc
         sns_plot.ax_col_dendrogram.bar(0, 0, color=luts[category_label_columns[0]][label], label=label, linewidth=0)
-        legend = sns_plot.ax_col_dendrogram.legend(title=category_label_columns[0], loc="center", ncol=2, bbox_to_anchor=(x_positions[0], 1), bbox_transform=plt.gcf().transFigure)
+        legend = sns_plot.ax_col_dendrogram.legend(title=category_label_columns[0], loc="upper center", ncol=2, bbox_to_anchor=(x_positions[0], 1.05), bbox_transform=plt.gcf().transFigure)
     
     xpos_counter = 1
     # legend_counter = 1
     for category in category_label_columns[1:len(category_label_columns)]: # group, Grade, etc.
-        xx = []
+        artists = []
         for label in samp_meta_file[category].unique(): #group1, group2, etc
             x = sns_plot.ax_col_dendrogram.bar(0, 0, color=luts[category][label], label=label, linewidth=0)
-            xx.append(x)
-        legend = plt.legend(xx, samp_meta_file[category].unique(), loc="center", ncol=2, title=category, bbox_to_anchor=(x_positions[xpos_counter], 1), bbox_transform=plt.gcf().transFigure)
+            artists.append(x)
+        legend = plt.legend(artists, samp_meta_file[category].unique(), loc="upper center", ncol=2, title=category, bbox_to_anchor=(x_positions[xpos_counter], 1.05), bbox_transform=plt.gcf().transFigure)
 
         plt.gca().add_artist(legend)
         
@@ -216,4 +224,14 @@ def plot_clustermap(datafile: str, filetype: str, statsfile: str, metadata: str,
     
     print(f"\nFile created: {outname}")
     print(f"\nFile created: {out_filtered_z_path}")
-    
+
+    # Save the order of rows if desired, so that the same order can be applied on another dataset
+    if row_cluster:
+        row_cluster_order = [df_for_plotting.index[x] for x in sns_plot.dendrogram_row.reordered_ind]
+        row_cluster_order_outname = os.path.join(outdir, f"{prefix}_clustered_row_order.txt")
+
+        with open(row_cluster_order_outname, "w") as outfile:
+            outfile.write("\n".join(row_cluster_order))
+
+        print(f"\nFile created: {row_cluster_order_outname}")
+

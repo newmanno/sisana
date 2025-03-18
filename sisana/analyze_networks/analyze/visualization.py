@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
+import warnings
 
 def filter_for_user_defined_genes(datafile: pd.DataFrame, genes: list, verbose: bool=True):
     '''
@@ -99,3 +100,30 @@ def create_label_list(statsfile: pd.DataFrame, difference_column: str, adjp_colu
     for i,r in statsfile.iterrows():
         label_list.append(plt.text(x=r[difference_column],y=-np.log10(r[adjp_column]),s=i))
     return(label_list)
+
+def find_sample_overlap(samp_data_list, samp_meta_list):
+    '''
+    Description:
+        This code Finds the overlap between the samples in the data df and the metadata df. Note that ideally there 
+        should be a perfect overlap, but this ensures the code will not crash due to issues later 
+        
+    Parameters:
+    -----------
+        - samp_data_list: str, Data frame containing the gene name as index and statistics for plotting as columns
+        - samp_meta_list: str, Name of the column containing the difference (to be plotted on the x-axis)
+    
+    Returns:
+    -----------
+        - A list of samples that are common between the two data frames
+    '''
+    dif1 = np.setdiff1d(np.array(samp_data_list), np.array(samp_meta_list))
+    dif2 = np.setdiff1d(np.array(samp_meta_list), np.array(samp_data_list))
+    
+    diffsamps = np.concatenate((dif1, dif2))    
+        
+    if len(diffsamps) > 0:  
+        warnings.warn("Warning: Your samples in your metadata file are not a perfect match to the samples in the data file. The heatmaps will only be made on the overlapping samples of the two.") 
+        print(f"\nThe following samples are DIFFERENT between the metadata and data table, and thus will not be plotted: {diffsamps}\n")
+    
+    samp_overlaps = list(set(samp_data_list) & set(samp_meta_list)) # Get the overlapping samples between metadata and data df        
+    return(samp_overlaps)
