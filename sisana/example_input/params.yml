@@ -1,10 +1,3 @@
-##############################################################################################################################################################
-### Note: For this example params.yml file, we will be first using a truncated (5000 genes) version of a small subset (n=20) of the TCGA breast cancer dataset
-###       for the preprocess step and the generate step. Then, once we get to the compared stage, we will use the output of ALL the LumA and LumB breast cancer
-###       samples. The reason for splitting it like this is that it takes time to reconstruct the networks, so a version of all the LumA and LumB single sample
-###       networks, with the indegrees calculated for them, is provided instead.
-##############################################################################################################################################################
-
 # Stage 1: Preprocess data to format for next stage
 # example: sisana preprocess params.yml
 preprocess:
@@ -26,19 +19,14 @@ generate:
   ncores: 20 # Number of cores to use for calculating LIONESS networks. Must be less than or equal to the number of samples
   lionessfilepath: ./output/network/lioness_networks.npy # Path to the lioness output file to be created. Must have a .npy extension.
 
-##############################################################################################################################################################
-### Note: As mentioned before, we will now be moving to using the indegrees of all the LumA/LumB samples. However, when doing your own analysis you
-###       will keep using the same files you generated from the 'sisana generate' step.
-##############################################################################################################################################################
-
 # Stage 3: Compare experimental groups. Specify which comparison type to perform in the "sisana compare" command.
 compare:
 
   # Use the following if you wish to perform either a t-test, Mann-Whitney test, or their paired alternatives
   # example: sisana compare means params.yml
   means: 
-    datafile: ./example_inputs/lioness_df_indegree_3_decimal_places_all_LumA_LumB_samples.csv # Path to the data file (either expression, indegree, or outdegree)
-    mapfile: ./example_inputs/TCGA_mapping_755_LumA_LumB_samps_sampname_long.csv # Path to the mapping file, which maps sample name to sample group
+    datafile: ./output/network/lioness_indegree.csv # Path to the data file (either expression, indegree, or outdegree)
+    mapfile: ./example_inputs/BRCA_TCGA_20_LumA_LumB_samps_mapping.csv # Path to the mapping file, which maps sample name to sample group
     datatype: degree # The type of data being used (example: "expression" or "degree")
     groups:  # Names of the two groups (from the second column of mapfile) to be compared. The second group listed will be used as the numerator in the fold change calulation.
       - LumA
@@ -63,7 +51,7 @@ compare:
 # Stage 4: Perform gene set enrichment analysis (GSEA)
 # example: sisana gsea params.yml
 gsea:
-  genefile: ./output/compare_means/comparison_mw_between_LumA_LumB_expression_ranked_test_stat.rnk # Path to file (.rnk format, which is two column, tab delimited, no header) containing the genes and test statistics to do enrichment on
+  genefile: ./output/compare_means/comparison_mw_between_LumA_LumB_degree_ranked_test_stat.rnk # Path to file (.rnk format, which is two column, tab delimited, no header) containing the genes and test statistics to do enrichment on
   gmtfile: ./example_inputs/c2.cp.reactome.v2023.2.Hs.symbols.gmt # Path to the gene set file in gmt format
   geneset: Reactome # The gene set type used for gmtfile
   outdir: ./output/gsea/ # The directory to save the output to
@@ -74,13 +62,15 @@ visualize:
   # Use the following option if you wish to make a volcano plot, plotting both the fold change and FDR of genes
   # example: sisana visualize volcano params.yml
   volcano: 
-    datafile: ./output/compare_means/comparison_mw_between_LumA_LumB_expression.txt # Path to TSV file containing the fold change, p-value, FDR, and mean degree/expression for each gene
-    FCcol: mean_log2FC_LumB/LumA # The name of the column containing the values for the x-axis. For networks, this should be the difference in median degree between the two groups
+    statsfile: ./output/compare_means/comparison_mw_between_LumA_LumB_degree.txt # Path to TSV file containing the fold change, p-value, FDR, and mean degree/expression for each gene
+    diffcol: difference_of_medians_(LumB-LumA) # The name of the column containing the values for the x-axis. For networks, this should be the difference in median degree between the two groups
     adjpcol: FDR # The name of the column containing the adj. p-value
     xaxisthreshold: 50 # Threshold to use for the x-axis (value will also be applied to the negative end of the fold change axis, meaning a value of 50 really means +/- 50)"
     adjpvalthreshold: 0.25 # Threshold to use for the adjusted p-value (y-axis)
-    numlabels: 15 # Maximum number of values to label on each half of the plot
+    difftype: median # Choices are 'median' or 'mean'. Enter whether you are plotting the differences in medians or means. 
     outdir: ./output/volcano/ # The directory to save the output to
+    genelist: # [OPTIONAL] If you have a list of genes you want to label, enter them here. Otherwise, keep this blank and only the top genes (number dictated by numlabels) will be labeled 
+    numlabels: 15 # [OPTIONAL] Maximum number of values to label on each half of the plot
 
   # Use the following option if you wish to make a boxplot or violin plot. Specify which plot type in genelist
   # example: sisana visualize quantity params.yml
