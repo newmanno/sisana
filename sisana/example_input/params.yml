@@ -1,3 +1,10 @@
+##############################################################################################################################################################
+### Note: For this example params.yml file, we will be first using a truncated (5000 genes) version of a small subset (n=20) of the TCGA breast cancer dataset
+###       for the preprocess step and the generate step. Then, once we get to the compared stage, we will use the output of ALL the LumA and LumB breast cancer
+###       samples. The reason for splitting it like this is that it takes time to reconstruct the networks, so a version of all the LumA and LumB single sample
+###       networks, with the indegrees calculated for them, is provided instead.
+##############################################################################################################################################################
+
 # Stage 1: Preprocess data to format for next stage
 # example: sisana preprocess params.yml
 preprocess:
@@ -10,13 +17,19 @@ preprocess:
 # Stage 2: Reconstruct networks and calculate degrees
 # example: sisana generate params.yml
 generate:
-  processed_paths: ./tmp/processed_data_paths.yml # Path to yaml file containing the location of the processed data files
   method: lioness # Which method to use, either "panda" to run just PANDA or "lioness", which runs PANDA first, then LIONESS
-  outdir: ./output/network/ # output directory
+  processed_paths: ./tmp/processed_data_paths.yml # Path to yaml file containing the location of the processed data files. By default, these files are stored to ./tmp/processed_data_paths.yml
+  pandafilepath: ./output/network/panda_network.txt # Path to the panda output file to be created. Must have a .txt extension.
 
   # The following commands are used if you specified "lioness" for the method arg
   compute: cpu # Whether to use "gpu" or "cpu" for computing LIONESS networks
   ncores: 20 # Number of cores to use for calculating LIONESS networks. Must be less than or equal to the number of samples
+  lionessfilepath: ./output/network/lioness_networks.npy # Path to the lioness output file to be created. Must have a .npy extension.
+
+##############################################################################################################################################################
+### Note: As mentioned before, we will now be moving to using the indegrees of all the LumA/LumB samples. However, when doing your own analysis you
+###       will keep using the same files you generated from the 'sisana generate' step.
+##############################################################################################################################################################
 
 # Stage 3: Compare experimental groups. Specify which comparison type to perform in the "sisana compare" command.
 compare:
@@ -24,14 +37,14 @@ compare:
   # Use the following if you wish to perform either a t-test, Mann-Whitney test, or their paired alternatives
   # example: sisana compare means params.yml
   means: 
-    datafile: ./example_inputs/BRCA_TCGA_20_LumA_LumB_samps_5000_genes_exp.tsv # Path to the data file (either expression, indegree, or outdegree)
-    mapfile: ./example_inputs/BRCA_TCGA_20_LumA_LumB_samps_mapping.csv # Path to the mapping file, which maps sample name to sample group
-    datatype: expression # The type of data being used (example: "expression" or "degree")
+    datafile: ./example_inputs/lioness_df_indegree_3_decimal_places_all_LumA_LumB_samples.csv # Path to the data file (either expression, indegree, or outdegree)
+    mapfile: ./example_inputs/TCGA_mapping_755_LumA_LumB_samps_sampname_long.csv # Path to the mapping file, which maps sample name to sample group
+    datatype: degree # The type of data being used (example: "expression" or "degree")
     groups:  # Names of the two groups (from the second column of mapfile) to be compared. The second group listed will be used as the numerator in the fold change calulation.
       - LumA
       - LumB
     testtype: mw # Type of comparison to perform, either "tt" for Student's t-test, "mw" for Mann-Whitney U, "paired_tt", or "wilcoxon"
-    filetype: tsv # The type of data file ("csv" or "txt" or "tsv") being used
+    filetype: csv # The type of data file ("csv" or "txt" or "tsv") being used
     outdir: ./output/compare_means/ # The directory to save the output to
 
   # Use the following if you wish to perform a survival analysis between two sample groups
@@ -47,13 +60,13 @@ compare:
       - LumB
     outdir: ./output/survival/ # The directory to save the output to
 
-  # Use the following if you wish to perform gene set enrichment analysis (GSEA)
-  # example: sisana compare gsea params.yml
-  gsea:
-    genefile: ./output/compare_means/comparison_mw_between_LumA_LumB_expression_ranked_test_stat.rnk # Path to file (.rnk format, which is two column, tab delimited, no header) containing the genes and test statistics to do enrichment on
-    gmtfile: ./example_inputs/c2.cp.reactome.v2023.2.Hs.symbols.gmt # Path to the gene set file in gmt format
-    geneset: Reactome # The gene set type used for gmtfile
-    outdir: ./output/gsea/ # The directory to save the output to
+# Stage 4: Perform gene set enrichment analysis (GSEA)
+# example: sisana gsea params.yml
+gsea:
+  genefile: ./output/compare_means/comparison_mw_between_LumA_LumB_expression_ranked_test_stat.rnk # Path to file (.rnk format, which is two column, tab delimited, no header) containing the genes and test statistics to do enrichment on
+  gmtfile: ./example_inputs/c2.cp.reactome.v2023.2.Hs.symbols.gmt # Path to the gene set file in gmt format
+  geneset: Reactome # The gene set type used for gmtfile
+  outdir: ./output/gsea/ # The directory to save the output to
 
 # Stage 4: Visualize the differences between experimental groups. Specify which visualization to perform in the "sisana visualize" command
 visualize:
@@ -62,10 +75,10 @@ visualize:
   # example: sisana visualize volcano params.yml
   volcano: 
     datafile: ./output/compare_means/comparison_mw_between_LumA_LumB_expression.txt # Path to TSV file containing the fold change, p-value, FDR, and mean degree/expression for each gene
-    FCcol: mean_log2FC_LumB/LumA # The name of the column containing the log2 fold change values
+    FCcol: mean_log2FC_LumB/LumA # The name of the column containing the values for the x-axis. For networks, this should be the difference in median degree between the two groups
     adjpcol: FDR # The name of the column containing the adj. p-value
-    fcthreshold: 1 # Fold change threshold to use (value will also be applied to the negative end of the fold change axis, meaning a value of 1.5 really means +/- 1.5)"
-    adjpvalthreshold: 0.25 # Threshold to use for the adjusted p-value
+    xaxisthreshold: 50 # Threshold to use for the x-axis (value will also be applied to the negative end of the fold change axis, meaning a value of 50 really means +/- 50)"
+    adjpvalthreshold: 0.25 # Threshold to use for the adjusted p-value (y-axis)
     numlabels: 15 # Maximum number of values to label on each half of the plot
     outdir: ./output/volcano/ # The directory to save the output to
 
@@ -102,6 +115,26 @@ visualize:
     prefix: LumA_LumB_expression # Prefix to use for the output file; note that the output file will automatically be generated with the suffix '_heatmap.png'
     plotnames: True # Flag ("True" or "False") for whether to plot the names of the genes on the rows of the heatmap
     outdir: ./output/plot_heatmap/ # Path to directory to output file to
+
+  # For metabric:
+  clustermap: 
+    datafile: ./input/metabric_lioness_df_indegree_3_decimal_places.csv # Path to file containing the expression or indegrees of each gene per sample
+    filetype: csv # Type of input file, must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv implies tab-separated
+    statsfile: ./input/tcga_comparison_mw_between_group1_group2_indeg.csv # Path to file with the comparison output performed between two groups
+    metadata: ./input/metabric_predicted_classes_from_RF_mapping.csv # Path to the csv metadata file mapping samples to groups (groups must match names of the groupnames arg), must have a header of the format 'name,group'
+    genelist: ./output/clustermap/TCGA_Basal_samps_indegree_with_metastasis_info_clustered_row_order.txt # .txt file containing a list of genes to plot, must match the name of genes in the datafile. Recommended to not use more than 10 genes, otherwise use a heatmap.
+    column_cluster: False # Flag ("True" or "False") for if you wish to perform hierarchical clustering on the columns. If False, then the samples will only be grouped according to the first category in category_label_columns   
+    row_cluster: False # Flag ("True" or "False") for if you wish to perform hierarchical clustering on the genes   
+    plot_gene_names: True # Flag ("True" or "False") for whether to plot the names of the genes on the rows of the heatmap
+    plot_sample_names: False # Flag ("True" or "False") for whether to plot the names of the samples on the columns of the heatmap
+    category_label_columns: # The names of columns (categories of samples) in the metadata file you wish to use for coloring the columns in the clustermap. The clustermap will be grouped by the first name given, unless column_cluster=True
+      - group
+    category_column_colors: # The matplotlib color codes you wish to use for the sub-categories given in category_label_columns. For example, a category called "Sex" may want to use ["pink", "blue"] as their colors (though SiSaNA has no way of determining which samples are female or male, so you may need to change the order you give the colors)
+      - {'Group1': 'b', 
+         'Group2': 'r'}
+    outdir: ./output/clustermap/ # Path to directory to output file to
+    prefix: Metabric_samps_indegree_with_metastasis_info # Prefix to use for the output file; note that the output file will automatically be generated with the suffix '_clustermap.png'
+
 
 # Stage 5: Extract edges that connect to specified TFs or genes. Specify whether to use "genes" or "tfs" in the "sisana extract" command.
 # example: sisana extract params.yml
