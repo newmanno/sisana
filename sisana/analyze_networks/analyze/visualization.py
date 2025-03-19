@@ -52,10 +52,13 @@ def filter_for_top_genes(datafile: pd.DataFrame, statsfile: pd.DataFrame, number
     '''
     datafile = datafile.T
 
+    if number==None:  
+        number=10
+
     # Filter out any non-significant genes
     signif_indata = statsfile[statsfile['FDR'] < pval_threshold]
     
-    sorted_indata = signif_indata.sort_values('abs(difference_of_medians)', ascending=False)
+    sorted_indata = signif_indata.sort_values('FDR', ascending=True)
 
     topgenes = sorted_indata.index[0:number]
 
