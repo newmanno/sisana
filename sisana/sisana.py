@@ -303,24 +303,40 @@ def cli():
                          adjpcol=params["visualize"]["volcano"]["adjpcol"],
                          adjpvalthreshold=params["visualize"]["volcano"]["adjpvalthreshold"],
                          xaxisthreshold=params["visualize"]["volcano"]["xaxisthreshold"],
+                         difftype=params["visualize"]["volcano"]["difftype"],
                          genelist=params["visualize"]["volcano"]["genelist"],
                          outdir=params["visualize"]["volcano"]["outdir"],
                          top=False)      
     
-        if args.plotchoice == "quantity":    
-            plot_expression_degree(datafile=params["visualize"]["quantity"]["datafile"],
-                        filetype=params["visualize"]["quantity"]["filetype"], 
-                        statsfile=params["visualize"]["quantity"]["statsfile"], 
-                        metadata=params["visualize"]["quantity"]["metadata"],
-                        genelist=params["visualize"]["quantity"]["genelist"],
-                        plottype=params["visualize"]["quantity"]["plottype"],
-                        groups=params["visualize"]["quantity"]["groups"],
-                        colors=params["visualize"]["quantity"]["colors"],
-                        prefix=params["visualize"]["quantity"]["prefix"],
-                        yaxisname=params["visualize"]["quantity"]["yaxisname"],
-                        outdir=params["visualize"]["quantity"]["outdir"],
-                        top=False)   
-            
+        if args.plotchoice == "quantity":   
+            if params["visualize"]["quantity"]["genelist"] != None:
+                plot_expression_degree(datafile=params["visualize"]["quantity"]["datafile"],
+                            filetype=params["visualize"]["quantity"]["filetype"], 
+                            statsfile=params["visualize"]["quantity"]["statsfile"], 
+                            metadata=params["visualize"]["quantity"]["metadata"],
+                            plottype=params["visualize"]["quantity"]["plottype"],
+                            groups=params["visualize"]["quantity"]["groups"],
+                            colors=params["visualize"]["quantity"]["colors"],
+                            prefix=params["visualize"]["quantity"]["prefix"],
+                            yaxisname=params["visualize"]["quantity"]["yaxisname"],
+                            outdir=params["visualize"]["quantity"]["outdir"],
+                            genelist=params["visualize"]["quantity"]["genelist"],
+                            top=False)   
+            else:
+                plot_expression_degree(datafile=params["visualize"]["quantity"]["datafile"],
+                            filetype=params["visualize"]["quantity"]["filetype"], 
+                            statsfile=params["visualize"]["quantity"]["statsfile"], 
+                            metadata=params["visualize"]["quantity"]["metadata"],
+                            plottype=params["visualize"]["quantity"]["plottype"],
+                            groups=params["visualize"]["quantity"]["groups"],
+                            colors=params["visualize"]["quantity"]["colors"],
+                            prefix=params["visualize"]["quantity"]["prefix"],
+                            yaxisname=params["visualize"]["quantity"]["yaxisname"],
+                            outdir=params["visualize"]["quantity"]["outdir"],
+                            genelist=params["visualize"]["quantity"]["genelist"],
+                            numgenes=params["visualize"]["quantity"]["numgenes"],
+                            top=True)                   
+                
         # if args.plotchoice == "heatmap":    
         #     plot_heatmap(datafile=params["visualize"]["heatmap"]["datafile"],
         #                 filetype=params["visualize"]["heatmap"]["filetype"], 

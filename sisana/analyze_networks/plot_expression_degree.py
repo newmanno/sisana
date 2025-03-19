@@ -9,9 +9,9 @@ import warnings
 from .analyze import file_to_list, NotASubsetError, filter_for_top_genes, filter_for_user_defined_genes, IncorrectHeaderError
 import os
 
-def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadata: str, genelist: str, 
+def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadata: str, 
                   plottype: str, groups: list, colors: list, prefix: str, yaxisname: str, outdir: str,
-                  top: bool=True):
+                  top: bool=True, numgenes: int=10, genelist: str=""):
     """
     Description:
         This code creates either a violin plot or a box plot of gene expression or degree data. The plots are annotated using the previously
@@ -61,7 +61,7 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
     # args = parser.parse_args()
     
     # Check that there are no more than 5 group names, otherwise warn user
-    if len(groups) > 10:
+    if len(groups) > 5:
         warnings.warn("Warning: Supplying more than 10 groups at once may cause the created graphs to be unreadable. Consider reducing the number of groups.")
     
     # Get data and metadata
@@ -73,14 +73,16 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
         indata = pd.read_csv(datafile, sep='\t', engine = "python", index_col=[0])
         
     # meta = pd.read_csv(metadata, engine = "pyarrow", index_col=[0])
-    meta = pd.read_csv(metadata, engine = "python")
-    if meta.columns[0] != "name":
-        raise IncorrectHeaderError(meta)
-    else:
-        meta = meta.set_index('name')
+    meta = pd.read_csv(metadata, engine = "python", header=None, index_col=0)
+    # if meta.columns[0] != "name":
+    #     raise IncorrectHeaderError(meta)
+    # else:
+    #     meta = meta.set_index('name')
+    meta.index.name = "name"
+    meta.columns = ["group"]
 
-    # Create list of genes
-    if not top:
+    # Create list of genes if the user has supplied a gene list 
+    if genelist != None:
         user_gene_list = file_to_list(genelist)
 
         # Check if the user-supplied gene list is a subset of the genes in the data
@@ -96,17 +98,16 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
     compare_df = pd.read_csv(statsfile, sep = "\t", index_col=0)
     
     # If the user has supplied the gene list, plot just the genes they supplied. Otherwise, plot the top genes based on FDR and fold change
-    if not top:
+    if genelist != None:
         # Filter the data frame containing the degree/expression values for just the genes in the supplied gene list
         filtered_indata_genelist = filter_for_user_defined_genes(datafile=indata, genes=user_gene_list)
         # filtered_indata_genelist = indata.loc[:,user_gene_list]
         filtered_indata_genelist = filtered_indata_genelist # Need to transform here, do not remove without testing
 
     else:
-        
         filtered_indata_genelist = filter_for_top_genes(datafile=indata, 
                 statsfile=compare_df,                     
-                number=10)
+                number=numgenes)
         topgenes = filtered_indata_genelist.index
 
         # # Find top genes
@@ -149,7 +150,7 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
     subdata_melt = subdata_melt.sort_values('group')   
    
     # Group samples by gene in the melted data frame, required for plotting
-    if not top:
+    if genelist != None:
         subdata_melt['gene'] = pd.Categorical(subdata_melt.gene, ordered=True, categories=user_gene_list)
     else:
         subdata_melt['gene'] = pd.Categorical(subdata_melt.gene, ordered=True, categories=topgenes)
@@ -201,12 +202,12 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
     # Subset the data frame for just the samples belonging to the user-defined groups
     subdata_melt = subdata_melt[subdata_melt['group'].isin(groups)]
 
-    if not top:
+    if genelist != None:
         stat_annotation_pairs = _create_comparison_list(user_gene_list)
     else:
         stat_annotation_pairs = _create_comparison_list(topgenes)
 
-    print(stat_annotation_pairs)
+    # print(stat_annotation_pairs)
     
     from statannotations.Annotator import Annotator
     
@@ -227,7 +228,7 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
     ax.set(xlabel=None)
         
     # Annotate with the FDRs that were calculated previously
-    if not top:
+    if genelist != None:
         pval_list = [compare_df.loc[gene, "FDR"] for gene in user_gene_list]
     else:
         pval_list = [compare_df.loc[gene, "FDR"] for gene in topgenes]
