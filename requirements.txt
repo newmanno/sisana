@@ -9,3 +9,5 @@ seaborn
 adjustText 
 pyyaml
 netZooPy
+pingouin
+statannotations

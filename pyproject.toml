@@ -7,7 +7,7 @@ name = "sisana"
 authors = [
     {name = "Nolan Newman", email = "nolan.newman@ncmm.uio.no"},
 ]
-version = "0.0.7"
+version = "0.0.12"
 description = "A command line interface tool to reconstruct and analyze single sample networks."
 readme = "README.md"
 requires-python = ">=3.9.0"
@@ -29,7 +29,11 @@ dependencies = [
     "seaborn",
     "adjustText",
     "pyyaml",
+    "pingouin",
+    "statannotations",
 ]
+license = "MIT"
+
 
 [tool.setuptools.packages.find]
 where = ["."] 
@@ -40,7 +44,8 @@ include = ["sisana",
     "sisana.postprocessing.post", 
     "sisana.analyze_networks",
     "sisana.analyze_networks.analyze", 
-    "sisana.analyze_networks.genesets"] 
+    "sisana.analyze_networks.genesets",
+    "sisana.example_input"] 
 namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
 
 [project.scripts]
