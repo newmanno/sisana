@@ -1,3 +1,9 @@
+#######################################################################################################################################
+##### We will start this example file by reconstructing networks for just 20 samples from the TCGA dataset (10 LumA, 10 LumB).
+##### After reconstructing the networks (Stage 2), we will use a larger dataset with more LumA and LumB samples. This is just 
+##### to cut down on the length of computational time for this tutorial.
+#######################################################################################################################################
+
 # Stage 1: Preprocess data to format for next stage
 # example: sisana preprocess params.yml
 preprocess:
@@ -19,14 +25,20 @@ generate:
   ncores: 20 # Number of cores to use for calculating LIONESS networks. Must be less than or equal to the number of samples
   lionessfilepath: ./output/network/lioness_networks.npy # Path to the lioness output file to be created. Must have a .npy extension.
 
+#######################################################################################################################################
+##### Note: Now we will begin running the downstream analysis on a superset of the samples used for stages 1 and 2. This superset
+##### contains 100 LumA samples and 100 LumB samples, all from the TCGA dataset. This is to save on computational time for this
+##### tutorial. For your data, you will continue using the files produced by stage 1 and stage 2 in your analysis.
+#######################################################################################################################################
+
 # Stage 3: Compare experimental groups. Specify which comparison type to perform in the "sisana compare" command.
 compare:
 
   # Use the following if you wish to perform either a t-test, Mann-Whitney test, or their paired alternatives
   # example: sisana compare means params.yml
   means: 
-    datafile: ./output/network/lioness_indegree.csv # Path to the data file (either expression, indegree, or outdegree)
-    mapfile: ./example_inputs/BRCA_TCGA_20_LumA_LumB_samps_mapping.csv # Path to the mapping file, which maps sample name to sample group
+    datafile: ./example_inputs/lioness_df_indegree_3_decimal_places_subset_200_LumALumB_samps.csv # Path to the data file (either expression, indegree, or outdegree)
+    mapfile: ./example_inputs/BRCA_TCGA_200_LumA_LumB_samps_mapping.csv # Path to the mapping file, which maps sample name to sample group. No header. 
     datatype: degree # The type of data being used (example: "expression" or "degree")
     groups:  # Names of the two groups (from the second column of mapfile) to be compared. The second group listed will be used as the numerator in the fold change calulation.
       - LumA
@@ -38,11 +50,11 @@ compare:
   # Use the following if you wish to perform a survival analysis between two sample groups
   # example: sisana compare survival params.yml
   survival:
-    metadata: ./example_inputs/BRCA_TCGA_20_LumA_LumB_samps_survival_data.csv # Path to mapping file ("csv" or "txt") that maps samples to groups. Must also contain a column describing the survival status (see alivestatus_colname param)
+    metadata: ./example_inputs/BRCA_TCGA_200_LumA_LumB_samps_survival_data.csv # Path to file ("csv" or "txt") containing the survival status and mapping to groups. Must contain a column describing the survival status (see alivestatus_colname param)
     filetype: csv # Type of file, used to indicate the delimiter to use for metadata. Enter "csv" or "txt" for this.
     sampgroup_colname: PAM50_subtype # Name of column containing sample group names
-    alivestatus_colname: Dead # Name of column that contains the status of the individual. Must contain True/False values only, where True = dead (event occurred) and False = alive.
-    days_colname: days_to_death_or_follow_up # Name of column containing either the number of days an individual survived or the number of days to the last follow up.
+    alivestatus_colname: Survival_status(False_equals_alive) # Name of column that contains the status of the individual. Must contain True/False values only, where True = dead (event occurred) and False = alive.
+    days_colname: days_to_death_or_last_followup # Name of column containing either the number of days an individual survived or the number of days to the last follow up.
     groups: # The names of the two groups (from the metadata file) to compare
       - LumA
       - LumB
@@ -51,7 +63,7 @@ compare:
 # Stage 4: Perform gene set enrichment analysis (GSEA)
 # example: sisana gsea params.yml
 gsea:
-  genefile: ./output/compare_means/comparison_mw_between_LumA_LumB_degree_ranked_test_stat.rnk # Path to file (.rnk format, which is two column, tab delimited, no header) containing the genes and test statistics to do enrichment on
+  genefile: ./output/compare_means/comparison_mw_between_LumA_LumB_degree_ranked_test_stat.rnk # Path to file (.rnk format, which is two columns, tab delimited, no header) containing the genes and test statistics to do enrichment on
   gmtfile: ./example_inputs/c2.cp.reactome.v2023.2.Hs.symbols.gmt # Path to the gene set file in gmt format
   geneset: Reactome # The gene set type used for gmtfile
   outdir: ./output/gsea/ # The directory to save the output to
@@ -62,24 +74,23 @@ visualize:
   # Use the following option if you wish to make a volcano plot, plotting both the fold change and FDR of genes
   # example: sisana visualize volcano params.yml
   volcano: 
-    statsfile: ./output/compare_means/comparison_mw_between_LumA_LumB_degree.txt # Path to TSV file containing the fold change, p-value, FDR, and mean degree/expression for each gene
+    statsfile: ./output/compare_means/comparison_mw_between_LumA_LumB_degree.txt # Path to TSV file containing the difference in mean/median degree, p-value, and FDR
     diffcol: difference_of_medians_(LumB-LumA) # The name of the column containing the values for the x-axis. For networks, this should be the difference in median degree between the two groups
     adjpcol: FDR # The name of the column containing the adj. p-value
     xaxisthreshold: 50 # Threshold to use for the x-axis (value will also be applied to the negative end of the fold change axis, meaning a value of 50 really means +/- 50)"
     adjpvalthreshold: 0.25 # Threshold to use for the adjusted p-value (y-axis)
     difftype: median # Choices are 'median' or 'mean'. Enter whether you are plotting the differences in medians or means. 
     outdir: ./output/volcano/ # The directory to save the output to
-    genelist: # [OPTIONAL] If you have a list of genes you want to label, enter them here. Otherwise, keep this blank and only the top genes (number dictated by numlabels) will be labeled 
-    numlabels: 15 # [OPTIONAL] Maximum number of values to label on each half of the plot
+    genelist: ./example_inputs/volcano_plot_genes.txt # [OPTIONAL, BUT DON'T DELETE] If you have a list of genes you want to label in a .txt file, no header, enter them here. Otherwise, keep this blank and only the top genes (number dictated by numlabels) will be labeled 
+    numlabels: # [OPTIONAL, BUT DON'T DELETE] Maximum number of values to label on each half of the plot. Default value is 15. Will not be used if a file is given for genelist.
 
   # Use the following option if you wish to make a boxplot or violin plot. Specify which plot type in genelist
   # example: sisana visualize quantity params.yml
   quantity: 
-    datafile: /storage/kuijjerarea/nolan/sisana_test_analysis_4/output/network/lioness_transformed_edges_indegree.csv # Path to file containing the expression or indegrees of each gene per sample.
-    compfile: ./output/comparison_mw_between_LumA_LumB_degree.txt
-    filetype: csv # Type of input file, must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv implies tab-separated
-    metadata: ./example_inputs/BRCA_TCGA_20_LumA_LumB_samps_mapping.csv # Path to the csv metadata file mapping samples to groups (groups must match names of the groupnames arg), must have a header of the format 'name,group'
-    genelist: ./example_inputs/genes.txt # .txt file containing a list of genes to plot, must match the name of genes in the datafile. Recommended to not use more than 10 genes, otherwise use a heatmap.
+    datafile: ./example_inputs/lioness_df_indegree_3_decimal_places_subset_200_LumALumB_samps.csv # Path to file containing the expression or indegrees of each gene per sample.
+    statsfile: ./output/compare_means/comparison_mw_between_LumA_LumB_degree.txt # Path to TSV file containing the difference in mean/median degree, p-value, and FDR
+    filetype: csv # Type of the datafile file. Must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv implies tab-separated
+    metadata: ./example_inputs/BRCA_TCGA_200_LumA_LumB_samps_mapping.csv # Path to the csv metadata file mapping samples to groups (groups must match names of the groupnames arg). No header. 
     plottype: boxplot # The type of plot to create. Choices are "boxplot" or "violin"
     groups:  # The names of the groups to plot, should ideally be a list of 5 names or less. Groups will be plotted in the order they are written in this argument
       - LumA
@@ -90,45 +101,32 @@ visualize:
     prefix: LumA_LumB_indegree # Prefix to use for the output figures. For example, "expression_group1_group2" would produce "expression_group1_group2_box_plot.png" (assuming boxplot was used for plottype)
     yaxisname: Indegree # Name to use for the y-axis
     outdir: ./output/plot_quantity/ # Path to directory to output file to
+    genelist:  # [OPTIONAL, BUT DON'T DELETE] .txt file containing a list of genes to plot, must match the name of genes in the datafile. Recommended to not use more than 10 genes, otherwise use a clustermap/heatmap.
+    numgenes: 5 # [OPTIONAL, BUT DON'T DELETE] Number of top genes (or TFs) based on p-value to plot. Default value is 10. Will not be used if a file is given for genelist.
 
-  # Use the following to create a heatmap
-  # example: sisana visualize heatmap params.yml
-  heatmap: 
-    datafile: ./example_inputs/BRCA_TCGA_20_LumA_LumB_samps_5000_genes_exp.tsv # Path to file containing the expression or indegrees of each gene per sample
-    filetype: tsv # Type of input file, must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv implies tab-separated
-    metadata: ./example_inputs/BRCA_TCGA_20_LumA_LumB_samps_mapping.csv # Path to the csv metadata file mapping samples to groups (groups must match names of the groupnames arg), must have a header of the format 'name,group'
-    genelist: ./example_inputs/top_50_genes_heatmap.txt # .txt file containing a list of genes to plot, must match the name of genes in the datafile. Recommended to not use more than 10 genes, otherwise use a heatmap.
-    hierarchicalcluster: True # Flag ("True" or "False") for if you wish to perform hierarchical clustering on the genes
-    groups:  # The names of the groups to plot (from the --metadata file). Groups will be plotted as column groups in the order they are written in this argument
-      - LumA
-      - LumB      
-    prefix: LumA_LumB_expression # Prefix to use for the output file; note that the output file will automatically be generated with the suffix '_heatmap.png'
-    plotnames: True # Flag ("True" or "False") for whether to plot the names of the genes on the rows of the heatmap
-    outdir: ./output/plot_heatmap/ # Path to directory to output file to
-
-  # For metabric:
+  # Use the following option if you wish to make a clustermap or heatmap
+  # example: sisana visualize clustermap params.yml
   clustermap: 
-    datafile: ./input/metabric_lioness_df_indegree_3_decimal_places.csv # Path to file containing the expression or indegrees of each gene per sample
+    datafile: ./example_inputs/lioness_df_indegree_3_decimal_places_subset_200_LumALumB_samps.csv # Path to file containing the expression or indegrees of each gene per sample
     filetype: csv # Type of input file, must be either "csv", "txt", or "tsv", where csv implies comma separated values and txt/tsv implies tab-separated
-    statsfile: ./input/tcga_comparison_mw_between_group1_group2_indeg.csv # Path to file with the comparison output performed between two groups
-    metadata: ./input/metabric_predicted_classes_from_RF_mapping.csv # Path to the csv metadata file mapping samples to groups (groups must match names of the groupnames arg), must have a header of the format 'name,group'
-    genelist: ./output/clustermap/TCGA_Basal_samps_indegree_with_metastasis_info_clustered_row_order.txt # .txt file containing a list of genes to plot, must match the name of genes in the datafile. Recommended to not use more than 10 genes, otherwise use a heatmap.
+    statsfile: ./output/compare_means/comparison_mw_between_LumA_LumB_degree.txt # Path to file with the comparison output performed between two groups
+    metadata: ./example_inputs/BRCA_TCGA_200_LumA_LumB_samps_mapping_w_header.csv # Path to the csv metadata file mapping samples to groups (groups must match names of the groupnames arg), must have a header of the format 'name,group'
+    genelist: ./example_inputs/clustermap_genes.txt # .txt file containing a list of genes to plot, must match the name of genes in the datafile. 
     column_cluster: False # Flag ("True" or "False") for if you wish to perform hierarchical clustering on the columns. If False, then the samples will only be grouped according to the first category in category_label_columns   
-    row_cluster: False # Flag ("True" or "False") for if you wish to perform hierarchical clustering on the genes   
+    row_cluster: True # Flag ("True" or "False") for if you wish to perform hierarchical clustering on the genes   
     plot_gene_names: True # Flag ("True" or "False") for whether to plot the names of the genes on the rows of the heatmap
     plot_sample_names: False # Flag ("True" or "False") for whether to plot the names of the samples on the columns of the heatmap
     category_label_columns: # The names of columns (categories of samples) in the metadata file you wish to use for coloring the columns in the clustermap. The clustermap will be grouped by the first name given, unless column_cluster=True
       - group
     category_column_colors: # The matplotlib color codes you wish to use for the sub-categories given in category_label_columns. For example, a category called "Sex" may want to use ["pink", "blue"] as their colors (though SiSaNA has no way of determining which samples are female or male, so you may need to change the order you give the colors)
-      - {'Group1': 'b', 
-         'Group2': 'r'}
+      - {'LumA': 'b', 
+         'LumB': 'r'}
     outdir: ./output/clustermap/ # Path to directory to output file to
-    prefix: Metabric_samps_indegree_with_metastasis_info # Prefix to use for the output file; note that the output file will automatically be generated with the suffix '_clustermap.png'
-
+    prefix: TCGA_200_LumA_LumB_samps # Prefix to use for the output file; note that the output file will automatically be generated with the suffix '_clustermap.png'
 
 # Stage 5: Extract edges that connect to specified TFs or genes. Specify whether to use "genes" or "tfs" in the "sisana extract" command.
 # example: sisana extract params.yml
 extract:
-  pickle: ./tmp/lioness_transformed_edges.pickle # The path to the lioness_transformed_edges.pickle file created in the "generate" step
+  pickle: ./tmp/lioness.pickle # The path to the pickle file created in the "generate" step
   namefile: ./example_inputs/genes.txt # The path to the file that contains the names of TFs or genes (and their associated edges) you wish to extract
   outdir: ./output/extract/ # The directory to save the output file to
