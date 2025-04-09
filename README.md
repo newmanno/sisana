@@ -32,7 +32,9 @@ cd sisana
 ```
 
 ## Pipeline overview 
-<img src="https://github.com/kuijjerlab/sisana/blob/main/docs/sisana_pipeline_overview_v3.png" width="500" />
+<p align="center">  
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/sisana_pipeline_overview_v3.png" width="500" />
+</p>
 
 ## Example input files
 Example input files can be obtained using the command
@@ -104,7 +106,9 @@ For performing survival analyses, you can use a command like this:
 sisana compare survival ./example_inputs/params.yml
 ```
 <br />
-
+<p align="center">
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/LumA_v_LumB_survival_plot.png" width="500" />
+</p>
 
 ## Perform gene set enrichment analysis (GSEA) between two groups 
 "sisana gsea" is used to perform gene set enrichment analysis (GSEA) to identify pathways that are differentially regulated based on the gene targeting scores. It uses the ranks of genes found in the previous step (sisana compare means) as input.
@@ -121,13 +125,22 @@ The final stage of SiSaNA, "visualize" allows you to visualize the results of yo
 ```
 sisana visualize volcano ./example_inputs/params.yml
 ```
+<p align="center">
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/volcano_plot_adjp_0.25.png" width="500" />
+</p>
 
 ...making boxplots or violin plots of expression/degrees...
 ```
 sisana visualize quantity ./example_inputs/params.yml
 ```
+<p align="center">
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/LumA_LumB_indegree_box_plot.png" width="500" />
+</p>
 
 ...and creating heatmaps
 ```
 sisana visualize heatmap ./example_inputs/params.yml
 ```
+<p align="center">
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/TCGA_200_LumA_LumB_samps_clustermap.png" width="500" />
+</p> 
