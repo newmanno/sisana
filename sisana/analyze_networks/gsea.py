@@ -6,6 +6,7 @@ import numpy as np
 from .analyze import file_to_list, map_samples
 import gseapy as gp
 from matplotlib import pyplot as plt
+from pathlib import Path
 
 __author__ = 'Nolan Newman'
 __contact__ = 'nolankn@uio.no'
@@ -75,7 +76,8 @@ def perform_gsea(genefile: str, gmtfile: str, geneset: str, outdir: str):
     pre_res_df = pre_res_df.sort_values('NOM p-val', ascending = True)
     print(pre_res_df)
 
-    res_file_name = os.path.join(outdir, f"Prerank_GSEA_{geneset}_results.txt")
+    file_basename = Path(genefile).stem
+    res_file_name = os.path.join(outdir, f"{file_basename}_prerank_GSEA_{geneset}_results.txt")
     pre_res_df.to_csv(res_file_name, sep = "\t", index = False)
     
     terms = pre_res.res2d.Term
@@ -87,7 +89,7 @@ def perform_gsea(genefile: str, gmtfile: str, geneset: str, outdir: str):
                    figsize=(15,20)
                   )
     
-    gsea_plot_name = os.path.join(outdir, f"GSEA_{geneset}_basic_enrichment_plot.png")
+    gsea_plot_name = os.path.join(outdir, f"{file_basename}_GSEA_{geneset}_basic_enrichment_plot.png")
     ax.figure.savefig(gsea_plot_name, bbox_inches = "tight")
     
     # Plot significant GSEA terms
@@ -101,7 +103,7 @@ def perform_gsea(genefile: str, gmtfile: str, geneset: str, outdir: str):
                 cutoff=0.25, 
                 show_ring=False)
 
-    dotplot_name = os.path.join(outdir, f"GSEA_{geneset}_basic_enrichment_dotplot.png")
+    dotplot_name = os.path.join(outdir, f"{file_basename}_GSEA_{geneset}_basic_enrichment_dotplot.png")
     ax.figure.savefig(dotplot_name, bbox_inches = "tight")
 
     print("\nDone!")

@@ -5,7 +5,7 @@ from netZooPy.lioness.lioness import Lioness
 from sisana.preprocessing import preprocess_data
 from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes
 from sisana.analyze_networks import calculate_panda_degree, calculate_lioness_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap, plot_clustermap
-from sisana.example_input import find_example_paths
+from sisana.example_input import find_example_paths, fetch_files
 import sisana.docs
 import os 
 import pandas as pd
@@ -65,7 +65,7 @@ def cli():
     gsea.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
     # options for visualize subcommand
-    vis.add_argument("plotchoice", type=str, choices = ["all", "quantity", "heatmap", "volcano", "clustermap"], nargs='?', default="all", help="The type of plot to create")   
+    vis.add_argument("plotchoice", type=str, choices = ["all", "quantity", "heatmap", "volcano"], nargs='?', default="all", help="The type of plot to create")   
     vis.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
     args = parser.parse_args()
@@ -73,14 +73,7 @@ def cli():
     # If user wants example files, retrieve them from their installed paths
     if args.example:
         print("Copying example files. Please wait...")
-
-        import shutil
-        import glob
-        os.makedirs('./example_inputs/', exist_ok=True)
-        all_ex_files = find_example_paths()
-
-        for fname in all_ex_files:
-            shutil.copy2(fname, './example_inputs')
+        fetch_files()
         print("Example input files have been created in ./example_inputs/")
         sys.exit(0)
         
@@ -96,19 +89,15 @@ def cli():
     preprocess_params = params['preprocess']
     if args.command == 'preprocess':
         
-        # Save the order of the sample names to their own file, then export the data frame without a header, since that is what is required for CLI version of PANDA
-        expdf = pd.read_csv(preprocess_params['exp_file'], sep='\t', index_col=0)
-        name_list = list(expdf.columns.values)
+        # # Save the order of the sample names to their own file, then export the data frame without a header, since that is what is required for CLI version of PANDA
+        # expdf = pd.read_csv(preprocess_params['exp_file'], sep='\t', index_col=0)
+        # name_list = list(expdf.columns.values)
         
-        with open('./tmp/samples.txt', 'w') as f:
-            for line in name_list:
-                f.write(f"{line}\n")
-        
-        expdf.to_csv('./tmp/exp_no_header.csv', header=False, sep="\t")
-        
-        preprocess_data('./tmp/exp_no_header.csv', 
-                        preprocess_params['motif_file'],
-                        preprocess_params['ppi_file'],
+        # with open('./tmp/samples.txt', 'w') as f:
+        #     for line in name_list:
+        #         f.write(f"{line}\n")
+                
+        preprocess_data(preprocess_params['exp_file'], 
                         preprocess_params['number'],
                         preprocess_params['outdir'])    
         
@@ -120,9 +109,7 @@ def cli():
         
         if params['generate']['method'].lower() == 'panda' or params['generate']['method'].lower() == 'lioness':
 
-            # gen_params = yaml.load(open(args.params), Loader=yaml.FullLoader)
-            # data_paths = yaml.load(open(params['generate']['processed_paths']), Loader=yaml.FullLoader)    
-            data_paths = yaml.load(open('./tmp/processed_data_paths.yml'), Loader=yaml.FullLoader)
+            # data_paths = yaml.load(open('./tmp/processed_data_paths.yml'), Loader=yaml.FullLoader)
             
             # Create output dir if one does not already exist
             panda_output_location = params['generate']['pandafilepath']
@@ -133,15 +120,29 @@ def cli():
                 raise Exception("Error: Panda output file must have a .txt extension. Please edit your pandafilepath variable in your params file")
             os.makedirs(pandapath.parent, exist_ok=True)
 
-            panda_obj = Panda(expression_file=data_paths['exp'], 
-                            motif_file=data_paths['motif'], 
-                            ppi_file=data_paths['ppi'], 
-                            save_tmp=False, 
-                            remove_missing=False, 
-                            keep_expression_matrix=True, 
-                            save_memory=False)
+            # panda_obj = Panda(expression_file=data_paths['exp'], 
+            #                 motif_file=data_paths['motif'], 
+            #                 ppi_file=data_paths['ppi'], 
+            #                 save_tmp=False, 
+            #                 remove_missing=False, 
+            #                 keep_expression_matrix=True, 
+            #                 save_memory=False)
+            
+            
+            expdf = pd.read_csv(params['generate']['exp'], sep='\t', index_col=0)
+            # name_list = list(expdf.columns.values)
 
-            panda_obj.save_panda_results(panda_output_location)     
+            panda_obj = Panda(expression_file=params['generate']['exp'], 
+                motif_file=params['generate']['motif'], 
+                ppi_file=params['generate']['ppi'], 
+                save_tmp=False, 
+                remove_missing=False, 
+                keep_expression_matrix=True, 
+                save_memory=False,
+                modeProcess="intersection",
+                with_header=True)
+
+            panda_obj.save_panda_results(panda_output_location, old_compatible=False)     
             
             print("Now calculating PANDA degrees...")
             calculate_panda_degree(inputfile=panda_output_location)
@@ -165,6 +166,7 @@ def cli():
 
             #lion_loc = params['generate']['outdir'] + "lioness.npy"
             lion_loc = lioness_output_location
+            print(lion_loc)
             liondf = pd.DataFrame(np.load(lion_loc))            
                 
             # To make the edges positive values for log2FC calculation later on, first need to transform 
@@ -209,8 +211,8 @@ def cli():
         if params['generate']['method'].lower() == 'lioness':        
             print("\nLIONESS network saved to " + lioness_output_location)
             print(f"LIONESS degrees saved to:")
-            print(f"{os.path.splitext(lioness_output_location)[0]}_outdegree.csv")
-            print(f"{os.path.splitext(lioness_output_location)[0]}_indegree.csv")
+            print(f"{Path(lioness_output_location).parent}/lioness_indegree.csv")
+            print(f"{Path(lioness_output_location).parent}/lioness_outdegree.csv")
 
     ########################################################
     # 3) Compare between sample groups
@@ -260,42 +262,7 @@ def cli():
     # 5) Visualize results
     ########################################################       
 
-    elif args.command == "visualize":
-
-        # if args.plotchoice == "all":
-            # # plot top genes in each visualization mode
-            # plot_volcano(statsfile=params["visualize"]["volcano"]["statsfile"],
-            #              diffcol=params["visualize"]["volcano"]["diffcol"],
-            #              adjpcol=params["visualize"]["volcano"]["adjpcol"],
-            #              adjpvalthreshold=params["visualize"]["volcano"]["adjpvalthreshold"],
-            #              outdir=params["visualize"]["volcano"]["outdir"],
-            #              top=True,
-            #              numlabels=25)   
-
-            # plot_expression_degree(datafile=params["visualize"]["quantity"]["datafile"],
-            #             filetype=params["visualize"]["quantity"]["filetype"], 
-            #             statsfile=params["visualize"]["quantity"]["statsfile"],                         
-            #             metadata=params["visualize"]["quantity"]["metadata"],
-            #             genelist=params["visualize"]["quantity"]["genelist"],
-            #             plottype=params["visualize"]["quantity"]["plottype"],
-            #             groups=params["visualize"]["quantity"]["groups"],
-            #             colors=params["visualize"]["quantity"]["colors"],
-            #             prefix=params["visualize"]["quantity"]["prefix"],
-            #             yaxisname=params["visualize"]["quantity"]["yaxisname"],
-            #             outdir=params["visualize"]["quantity"]["outdir"],
-            #             top=True)   
-            
-            # plot_heatmap(datafile=params["visualize"]["heatmap"]["datafile"],
-            #             filetype=params["visualize"]["heatmap"]["filetype"], 
-            #             statsfile=params["visualize"]["heatmap"]["statsfile"],
-            #             metadata=params["visualize"]["heatmap"]["metadata"],
-            #             genelist=params["visualize"]["heatmap"]["genelist"],
-            #             hierarchicalcluster=params["visualize"]["heatmap"]["hierarchicalcluster"],
-            #             groups=params["visualize"]["heatmap"]["groups"],
-            #             prefix=params["visualize"]["heatmap"]["prefix"],
-            #             plotnames=params["visualize"]["heatmap"]["plotnames"],
-            #             outdir=params["visualize"]["heatmap"]["outdir"],
-            #             top=True)                           
+    elif args.command == "visualize":                  
 
         if args.plotchoice == "volcano":    
             plot_volcano(statsfile=params["visualize"]["volcano"]["statsfile"],
@@ -337,6 +304,8 @@ def cli():
                             numgenes=params["visualize"]["quantity"]["numgenes"],
                             top=True)                   
                 
+        # For now, the plot_heatmap option is being deprecated for use of the plot_clustermap option instead,
+        # as the clustermap option allows for more user control and clustering of patients/parameters
         # if args.plotchoice == "heatmap":    
         #     plot_heatmap(datafile=params["visualize"]["heatmap"]["datafile"],
         #                 filetype=params["visualize"]["heatmap"]["filetype"], 
@@ -349,19 +318,19 @@ def cli():
         #                 outdir=params["visualize"]["heatmap"]["outdir"],
         #                 top=False)  
             
-        if args.plotchoice == "clustermap":    
-            plot_clustermap(datafile=params["visualize"]["clustermap"]["datafile"],
-                        filetype=params["visualize"]["clustermap"]["filetype"], 
-                        metadata=params["visualize"]["clustermap"]["metadata"],
-                        genelist=params["visualize"]["clustermap"]["genelist"],
-                        column_cluster=params["visualize"]["clustermap"]["column_cluster"],
-                        row_cluster=params["visualize"]["clustermap"]["row_cluster"],
-                        prefix=params["visualize"]["clustermap"]["prefix"],
-                        outdir=params["visualize"]["clustermap"]["outdir"],
-                        plot_gene_names=params["visualize"]["clustermap"]["plot_gene_names"],
-                        plot_sample_names=params["visualize"]["clustermap"]["plot_sample_names"],
-                        category_label_columns=params["visualize"]["clustermap"]["category_label_columns"],
-                        category_column_colors=params["visualize"]["clustermap"]["category_column_colors"],                       
+        if args.plotchoice == "heatmap":    
+            plot_clustermap(datafile=params["visualize"]["heatmap"]["datafile"],
+                        filetype=params["visualize"]["heatmap"]["filetype"], 
+                        metadata=params["visualize"]["heatmap"]["metadata"],
+                        genelist=params["visualize"]["heatmap"]["genelist"],
+                        column_cluster=params["visualize"]["heatmap"]["column_cluster"],
+                        row_cluster=params["visualize"]["heatmap"]["row_cluster"],
+                        prefix=params["visualize"]["heatmap"]["prefix"],
+                        outdir=params["visualize"]["heatmap"]["outdir"],
+                        plot_gene_names=params["visualize"]["heatmap"]["plot_gene_names"],
+                        plot_sample_names=params["visualize"]["heatmap"]["plot_sample_names"],
+                        category_label_columns=params["visualize"]["heatmap"]["category_label_columns"],
+                        category_column_colors=params["visualize"]["heatmap"]["category_column_colors"],                       
                         top=False)   
             
     ########################################################

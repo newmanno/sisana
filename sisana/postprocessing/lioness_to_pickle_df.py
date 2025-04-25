@@ -36,25 +36,26 @@ def convert_lion_to_pickle(panda: str, lion: str, type: str, names: str, outfile
     # dfs_from_files = files_to_dfs(panda, lion, type)
 
     # Create data frames from input files
-    pan = pd.read_csv(panda, sep = " ", engine = "python", header = None)
+    pan = pd.read_csv(panda, sep = " ", engine = "python")
 
     # pan = dfs_from_files[0]
     # lion = dfs_from_files[1]
     # print(lion.head())
+    print(pan)
 
-    pan.columns = ['TF', 'Target', 'Interaction', 'Score']
-    pan["TF-target"] = "TF_" + pan["TF"] + "<==>" + pan["Target"]
+    # pan.columns = ['TF', 'Target', 'Interaction', 'Score']
+    pan["TF-gene"] = "TF_" + pan["tf"] + "<==>" + pan["gene"]
 
     # pan["TF-target"] = f'TF_{pan["TF"]}<==>{pan["Target"]}'
 
     # Lioness file does not have any header or column names, needs them for t-test later
     sampsfile = open(names, "r")
     fileread = sampsfile.read()
-    namelist = fileread.split("\n") 
-    namelist = list(filter(None, namelist))
+    # namelist = fileread.split("\n") 
+    # namelist = list(filter(None, namelist))
         
-    lion.columns = namelist
-    lion.index = pan["TF-target"]  
+    # lion.columns = namelist
+    lion.index = pan["TF-gene"]  
 
     savefile = outfile
     lion.to_pickle(savefile)   

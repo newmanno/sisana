@@ -1,7 +1,7 @@
 import pandas
 
 def outdeg_calculator(tfnet):
-    return(tfnet.groupby(by="TF").sum())
+    return(tfnet.groupby(by="tf").sum())
 
 def indeg_calculator(targetnet):
-    return(targetnet.groupby(by="Target").sum())
+    return(targetnet.groupby(by="gene").sum())
