@@ -226,7 +226,8 @@ def cli():
                               datatype=params["compare"]["means"]["datatype"], 
                               groups=params["compare"]["means"]["groups"],
                               testtype=params["compare"]["means"]["testtype"], 
-                              filetype=params["compare"]["means"]["filetype"], 
+                              filetype=params["compare"]["means"]["filetype"],
+                              rankby_col=params["compare"]["means"]["rankby"],
                               outdir=params["compare"]["means"]["outdir"])
         
         if args.compchoice == "survival":     

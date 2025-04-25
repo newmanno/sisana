@@ -13,7 +13,7 @@ import sys
 __author__ = 'Nolan Newman'
 __contact__ = 'nolankn@uio.no'
     
-def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, testtype: str, filetype: str, outdir: str):
+def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, testtype: str, filetype: str, rankby_col: str, outdir: str):
     '''
     Description:
         This code compares the degree or expression of two sample groups
@@ -26,6 +26,7 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
         - groups: str, Names of the two groups (from the second column of mapfile) to be compared. The second group listed will be used as the numerator in the fold change calulation.
         - testtype: str, Type of comparison to perform, either "tt" for Student's t-test, "mw" for Mann-Whitney U, "paired_tt", or "wilcoxon"
         - filetype: str, The type of data file ("csv" or "txt" or "tsv") being used
+        - rankby_col: str, Choices: ["mediandiff", "mwu", "neglogp", "meandiff"]. The statistic to rank the .rnk output file by for GSEA. 
         - outdir: str, The directory to save the output to
         
     Returns:
@@ -108,8 +109,9 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     
         # Format the output data frame
         pval_column = testtype + "_pvalue"
+        
         test_stat_column = "mw_uvalue"
-        neglogp_column = "mw_-log(pvalue)"
+        neglogp_column = "mw_signed_-log(pvalue)"
         cles_column = "mw_CLES"
         
         pvaldf = pd.DataFrame({'Target':mwu_calculations.index, pval_column:mwu_calculations})
@@ -154,15 +156,30 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     newpvaldf[FDR_colname] = stats.false_discovery_control(newpvaldf[pval_column])
     newpvaldf = newpvaldf.sort_values(pval_column, ascending = True)
     
-    # Create new df without pval, ranked on test statistic
-    if testtype != "mw":
-        ranked = newpvaldf.sort_values(test_stat_column, ascending = False)
-        ranked.drop([pval_column, FDR_colname], inplace=True, axis=1)
-        ranked = ranked[test_stat_column]
+    
+    print(newpvaldf)
+    if testtype == "mw": 
+        if rankby_col == "mwu":
+            sortcol = "mw_uvalue"
+        elif rankby_col == "mediandiff":
+            sortcol = f"difference_of_medians_({groups[1]}-{groups[0]})"
+            ascend_choice = False
+        elif rankby_col == "meandiff":
+            sortcol = f"difference_of_means_({groups[1]}-{groups[0]})"
+            ascend_choice = False
+        elif rankby_col == "neglogp":
+            sortcol = "mw_signed_-log(pvalue)"
+            ascend_choice = False
     else:
-        ranked = newpvaldf.sort_values(neglogp_column, ascending = False)
-        ranked.drop([pval_column, FDR_colname], inplace=True, axis=1)
-        ranked = ranked[neglogp_column]        
+        sortcol = test_stat_column
+    
+    # Create new df without pval, ranked on test statistic (as chosen by user)
+    print(newpvaldf)
+    ranked = newpvaldf.sort_values(sortcol, ascending = False)
+    ranked.drop([pval_column, FDR_colname], inplace=True, axis=1)
+    ranked = ranked[sortcol]
+    print(ranked)    
+    
     
     # Rearrange column order so that FDR calculations comes after p-value
     if testtype != "mw":
@@ -181,10 +198,15 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     # Write to disk
     if testtype == "tt" or testtype == "mw":
         save_file_path = os.path.join(outdir, f"comparison_{testtype}_between_{groups[0]}_{groups[1]}_{datatype}.txt")
-        save_file_path_ranked = os.path.join(outdir, f"comparison_{testtype}_between_{groups[0]}_{groups[1]}_{datatype}_ranked_test_stat.rnk")
+        
+        if testtype == "tt":
+            save_file_path_ranked = os.path.join(outdir, f"comparison_{testtype}_between_{groups[0]}_{groups[1]}_{datatype}_ranked_test_stat.rnk")
+        else:
+            save_file_path_ranked = os.path.join(outdir, f"comparison_{testtype}_between_{groups[0]}_{groups[1]}_{datatype}_ranked_{rankby_col}.rnk")
+            
     if testtype == "paired_tt" or testtype == "wilcoxon":
         save_file_path = os.path.join(outdir, f"comparison_{testtype}_{datatype}.txt")
-        save_file_path_ranked = os.path.join(outdir, f"comparison_{testtype}_{datatype}_ranked_test_stat.rnk")
+        save_file_path_ranked = os.path.join(outdir, f"comparison_{testtype}_{datatype}_ranked_{rankby_col}.rnk")
     
     # Make output directory if it does not already exist
     Path(outdir).mkdir(parents=True, exist_ok=True)    
