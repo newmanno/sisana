@@ -5,6 +5,7 @@ import pickle
 import numpy as np
 from pathlib import Path
 import time
+import sys
 from .analyze import indeg_calculator, outdeg_calculator
 
 __author__ = 'Nolan Newman'
@@ -23,16 +24,16 @@ def calculate_panda_degree(inputfile: str):
     -----------
         - Nothing
     '''
-    colnames=['TF', 'Target', 'Prior', 'Weight'] 
-    panda_df = pd.read_csv(inputfile, names=colnames, sep=" ")   
+    # colnames=['tf', 'gene', 'motif', 'force'] 
+    panda_df = pd.read_csv(inputfile, sep=" ")   
     
     # Ensure columns of factors are strings
-    panda_df['TF'] = panda_df['TF'].astype(str)
-    panda_df['Target'] = panda_df['Target'].astype(str)
+    panda_df['tf'] = panda_df['tf'].astype(str)
+    panda_df['gene'] = panda_df['gene'].astype(str)
     
     # Remove unneeded columns or else it adds strings together and wastes memory
-    panda_df_tf = panda_df.drop(columns=['Target', 'Prior'])
-    panda_df_target = panda_df.drop(columns=['TF', 'Prior'])
+    panda_df_tf = panda_df.drop(columns=['gene', 'motif'])
+    panda_df_target = panda_df.drop(columns=['tf', 'motif'])
     
     # Perform calculation
     outdeg = outdeg_calculator(panda_df_tf)
@@ -42,7 +43,7 @@ def calculate_panda_degree(inputfile: str):
     outdeg_filename =  f"{str(inputfile)[:-4]}_outdegree.csv"
     indeg_filename =  f"{str(inputfile)[:-4]}_indegree.csv"
 
-    outdeg.to_csv(outdeg_filename, index_label='TF')  
+    outdeg.to_csv(outdeg_filename, index_label='tf')  
     indeg.to_csv(indeg_filename)
     
     # print("\nFinished calculating degrees!")
@@ -82,17 +83,15 @@ def calculate_lioness_degree(inputfile: str, datatype: str):
     
     # Separate the row names to be two different columns, TF and Target
     nwdf = nwdf.rename_axis("TF").reset_index()
-    nwdf[['TF','Target']] = nwdf['TF'].str.split('<==>',expand=True)
+    nwdf[['tf','gene']] = nwdf['TF'].str.split('<==>',expand=True)
     
     # Ensure columns of factors are strings
-    nwdf['TF'] = nwdf['TF'].astype(str)
-    nwdf['Target'] = nwdf['Target'].astype(str)
+    nwdf['tf'] = nwdf['tf'].astype(str)
+    nwdf['gene'] = nwdf['gene'].astype(str)
     
     # Remove unneeded columns or else it adds strings together and wastes memory
-    nwdf_tf = nwdf.drop(columns=['Target'])
-    nwdf_target = nwdf.drop(columns=['TF'])
-
-
+    nwdf_tf = nwdf.drop(columns=['TF', 'gene'])
+    nwdf_target = nwdf.drop(columns=['TF', 'tf'])
 
     # Perform calculation
     outdeg = outdeg_calculator(nwdf_tf)
@@ -118,8 +117,8 @@ def calculate_lioness_degree(inputfile: str, datatype: str):
     # save_file_path_outdeg = os.path.join(outdeg_filename)
     # save_file_path_indeg = os.path.join(indeg_filename)
     
-    outdeg.to_csv(outdeg_filename, index_label='TF')  
-    indeg.to_csv(indeg_filename)
+    outdeg.to_csv(outdeg_filename, index_label='tf')  
+    indeg.to_csv(indeg_filename, index_label='target')
     
     # print("\nFinished calculating degrees!")
     # print(f"In-degree output can be found here: {save_file_path_indeg}")  
