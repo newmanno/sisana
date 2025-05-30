@@ -21,13 +21,11 @@ if __name__ == '__main__':
     ArgGroup = parser.add_argument_group('Required arguments')  
     
     ArgGroup.add_argument("-n", "--filename", type=str, help="Path to file in csv or pickle format", required=True)
-    ArgGroup.add_argument("-i", "--informat", type=str, choices = ["csv", "pickle"], help="Format of the input file", required=True)    
+    ArgGroup.add_argument("-i", "--informat", type=str, choices = ["csv", "pickle", "txt"], help="Format of the input file", required=True)    
     ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to directory to output file to", required=True) 
     ArgGroup.add_argument("-f", "--outformat", type=str, choices = ["csv", "pickle", "RData"], help="Format of file to output the network to", required=True) 
     ArgGroup.add_argument("-d", "--decimal", type=str, help="Number of decimal places to keep", required=True) 
     
-    start = time.time()    
-
     args = parser.parse_args()
     
     pd.set_option("display.precision", 3)
@@ -36,6 +34,8 @@ if __name__ == '__main__':
         nwdf = pd.read_csv(args.filename)
     elif args.informat == "pickle":
         nwdf = pd.read_pickle(args.filename)
+    elif args.informat == "txt":
+        nwdf = pd.read_csv(args.filename, sep = "\t")
 
     base_file_name = Path(args.filename).stem
     
@@ -72,6 +72,3 @@ if __name__ == '__main__':
             
         save_rdata_file(round_nwdf, os.path.join(args.outdir, f"{base_file_name}_{args.decimal}_decimal_places.RData"))
     
-    end = time.time()  
-    totaltime = end - start
-    print(f"Time taken for whole script: {totaltime} seconds")
