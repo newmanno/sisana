@@ -25,50 +25,29 @@ def file_to_list(fname):
 
     return (returnlist)   
 
-def map_samples(mapfile, type1, type2):
+def map_samples(mapfile: pd.DataFrame, type1: str, type2: str):
     '''
     Function that assigns samples to groups for statistical analysis
 
         Arguments:
-            - mapfile: input file from user
-            - type1: the name of the group in the first set of samples, must be present in the mapfile
-            - type2: the name of the group in the second set of samples, must be present in the mapfile
+            - mapfile: pd.DataFrame, data frame with sample name as rows, first column contains the name of the group each sample belongs to
+            - type1: str, the name of the group in the first set of samples, must be present in the mapfile
+            - type2: str, the name of the group in the second set of samples, must be present in the mapfile
+        
+        Returns:
+            - samp_type_dict: dict, A dictionary that contains group name as keys and a list of sample names that belong to that group as values 
     '''
-    samp_type_dict = {}
-
-    type1_list = []
-    type2_list = []
-
-    init_dict = {}
-    samp_type_dict = {}
 
     # Check if the supplied groups are a subset of the mapping column
-    mapf = pd.read_csv(mapfile, index_col = 0)
+    # mapf = pd.read_csv(mapfile, index_col = 0)
+    mapf = mapfile
     input_groups_set = set([type1, type2])
     column_group_set = set(mapf[mapf.columns[0]])
 
     if not input_groups_set.issubset(column_group_set):
         raise NotASubsetError([type1, type2], mapf[mapf.columns[0]], "groups")
 
-    # Add all node-type pairs from the input file into the node_type_dict
-    with open(mapfile) as samp_file:
-        samp_file = csv.reader(samp_file, delimiter = ',')
-
-        for row in samp_file:
-            init_dict[row[0]] = row[1]
-
-    for key,value in init_dict.items():
-        try:
-            if re.search(type1, value):
-                type1_list.append(key)
-            elif re.match(type2, value):
-                type2_list.append(key)
-        except:
-            print("Unexpected value found for the sample group name.")
-
-    samp_type_dict[type1] = type1_list
-    samp_type_dict[type2] = type2_list
-
+    samp_type_dict = {group: mapf.index[mapf.iloc[:,0] == group].tolist() for group in mapf.iloc[:,0].unique()}
     return (samp_type_dict)
 
 def calc_tt(group1, group2, ttype):
