@@ -111,4 +111,4 @@ def save_results(nw, format, base_name_begin, base_name_end, outdir):
         outfile_path = os.path.join(outdir, outfile)
         nw.to_pickle(outfile_path)   
     
-    print(f"File saved: {outfile_path}")  
+    print(f"File created: {outfile_path}")  
