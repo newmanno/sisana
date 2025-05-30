@@ -119,6 +119,9 @@ sisana gsea ./example_inputs/params.yml
 ```
 <br />
 
+<p align="center">
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/comparison_mw_between_LumA_LumB_degree_ranked_mediandiff_GSEA_Hallmarks_basic_enrichment_dotplot.png" width="500" />
+</p>
 
 ## Visualization of results
 The final stage of SiSaNA, "visualize" allows you to visualize the results of your analysis on publication-ready figures. There are multiple types of visualization you can perform, including generating volcano plots...
