@@ -3,35 +3,18 @@ preprocess_desc = """
 Step 1 - Preprocess
 -----------------------------------
 
-Preprocess is the first step to running SiSaNA. In this step, SiSaNA takes the 
-three provided input files given to params.yml (the protein-protein interaction file,
-prior motif, and gene expression) and filters them to only contain the proteins/genes
-that are present in all files. It also uses the "number" argument of the params.yml
-file to filter out genes that are not expressed in at least the specified number of
-samples. 
+Preprocess is the first step to running SiSaNA. In this step, SiSaNA removes genes that 
+are not expressed in at least the specified number of samples. 
 
 Example: sisana preprocess params.yml
 
 Input files (specified in the params.yml file): 
-  - exp_file: A protein-protein interaction file of known PPIs. Three column, tab-separated, 
-    no header. The first and seccond columns are TF names and the third column is
-    a binary value (0 or 1), indicating whether there is a known interaction between
-    the two TFs.
-  - motif_file: A tab-separated transcription factor binding motif file (no header) describing 
-    whether the TF (column 1) binds to the motif of the gene (column 2). The third 
-    column is a binary value (0 or 1) that indicates whether the TF is known to bind 
-    to that motif.
-  - exp_file: A tab-separated gene expression file with a header, where rows are gene names and
-    columns are sample names.
+  - exp_file: A gene expression file with sample names as columns and gene names as rows
 
 Output files: 
-  - *_filtered.txt files: (3 total) in the user-specified output directory. These are the 
-    input files, filtered to only contain the proteins/genes across all three. The gene
-    expression file also only contains genes that are expressed in the user-defined number of 
-    samples. 
-  - *filtering_statistics.txt: Contains information regarding the number of genes/proteins filtered
-    out of each file
-    
+  - *_preprocessed.txt: The gene expression file, filtered only to contain genes that are 
+  expressed in at least the user-defined number of samples. E.g. if the user sets "5" as 
+  their value, then SiSaNA will remove genes not expressed in at least 5 samples.
 """
 
 generate_desc = """
@@ -48,8 +31,9 @@ gene and transcription factor respectively, per sample.
 Example: sisana generate params.yml
 
 Input files (specified in the params.yml file):
-  - processed_paths: The path to the "processed_data_paths.yml" file created in the "preprocess"
-    step. This is saved in the ./tmp/ directory.
+  - exp: ./output/preprocess/BRCA_TCGA_20_LumA_LumB_samps_5000_genes_exp_preprocessed.txt # Path to the expression file
+  - motif: ./example_inputs/motif_tcga_brca.tsv # Path to the motif prior file
+  - ppi: ./example_inputs/ppi_tcga_brca.tsv # Path to the PPI prior file
 
 Output files: 
   - panda_output.txt: saved to the user-specified output directory. Four column, tab-delimited
@@ -80,7 +64,7 @@ in a number of different ways.
   
     - Input files:
       - datafile: Data file (either expression, indegree, or outdegree) in tsv or csv format
-      - mapfile: CSV mapping file, with a header in the format "name,group", which maps sample name to sample group
+      - mapfile: CSV mapping file, which maps sample name (column 1) to sample group (column 2). Assumes file has a header.
       
     - Output files:
       - A .rnk file that is in rnk format, ranked on test statistic, for use with "siana compare gsea"
@@ -198,11 +182,12 @@ Examples: sisana extract genes params.yml
 
   - Input files:
     - pickle: The lioness.pickle file created in the "generate" step
-    - namefile: The path to the file that contains the names of TFs or genes you wish to extract
+    - sampnames: The path to the tmp/samples.txt file, which is a text file that is generated in the preprocess step
+    - symbols: The path to the file that contains the names of TFs or genes you wish to extract
   
   - Output files:
     - lioness_filtered_for_*.csv: Lioness networks filtered for the user-defined TFs/genes
     - lioness_available_*.csv: List of the names of genes or TSVs available to filter for. 
-      Note: This file is only created if an error occurs when trying to filter for genes/TFs.
+        - Note: This file is only created if an error occurs when trying to filter for genes/TFs.
       
 """
