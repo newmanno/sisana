@@ -145,5 +145,5 @@ sisana visualize quantity ./example_inputs/params.yml
 sisana visualize heatmap ./example_inputs/params.yml
 ```
 <p align="center">
-  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/TCGA_200_LumA_LumB_samps_clustermap.png" width="500" />
+  <img src="https://github.com/kuijjerlab/sisana/blob/main/docs/TCGA_200_LumA_LumB_samps_heatmap.png" width="500" />
 </p> 
