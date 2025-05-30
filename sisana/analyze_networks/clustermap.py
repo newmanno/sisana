@@ -219,7 +219,7 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
         
         xpos_counter += 1
             
-    outname = os.path.join(outdir, f"{prefix}_clustermap.png")
+    outname = os.path.join(outdir, f"{prefix}_heatmap.png")
     sns_plot.savefig(outname, dpi = 600, bbox_inches='tight')
     
     print(f"\nFile created: {outname}")
