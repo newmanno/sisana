@@ -1,5 +1,7 @@
 import requests
 import os
+from tqdm import tqdm
+import sys
 
 def fetch_files():
     """
@@ -16,7 +18,7 @@ def fetch_files():
     """
     
     os.makedirs('./example_inputs/', exist_ok=True)
-
+    
     urls = ['https://zenodo.org/records/15552563/files/BRCA_TCGA_200_LumA_LumB_samps_mapping_w_header.csv',
             'https://zenodo.org/records/15552563/files/BRCA_TCGA_200_LumA_LumB_samps_survival_data.csv',
             'https://zenodo.org/records/15552563/files/BRCA_TCGA_20_LumA_LumB_samps_5000_genes_exp.tsv',
@@ -35,11 +37,24 @@ def fetch_files():
             'https://zenodo.org/records/13628785/files/ppi_prior_2024.tsv',
             'https://zenodo.org/records/13628785/files/motif_prior_names_2024.tsv']
 
+    curfile = 1
+
     for link in urls:
+        filename = link.split("/")[-1]
+        print(f"Downloading file {curfile} of {len(urls)}: {filename}")
+        
         r = requests.get(link, stream=True)
         fname = os.path.basename(link)
-
-        with open(f'./example_inputs/{fname}', 'wb') as f:
-            for chunk in r.iter_content(chunk_size=16*1024):
-                f.write(chunk)
+        
+        # Sizes in bytes.
+        total_size = int(r.headers.get("content-length", 0))
+        block_size = 1024       
+        
+        with tqdm(total=total_size, unit="B", unit_scale=True) as progress_bar:
+            with open(f'./example_inputs/{fname}', 'wb') as f:
+                for chunk in r.iter_content(block_size):
+                    progress_bar.update(len(chunk))
+                    f.write(chunk)
+        print("\n")
+        curfile += 1
         f.close()
