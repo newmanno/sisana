@@ -20,7 +20,7 @@ def file_to_list(fname):
     returnlist = [name for name in all_lines if name]
     return(returnlist)
 
-def extract_tfs_genes(pickle: str, datatype: str, namefile: str, outdir: str):
+def extract_tfs_genes(pickle: str, datatype: str, sampnames: str, symbols: str, outdir: str):
     '''
     Description:
         This code filters the lioness output file for only desired TFs or genes
@@ -29,7 +29,8 @@ def extract_tfs_genes(pickle: str, datatype: str, namefile: str, outdir: str):
     -----------
         - pickle: str, Path to lioness output in pickle format
         - datatype: str, Do you want to subset for TFs (tf) or genes (gene)?
-        - namefile: str, Single column text file, no header, containing the name of genes or TFs (must be consistent with --type) to subset for
+        - sampnames: str, The path to the tmp/samples.txt file, which is a text file that is generated in the preprocess step
+        - symbols: str, Single column text file, no header, containing the name of genes or TFs (must be consistent with datatype) to subset for
         - outdir: str, Path to output directory
     
     Returns:
@@ -53,6 +54,8 @@ def extract_tfs_genes(pickle: str, datatype: str, namefile: str, outdir: str):
     os.makedirs(outdir, exist_ok=True)
     
     lion = pd.read_pickle(pickle)
+    sampnames = file_to_list(sampnames)
+    lion.columns = sampnames
     
     base_file_name = Path(pickle).stem
     if datatype == "tfs":
@@ -68,7 +71,7 @@ def extract_tfs_genes(pickle: str, datatype: str, namefile: str, outdir: str):
     lion['TF'] = lion['TF'].str.replace('TF_', '')
     
     # Import the list of TFs/genes to subset for
-    names_to_find = file_to_list(namefile)
+    names_to_find = file_to_list(symbols)
 
     # Check if the input TF(s)/gene(s) is/are in the data frame. If not, give the user a list of the available ones to filter for
     if datatype == "tfs":
@@ -107,5 +110,5 @@ def extract_tfs_genes(pickle: str, datatype: str, namefile: str, outdir: str):
         lion_subset = lion.loc[lion['Target'].isin(names_to_find)]
         lion_subset.to_csv(save_file_path, index = False)
 
-    print(f"\nFile saved: {save_file_path}\n")  
+    print(f"\nFile created: {save_file_path}\n")  
 
