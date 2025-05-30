@@ -72,7 +72,16 @@ def cli():
       
     # If user wants example files, retrieve them from their installed paths
     if args.example:
-        print("Copying example files. Please wait...")
+        
+        print("Downloading example input files from Zenodo. Please wait...")
+
+        # import shutil
+        # import glob
+        # os.makedirs('./example_inputs/', exist_ok=True)
+        # all_ex_files = find_example_paths()
+        # for fname in all_ex_files:
+        #     shutil.copy2(fname, './example_inputs')
+            
         fetch_files()
         print("Example input files have been created in ./example_inputs/")
         sys.exit(0)
@@ -96,7 +105,8 @@ def cli():
         # with open('./tmp/samples.txt', 'w') as f:
         #     for line in name_list:
         #         f.write(f"{line}\n")
-                
+        
+        # Remove genes that are not expressed in at least the user-defined minimum ("number")
         preprocess_data(preprocess_params['exp_file'], 
                         preprocess_params['number'],
                         preprocess_params['outdir'])    
@@ -105,7 +115,7 @@ def cli():
     # 2) Run PANDA, using the parameters from the yaml file
     ########################################################
 
-    elif args.command == 'generate':
+    if args.command == 'generate':
         
         if params['generate']['method'].lower() == 'panda' or params['generate']['method'].lower() == 'lioness':
 
@@ -218,7 +228,7 @@ def cli():
     # 3) Compare between sample groups
     ########################################################
 
-    elif args.command == 'compare':
+    if args.command == 'compare':
         
         if args.compchoice == "means":        
             compare_bw_groups(datafile=params["compare"]["means"]["datafile"], 
@@ -253,7 +263,7 @@ def cli():
     # 4) Perform gene set enrichment analysis
     ########################################################   
         
-    elif args.command == 'gsea':    
+    if args.command == 'gsea':    
         perform_gsea(genefile=params["gsea"]["genefile"], 
                         gmtfile=params["gsea"]["gmtfile"], 
                         geneset=params["gsea"]["geneset"], 
@@ -263,7 +273,7 @@ def cli():
     # 5) Visualize results
     ########################################################       
 
-    elif args.command == "visualize":                  
+    if args.command == "visualize":                  
 
         if args.plotchoice == "volcano":    
             plot_volcano(statsfile=params["visualize"]["volcano"]["statsfile"],
@@ -338,10 +348,10 @@ def cli():
     # 6) Optional, extract edges that connect to specific TFs/genes
     ########################################################
 
-    elif args.command == 'extract':
-        
+    if args.command == 'extract':
         extract_tfs_genes(pickle=params["extract"]["pickle"], 
                          datatype=args.extractchoice, 
-                         namefile=params["extract"]["namefile"], 
+                         sampnames=params["extract"]["sampnames"],
+                         symbols=params["extract"]["symbols"], 
                          outdir=params["extract"]["outdir"])
             
