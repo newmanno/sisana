@@ -8,6 +8,7 @@ import csv
 from scipy import stats
 from .analyze import file_to_list, map_samples, calc_tt, calc_group_difference
 import sys
+from numpy import log
 # from statistics import mean
 
 __author__ = 'Nolan Newman'
@@ -61,16 +62,15 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     else:
         datadf = pd.read_csv(datafile, index_col = 0, sep = "\t")
         
-    print("Performing calculations, please wait...")
-
     if testtype == "tt" or testtype == "mw":
           
         # Assign samples from mapping file to groups
+        mapfile = pd.read_csv(mapfile, index_col=0)
         sampdict = map_samples(mapfile, groups[0], groups[1])
         total_samps = len(sampdict[groups[0]]) + len(sampdict[groups[1]])
     
     elif testtype == "paired_tt" or testtype == "wilcoxon":
-        map = pd.read_csv(mapfile, header = None)
+        mapfile = pd.read_csv(mapfile)
 
         groups = {}
         groups["group1"] = mapfile.iloc[:,0].tolist()
@@ -87,6 +87,7 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
         
     del datadf
         
+    print("Performing comparisons, please wait...")
     # Calculate p-value/FDR
     if testtype != "mw":
         if testtype == "tt": 
@@ -156,29 +157,22 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
     newpvaldf[FDR_colname] = stats.false_discovery_control(newpvaldf[pval_column])
     newpvaldf = newpvaldf.sort_values(pval_column, ascending = True)
     
-    
-    print(newpvaldf)
     if testtype == "mw": 
         if rankby_col == "mwu":
             sortcol = "mw_uvalue"
         elif rankby_col == "mediandiff":
             sortcol = f"difference_of_medians_({groups[1]}-{groups[0]})"
-            ascend_choice = False
         elif rankby_col == "meandiff":
             sortcol = f"difference_of_means_({groups[1]}-{groups[0]})"
-            ascend_choice = False
         elif rankby_col == "neglogp":
             sortcol = "mw_signed_-log(pvalue)"
-            ascend_choice = False
     else:
         sortcol = test_stat_column
     
     # Create new df without pval, ranked on test statistic (as chosen by user)
-    print(newpvaldf)
     ranked = newpvaldf.sort_values(sortcol, ascending = False)
     ranked.drop([pval_column, FDR_colname], inplace=True, axis=1)
     ranked = ranked[sortcol]
-    print(ranked)    
     
     
     # Rearrange column order so that FDR calculations comes after p-value

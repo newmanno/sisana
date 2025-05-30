@@ -73,11 +73,8 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
         indata = pd.read_csv(datafile, sep='\t', engine = "python", index_col=[0])
         
     # meta = pd.read_csv(metadata, engine = "pyarrow", index_col=[0])
-    meta = pd.read_csv(metadata, engine = "python", header=None, index_col=0)
-    # if meta.columns[0] != "name":
-    #     raise IncorrectHeaderError(meta)
-    # else:
-    #     meta = meta.set_index('name')
+    meta = pd.read_csv(metadata, engine = "python", index_col=0)
+
     meta.index.name = "name"
     meta.columns = ["group"]
 
