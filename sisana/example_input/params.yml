@@ -120,8 +120,8 @@ visualize:
     category_label_columns: # The names of columns (categories of samples) in the metadata file you wish to use for coloring the columns in the clustermap. The clustermap will be grouped by the first name given, unless column_cluster=True
       - group
     category_column_colors: # The matplotlib color codes you wish to use for the sub-categories given in category_label_columns. For example, a category called "Sex" may want to use ["pink", "blue"] as their colors (though SiSaNA has no way of determining which samples are female or male, so you may need to change the order you give the colors)
-      - {'LumA': 'b', 
-         'LumB': 'r'}
+      - {'LumA': 'cornflowerblue', 
+         'LumB': 'orange'}
     outdir: ./output/heatmap/ # Path to directory to output file to
     prefix: TCGA_200_LumA_LumB_samps # Prefix to use for the output file; note that the output file will automatically be generated with the suffix '_clustermap.png'
 
