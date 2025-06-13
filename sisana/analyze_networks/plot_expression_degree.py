@@ -1,6 +1,5 @@
 import seaborn as sns 
 import pandas as pd
-import argparse
 import sys
 import pickle
 from pathlib import Path
@@ -39,37 +38,17 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
         
     Returns:
     -----------
-        - Nothing
+        - string of the output file path
     """
-    
-    # parser = argparse.ArgumentParser(description="Example command: python plot_expression_degree.py -d <indegree.csv> -f csv -m <metadata.csv> -g <genelist.txt> -s <samporder.txt> -p violin -n group1 group2 group3 -o ./output/")
-    # ArgGroup = parser.add_argument_group('Required arguments')  
-    
-    # ArgGroup.add_argument("-d", "--datafile", type=str, help="Path to file containing the expression or indegrees of each gene per sample. If file has a header, denote this with the -f argument. Otherwise, supply the header using the -s argument", required=True)
-    # ArgGroup.add_argument("-t", "--filetype", choices = ["csv", "txt"], help="Type of delimiter used for --datafile", required=True)    
-    # # ArgGroup.add_argument("-f", "--fileheader", action='store_true', help="Flag for if --datafile has a header already. If not, requires --sampleorder", required=False)    
-    # ArgGroup.add_argument("-m", "--metadata", type=str, help="Path to the csv metadata file mapping samples to groups (groups must match names of the --groupnames arg), must have a header of the format 'name,group'", required=True) 
-    # ArgGroup.add_argument("-g", "--genelist", type=str, help=".txt file containing a list of genes to plot", required=True)   
-    # # ArgGroup.add_argument("-s", "--sampleorder", type=str, help=".txt file containing the order of the samples in the data file", required=False)   
-    # ArgGroup.add_argument("-p", "--plottype", type=str, choices = ["boxplot","violin"], help="The type of plot to create", required=True)   
-    # ArgGroup.add_argument("-n", "--groupnames", type=str, nargs = "+", help="The names of the groups to plot, should ideally be a list of 5 names or less. Groups will be plotted in the order they are written in this argument", required=True)   
-    # ArgGroup.add_argument("-c", "--colors", type=str, nargs = "+", help="The colors for each group, in the same order the groups appear in --groupnames", required=False) 
-    # ArgGroup.add_argument("-x", "--prefix", type=str, help="Prefix to use for the output figures", required=True)         
-    # ArgGroup.add_argument("-y", "--yaxis_name", type=str, help="Name to use for the y-axis", required=True)         
-    # ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to directory to output file to", required=True) 
-    
-    # args = parser.parse_args()
-    
+
     # Check that there are no more than 5 group names, otherwise warn user
     if len(groups) > 5:
         warnings.warn("Warning: Supplying more than 10 groups at once may cause the created graphs to be unreadable. Consider reducing the number of groups.")
     
     # Get data and metadata
     if filetype == "csv":
-        # indata = pd.read_csv(datafile, engine = "pyarrow", index_col=[0])
         indata = pd.read_csv(datafile, engine = "python", index_col=[0])
     elif filetype == "txt" or filetype == "tsv":
-        # indata = pd.read_csv(datafile, sep='\t', engine = "pyarrow", header=None, index_col=[0])
         indata = pd.read_csv(datafile, sep='\t', engine = "python", index_col=[0])
         
     # meta = pd.read_csv(metadata, engine = "pyarrow", index_col=[0])
@@ -170,11 +149,11 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
 
     # Add statistical annotations to plot    
     hue_plot_params = {
-    'data': subdata_melt,
-    'x': 'gene',
-    'y': 'value',
-    "hue": "group",
-    }
+        'data': subdata_melt,
+        'x': 'gene',
+        'y': 'value',
+        "hue": "group",
+        }
             
     # Create the nested list (i.e. "[[('gene1', 'group1'), ('gene1', 'group2')], [('gene2', 'group1'), ('gene2', 'group2')], etc.] 
     # for telling the Annotator how to structure the plots. Note that the Annotator does not do the comparison itself, however, since 
@@ -203,8 +182,6 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
         stat_annotation_pairs = _create_comparison_list(user_gene_list)
     else:
         stat_annotation_pairs = _create_comparison_list(topgenes)
-
-    # print(stat_annotation_pairs)
     
     from statannotations.Annotator import Annotator
     
@@ -231,10 +208,12 @@ def plot_expression_degree(datafile: str, filetype: str, statsfile: str, metadat
         pval_list = [compare_df.loc[gene, "FDR"] for gene in topgenes]
         
     annotator.configure(hide_non_significant=True)
-    annotator.set_pvalues_and_annotate(pvalues = pval_list)    
+    annotator.set_pvalues_and_annotate(pvalues = pval_list)
     
     plt.figtext(0.5, 0.01, '* p < 0.05, ** p < 0.01, *** p < 0.001, **** p < 0.0001', horizontalalignment='center')
     plt.tight_layout()
     plt.subplots_adjust(bottom=0.18) 
     plt.savefig(outname)
     print(f"\nFile saved: {outname}\n")
+    
+    return(outname)

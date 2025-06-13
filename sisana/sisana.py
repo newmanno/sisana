@@ -7,6 +7,7 @@ from sisana.postprocessing import convert_lion_to_pickle, extract_tfs_genes
 from sisana.analyze_networks import calculate_panda_degree, calculate_lioness_degree, compare_bw_groups, survival_analysis, perform_gsea, plot_volcano, plot_expression_degree, plot_heatmap, plot_clustermap
 from sisana.example_input import find_example_paths, fetch_files
 import sisana.docs
+from sisana.docs import create_log_file
 import os 
 import pandas as pd
 import sys
@@ -53,7 +54,7 @@ def cli():
     # options for generate subcommand    
     gen.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
-    # options for compare subcommand
+    # options for extract subcommand
     ext.add_argument("extractchoice", type=str, choices = ["genes", "tfs"], help="Do you want to extract specific gene or TF edges?")   
     ext.add_argument("params", type=str, help='Path to yaml file containing the parameters to use')
 
@@ -74,14 +75,6 @@ def cli():
     if args.example:
         
         print("Downloading example input files from Zenodo. Please wait...")
-
-        # import shutil
-        # import glob
-        # os.makedirs('./example_inputs/', exist_ok=True)
-        # all_ex_files = find_example_paths()
-        # for fname in all_ex_files:
-        #     shutil.copy2(fname, './example_inputs')
-            
         fetch_files()
         print("Example input files have been created in ./example_inputs/")
         sys.exit(0)
@@ -107,9 +100,15 @@ def cli():
         #         f.write(f"{line}\n")
         
         # Remove genes that are not expressed in at least the user-defined minimum ("number")
-        preprocess_data(preprocess_params['exp_file'], 
+        f = preprocess_data(preprocess_params['exp_file'], 
                         preprocess_params['number'],
                         preprocess_params['outdir'])    
+        
+        file_name = [f]
+        
+        create_log_file("preprocess", 
+                        preprocess_params, 
+                        file_name)
         
     ########################################################
     # 2) Run PANDA, using the parameters from the yaml file
@@ -117,34 +116,25 @@ def cli():
 
     if args.command == 'generate':
         
-        if params['generate']['method'].lower() == 'panda' or params['generate']['method'].lower() == 'lioness':
+        generate_params = params['generate']
+
+        if generate_params['method'].lower() == 'panda' or generate_params['method'].lower() == 'lioness':
 
             # data_paths = yaml.load(open('./tmp/processed_data_paths.yml'), Loader=yaml.FullLoader)
             
             # Create output dir if one does not already exist
-            panda_output_location = params['generate']['pandafilepath']
+            panda_output_location = generate_params['pandafilepath']
 
             pandapath = Path(panda_output_location)
             if str(pandapath)[-4:] != ".txt":
-                print(str(pandapath)[-4:])
                 raise Exception("Error: Panda output file must have a .txt extension. Please edit your pandafilepath variable in your params file")
             os.makedirs(pandapath.parent, exist_ok=True)
-
-            # panda_obj = Panda(expression_file=data_paths['exp'], 
-            #                 motif_file=data_paths['motif'], 
-            #                 ppi_file=data_paths['ppi'], 
-            #                 save_tmp=False, 
-            #                 remove_missing=False, 
-            #                 keep_expression_matrix=True, 
-            #                 save_memory=False)
             
-            
-            expdf = pd.read_csv(params['generate']['exp'], sep='\t', index_col=0)
-            # name_list = list(expdf.columns.values)
+            expdf = pd.read_csv(generate_params['exp'], sep='\t', index_col=0)
 
-            panda_obj = Panda(expression_file=params['generate']['exp'], 
-                motif_file=params['generate']['motif'], 
-                ppi_file=params['generate']['ppi'], 
+            panda_obj = Panda(expression_file=generate_params['exp'], 
+                motif_file=generate_params['motif'], 
+                ppi_file=generate_params['ppi'], 
                 save_tmp=False, 
                 remove_missing=False, 
                 keep_expression_matrix=True, 
@@ -157,17 +147,17 @@ def cli():
             print("Now calculating PANDA degrees...")
             calculate_panda_degree(inputfile=panda_output_location)
                
-        if params['generate']['method'].lower() == 'lioness':
-            lioness_output_location = params['generate']['lionessfilepath']
+        if generate_params['method'].lower() == 'lioness':
+            lioness_output_location = generate_params['lionessfilepath']
             if lioness_output_location[-4:] != ".npy":
                 raise Exception("Error: Lioness output file must have a .npy extension. Please edit your lionessfilepath variable in your params file.")
             
             lionesspath = Path(lioness_output_location)
 
             lion = Lioness(panda_obj, 
-                           computing=params['generate']['compute'], 
+                           computing=generate_params['compute'], 
                            precision="double",
-                           ncores=params['generate']['ncores'], 
+                           ncores=generate_params['ncores'], 
                            save_dir=lionesspath.parent, 
                            save_fmt="npy")
             
@@ -176,7 +166,6 @@ def cli():
 
             #lion_loc = params['generate']['outdir'] + "lioness.npy"
             lion_loc = lioness_output_location
-            print(lion_loc)
             liondf = pd.DataFrame(np.load(lion_loc))            
                 
             # To make the edges positive values for log2FC calculation later on, first need to transform 
@@ -218,56 +207,88 @@ def cli():
         print(f"{str(panda_output_location)[:-4]}_outdegree.csv")
         print(f"{str(panda_output_location)[:-4]}_indegree.csv")
         
-        if params['generate']['method'].lower() == 'lioness':        
+        if generate_params['method'].lower() == 'lioness':        
             print("\nLIONESS network saved to " + lioness_output_location)
             print(f"LIONESS degrees saved to:")
             print(f"{Path(lioness_output_location).parent}/lioness_indegree.csv")
             print(f"{Path(lioness_output_location).parent}/lioness_outdegree.csv")
-
+            
+        outfiles = [panda_output_location,
+                    f"{str(panda_output_location)[:-4]}_outdegree.csv",
+                    f"{str(panda_output_location)[:-4]}_indegree.csv",
+                    lion_loc,
+                    f"{Path(lioness_output_location).parent}/lioness_indegree.csv",
+                    f"{Path(lioness_output_location).parent}/lioness_outdegree.csv"]
+            
+        create_log_file("generate", 
+                        generate_params, 
+                        outfiles)
+        
     ########################################################
     # 3) Compare between sample groups
     ########################################################
 
     if args.command == 'compare':
         
-        if args.compchoice == "means":        
-            compare_bw_groups(datafile=params["compare"]["means"]["datafile"], 
-                              mapfile=params["compare"]["means"]["mapfile"], 
-                              datatype=params["compare"]["means"]["datatype"], 
-                              groups=params["compare"]["means"]["groups"],
-                              testtype=params["compare"]["means"]["testtype"], 
-                              filetype=params["compare"]["means"]["filetype"],
-                              rankby_col=params["compare"]["means"]["rankby"],
-                              outdir=params["compare"]["means"]["outdir"])
+        if args.compchoice == "means":     
+            compare_means_params = params['compare']['means']
+   
+            outfiles = compare_bw_groups(datafile=compare_means_params["datafile"], 
+                                        mapfile=compare_means_params["mapfile"], 
+                                        datatype=compare_means_params["datatype"], 
+                                        groups=compare_means_params["groups"],
+                                        testtype=compare_means_params["testtype"], 
+                                        filetype=compare_means_params["filetype"],
+                                        rankby_col=compare_means_params["rankby"],
+                                        outdir=compare_means_params["outdir"])
+            
+            create_log_file(compare_means_params["outdir"],
+                "compare_means", 
+                compare_means_params, 
+                outfiles)
         
         if args.compchoice == "survival":     
+            compare_survival_params = params['compare']['survival']
+
             try:
-                survival_analysis(metadata=params["compare"]["survival"]["metadata"],
-                                filetype=params["compare"]["survival"]["filetype"], 
-                                sampgroup_colname=params["compare"]["survival"]["sampgroup_colname"],
-                                alivestatus_colname=params["compare"]["survival"]["alivestatus_colname"],
-                                days_colname=params["compare"]["survival"]["days_colname"],
-                                groups=params["compare"]["survival"]["groups"],
-                                outdir=params["compare"]["survival"]["outdir"],
-                                appendname=params["compare"]["survival"]["appendname"])
+                outfiles = survival_analysis(metadata=compare_survival_params["metadata"],
+                                filetype=compare_survival_params["filetype"], 
+                                sampgroup_colname=compare_survival_params["sampgroup_colname"],
+                                alivestatus_colname=compare_survival_params["alivestatus_colname"],
+                                days_colname=compare_survival_params["days_colname"],
+                                groups=compare_survival_params["groups"],
+                                outdir=compare_survival_params["outdir"],
+                                appendname=compare_survival_params["appendname"])
             except:
-                survival_analysis(metadata=params["compare"]["survival"]["metadata"],
-                                filetype=params["compare"]["survival"]["filetype"], 
-                                sampgroup_colname=params["compare"]["survival"]["sampgroup_colname"],
-                                alivestatus_colname=params["compare"]["survival"]["alivestatus_colname"],
-                                days_colname=params["compare"]["survival"]["days_colname"],
-                                groups=params["compare"]["survival"]["groups"],
-                                outdir=params["compare"]["survival"]["outdir"])
+                outfiles = survival_analysis(metadata=compare_survival_params["metadata"],
+                                filetype=compare_survival_params["filetype"], 
+                                sampgroup_colname=compare_survival_params["sampgroup_colname"],
+                                alivestatus_colname=compare_survival_params["alivestatus_colname"],
+                                days_colname=compare_survival_params["days_colname"],
+                                groups=compare_survival_params["groups"],
+                                outdir=compare_survival_params["outdir"])
+                
+            create_log_file(compare_survival_params["outdir"],
+                "compare_survival", 
+                compare_survival_params, 
+                [outfiles])
 
     ########################################################
     # 4) Perform gene set enrichment analysis
     ########################################################   
         
     if args.command == 'gsea':    
-        perform_gsea(genefile=params["gsea"]["genefile"], 
-                        gmtfile=params["gsea"]["gmtfile"], 
-                        geneset=params["gsea"]["geneset"], 
-                        outdir=params["gsea"]["outdir"])
+        gsea_params = params["gsea"]
+        
+        outfiles = perform_gsea(genefile=gsea_params["genefile"], 
+                        gmtfile=gsea_params["gmtfile"], 
+                        geneset=gsea_params["geneset"], 
+                        outdir=gsea_params["outdir"])
+        
+        create_log_file(gsea_params["outdir"],
+            "gsea", 
+            gsea_params, 
+            outfiles)
     
     ########################################################
     # 5) Visualize results
@@ -276,44 +297,58 @@ def cli():
     if args.command == "visualize":                  
 
         if args.plotchoice == "volcano":    
-            plot_volcano(statsfile=params["visualize"]["volcano"]["statsfile"],
-                         diffcol=params["visualize"]["volcano"]["diffcol"],
-                         adjpcol=params["visualize"]["volcano"]["adjpcol"],
-                         adjpvalthreshold=params["visualize"]["volcano"]["adjpvalthreshold"],
-                         xaxisthreshold=params["visualize"]["volcano"]["xaxisthreshold"],
-                         difftype=params["visualize"]["volcano"]["difftype"],
-                         genelist=params["visualize"]["volcano"]["genelist"],
-                         outdir=params["visualize"]["volcano"]["outdir"],
+            volcano_params = params["visualize"]["volcano"]
+
+            outfiles = plot_volcano(statsfile=volcano_params["statsfile"],
+                         diffcol=volcano_params["diffcol"],
+                         adjpcol=volcano_params["adjpcol"],
+                         adjpvalthreshold=volcano_params["adjpvalthreshold"],
+                         xaxisthreshold=volcano_params["xaxisthreshold"],
+                         difftype=volcano_params["difftype"],
+                         genelist=volcano_params["genelist"],
+                         outdir=volcano_params["outdir"],
                          top=False)      
+            
+            create_log_file(volcano_params["outdir"],
+                "volcano_plot", 
+                volcano_params, 
+                [outfiles])
     
         if args.plotchoice == "quantity":   
-            if params["visualize"]["quantity"]["genelist"] != None:
-                plot_expression_degree(datafile=params["visualize"]["quantity"]["datafile"],
-                            filetype=params["visualize"]["quantity"]["filetype"], 
-                            statsfile=params["visualize"]["quantity"]["statsfile"], 
-                            metadata=params["visualize"]["quantity"]["metadata"],
-                            plottype=params["visualize"]["quantity"]["plottype"],
-                            groups=params["visualize"]["quantity"]["groups"],
-                            colors=params["visualize"]["quantity"]["colors"],
-                            prefix=params["visualize"]["quantity"]["prefix"],
-                            yaxisname=params["visualize"]["quantity"]["yaxisname"],
-                            outdir=params["visualize"]["quantity"]["outdir"],
-                            genelist=params["visualize"]["quantity"]["genelist"],
+            quantity_params = params["visualize"]["quantity"]
+            
+            if quantity_params["genelist"] != None:
+                outfiles = plot_expression_degree(datafile=quantity_params["datafile"],
+                            filetype=quantity_params["filetype"], 
+                            statsfile=quantity_params["statsfile"], 
+                            metadata=quantity_params["metadata"],
+                            plottype=quantity_params["plottype"],
+                            groups=quantity_params["groups"],
+                            colors=quantity_params["colors"],
+                            prefix=quantity_params["prefix"],
+                            yaxisname=quantity_params["yaxisname"],
+                            outdir=quantity_params["outdir"],
+                            genelist=quantity_params["genelist"],
                             top=False)   
             else:
-                plot_expression_degree(datafile=params["visualize"]["quantity"]["datafile"],
-                            filetype=params["visualize"]["quantity"]["filetype"], 
-                            statsfile=params["visualize"]["quantity"]["statsfile"], 
-                            metadata=params["visualize"]["quantity"]["metadata"],
-                            plottype=params["visualize"]["quantity"]["plottype"],
-                            groups=params["visualize"]["quantity"]["groups"],
-                            colors=params["visualize"]["quantity"]["colors"],
-                            prefix=params["visualize"]["quantity"]["prefix"],
-                            yaxisname=params["visualize"]["quantity"]["yaxisname"],
-                            outdir=params["visualize"]["quantity"]["outdir"],
-                            genelist=params["visualize"]["quantity"]["genelist"],
-                            numgenes=params["visualize"]["quantity"]["numgenes"],
-                            top=True)                   
+                outfiles = plot_expression_degree(datafile=quantity_params["datafile"],
+                            filetype=quantity_params["filetype"], 
+                            statsfile=quantity_params["statsfile"], 
+                            metadata=quantity_params["metadata"],
+                            plottype=quantity_params["plottype"],
+                            groups=quantity_params["groups"],
+                            colors=quantity_params["colors"],
+                            prefix=quantity_params["prefix"],
+                            yaxisname=quantity_params["yaxisname"],
+                            outdir=quantity_params["outdir"],
+                            genelist=quantity_params["genelist"],
+                            numgenes=quantity_params["numgenes"],
+                            top=True)   
+                
+            create_log_file(quantity_params["outdir"],
+                "quantity_plot", 
+                quantity_params, 
+                [outfiles])               
                 
         # For now, the plot_heatmap option is being deprecated for use of the plot_clustermap option instead,
         # as the clustermap option allows for more user control and clustering of patients/parameters
@@ -330,28 +365,41 @@ def cli():
         #                 top=False)  
             
         if args.plotchoice == "heatmap":    
-            plot_clustermap(datafile=params["visualize"]["heatmap"]["datafile"],
-                        filetype=params["visualize"]["heatmap"]["filetype"], 
-                        metadata=params["visualize"]["heatmap"]["metadata"],
-                        genelist=params["visualize"]["heatmap"]["genelist"],
-                        column_cluster=params["visualize"]["heatmap"]["column_cluster"],
-                        row_cluster=params["visualize"]["heatmap"]["row_cluster"],
-                        prefix=params["visualize"]["heatmap"]["prefix"],
-                        outdir=params["visualize"]["heatmap"]["outdir"],
-                        plot_gene_names=params["visualize"]["heatmap"]["plot_gene_names"],
-                        plot_sample_names=params["visualize"]["heatmap"]["plot_sample_names"],
-                        category_label_columns=params["visualize"]["heatmap"]["category_label_columns"],
-                        category_column_colors=params["visualize"]["heatmap"]["category_column_colors"],                       
+            heatmap_params = params["visualize"]["heatmap"]
+
+            outfiles = plot_clustermap(datafile=heatmap_params["datafile"],
+                        filetype=heatmap_params["filetype"], 
+                        metadata=heatmap_params["metadata"],
+                        genelist=heatmap_params["genelist"],
+                        column_cluster=heatmap_params["column_cluster"],
+                        row_cluster=heatmap_params["row_cluster"],
+                        prefix=heatmap_params["prefix"],
+                        outdir=heatmap_params["outdir"],
+                        plot_gene_names=heatmap_params["plot_gene_names"],
+                        plot_sample_names=heatmap_params["plot_sample_names"],
+                        category_label_columns=heatmap_params["category_label_columns"],
+                        category_column_colors=heatmap_params["category_column_colors"],                       
                         top=False)   
+            
+            create_log_file(heatmap_params["outdir"],
+                "heatmap", 
+                heatmap_params, 
+                outfiles)  
             
     ########################################################
     # 6) Optional, extract edges that connect to specific TFs/genes
     ########################################################
 
     if args.command == 'extract':
-        extract_tfs_genes(pickle=params["extract"]["pickle"], 
+        extract_params = params["extract"]
+
+        outfiles = extract_tfs_genes(pickle=extract_params["pickle"], 
                          datatype=args.extractchoice, 
-                         sampnames=params["extract"]["sampnames"],
-                         symbols=params["extract"]["symbols"], 
-                         outdir=params["extract"]["outdir"])
+                         sampnames=extract_params["sampnames"],
+                         symbols=extract_params["symbols"], 
+                         outdir=extract_params["outdir"])
+        
+        create_log_file("extract", 
+                extract_params, 
+                [outfiles])  
             

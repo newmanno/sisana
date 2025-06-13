@@ -1,10 +1,8 @@
-import argparse
 import os
 import pandas as pd
 import pickle
 import numpy as np
 from pathlib import Path
-import time
 import sys
 from .analyze import indeg_calculator, outdeg_calculator
 
@@ -24,7 +22,7 @@ def calculate_panda_degree(inputfile: str):
     -----------
         - Nothing
     '''
-    # colnames=['tf', 'gene', 'motif', 'force'] 
+
     panda_df = pd.read_csv(inputfile, sep=" ")   
     
     # Ensure columns of factors are strings
@@ -45,12 +43,6 @@ def calculate_panda_degree(inputfile: str):
 
     outdeg.to_csv(outdeg_filename, index_label='tf')  
     indeg.to_csv(indeg_filename)
-    
-    # print("\nFinished calculating degrees!")
-    # print(f"In-degree output can be found here: {indeg_filename}")  
-    # print(f"Out-degree output can be found here: {outdeg_filename}")  
-
-
 
 def calculate_lioness_degree(inputfile: str, datatype: str):
     '''
@@ -66,16 +58,7 @@ def calculate_lioness_degree(inputfile: str, datatype: str):
     -----------
         - Nothing
     '''
-    # start = time.time()    
 
-    # parser = argparse.ArgumentParser(description="Example command: python lioness_df_indeg_outdeg_calculator.py -i lioness_df.pickle -t pickle -o ./output")
-    # ArgGroup = parser.add_argument_group('Required arguments')  
-    # ArgGroup.add_argument("-i", "--inputfile", type=str, help="Path to lioness file, either in .csv format or the .pickle file created by lioness_to_pickle_df.py script", required=True) 
-    # ArgGroup.add_argument("-t", "--inputtype", choices= ['csv', 'pickle'], type=str, help="File type of the lioness file", required=True) 
-    # ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to directory to output file to", required=True) 
-    
-    # args = parser.parse_args()
-    
     if datatype == 'pickle':
         nwdf = pd.read_pickle(inputfile)
     elif datatype == 'csv':
@@ -103,27 +86,11 @@ def calculate_lioness_degree(inputfile: str, datatype: str):
     
     # format file names and output
     file_path_and_stem = os.path.splitext(inputfile)[0]
-    # base_file_name = Path(inputfile).stem
     outdeg_filename =  f"{file_path_and_stem}_outdegree.csv"
     indeg_filename =  f"{file_path_and_stem}_indegree.csv"
 
-    # print("Locations of output lioness degree files:")
-    # print(outdeg_filename)
-    # print(indeg_filename)
-
     file_path_and_stem = os.path.splitext(inputfile)[0]
-    #save_file_path_outdeg = os.path.join(Path(inputfile).parent, outdeg_filename)
-    #save_file_path_indeg = os.path.join(Path(inputfile).parent, indeg_filename)
-    # save_file_path_outdeg = os.path.join(outdeg_filename)
-    # save_file_path_indeg = os.path.join(indeg_filename)
-    
+
     outdeg.to_csv(outdeg_filename, index_label='tf')  
     indeg.to_csv(indeg_filename, index_label='target')
     
-    # print("\nFinished calculating degrees!")
-    # print(f"In-degree output can be found here: {save_file_path_indeg}")  
-    # print(f"Out-degree output can be found here: {save_file_path_outdeg}")  
-
-    # end = time.time()
-    # timetaken = end - start
-    # print(f"\nTime required for script: {timetaken:2.2f} seconds")

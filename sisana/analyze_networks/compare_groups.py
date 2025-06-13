@@ -1,15 +1,12 @@
-import argparse
 import os
 import pandas as pd
 import numpy as np
 from pathlib import Path
-import time
 import csv
 from scipy import stats
 from .analyze import file_to_list, map_samples, calc_tt, calc_group_difference
 import sys
 from numpy import log
-# from statistics import mean
 
 __author__ = 'Nolan Newman'
 __contact__ = 'nolankn@uio.no'
@@ -32,22 +29,8 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
         
     Returns:
     -----------
-        - Nothing
+        - list of the output file paths
     '''
-
-    # parser = argparse.ArgumentParser(description="Example command: python compare_groups.py -m map.csv -p lioness.pickle -d degree -c high low -t mw -o ./output/")
-    # ArgGroup = parser.add_argument_group('Required arguments')  
-    # ArgGroup.add_argument("-p", "--datafile", type=str, help="Path to csv file containing the expression or degree (in/out) of each node", required=True)
-    # ArgGroup.add_argument("-m", "--mapfile", type=str, help="Path to mapping file (csv). If doing an unpaired test (--testtype = mw or tt) then this file maps samples (first column, no header) to groups (second column, no header). Otherwise, if doing a paired analysis (--testtype = paired_tt or wilcoxon) then the samples for one group will go in column 1 (no header) while their paired samples will go in column 2.", required=True) 
-    # ArgGroup.add_argument("-s", "--sampnames", type=str, help="Path to txt file containing the order of samples. Required if input file does not have a header", required=False)
-    # ArgGroup.add_argument("-f", "--filetype", choices = ["csv", "txt"], type=str, help="Data file type of --datafile, either csv or txt (for tab separated files)", required=True)
-    # ArgGroup.add_argument("-d", "--datatype", type=str, help="Type of input data, used as a suffix for the file names that are created", required=True)
-    # ArgGroup.add_argument("-c", "--compgroups", type=str, nargs=2, help="Name of groups in mapping file to compare, required if not performing a paired analysis. Please note that if comparing expression, the second group listed will be used as the numerator in calculating the log2 fold change (e.g. log2(group2/group1))", required=False) 
-    # ArgGroup.add_argument("-t", "--testtype", type=str, choices = ["tt", "mw", "paired_tt", "wilcoxon"], help="Type of comparison to perform, either Student's t-test, Mann-Whitney U, or a test for paired samples", required=True)     
-    # ArgGroup.add_argument("-x", "--foldchange", action="store_true", help="Flag for whether to calculate the fold change between samples. Note: Do not use for degrees due to degrees having a negative metric", required=False)    
-    # ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to directory to output file to", required=True) 
-    
-    # args = parser.parse_args()
     
     # Create output directory if one does not already exist    
     os.makedirs(outdir, exist_ok=True)
@@ -213,3 +196,5 @@ def compare_bw_groups(datafile: str, mapfile: str, datatype: str, groups: list, 
 
     print(f"\nFile saved: {save_file_path}\nThis file contains all the statistics results and is just for your reference.\n")
     print(f"File saved: {save_file_path_ranked}\nThis file contains only the calculated test statistic for each gene and is used for input to the GSEA analysis step.\n")
+    
+    return([save_file_path, save_file_path_ranked])

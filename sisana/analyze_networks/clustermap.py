@@ -43,7 +43,7 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
     
     Returns:
     -----------
-        - Nothing
+        - list of the output file paths
     '''
     
     if filetype == "csv":
@@ -222,6 +222,8 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
     outname = os.path.join(outdir, f"{prefix}_heatmap.png")
     sns_plot.savefig(outname, dpi = 600, bbox_inches='tight')
     
+    outfiles = [outname, out_filtered_z_path]
+    
     print(f"\nFile created: {outname}")
     print(f"\nFile created: {out_filtered_z_path}")
 
@@ -234,4 +236,7 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
             outfile.write("\n".join(row_cluster_order))
 
         print(f"\nFile created: {row_cluster_order_outname}")
+        outfiles.append(row_cluster_order_outname)
+    
+    return(outfiles)
 

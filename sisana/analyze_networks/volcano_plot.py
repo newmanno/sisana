@@ -17,7 +17,7 @@ def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: s
         both the survival plot and the statistics for the comparison(s)
         
     Parameters:
-    -----------
+    -----------\
         - statsfile: str, Path to tab delimited file containing the fold change, p-value, FDR, and mean 
           degree/statsression for each gene. This is reported with the compare_groups.py script
         - fccol: str, The name of the column containing the difference in medians or means
@@ -33,19 +33,9 @@ def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: s
         
     Returns:
     -----------
-        - Nothing 
+        - string of the output file path 
     """
-    
-    # parser = argparse.ArgumentParser(description="Example command: python volcano_plot.py -d indegree.csv -f csv -m metadata.csv -g genelist.txt -s samporder.txt -p violin -n group1 group2 -o ./output/")
-    # ArgGroup = parser.add_argument_group('Required arguments')  
-    
-    # ArgGroup.add_argument("-d", "--datafile", type=str, help="Path to file containing the fold change, p-value, FDR, and mean degree/statsression for each gene. This is reported with the compare_groups.py script.", required=True)
-    # ArgGroup.add_argument("-f", "--fcthreshold", type=float, help="Fold change threshold to use (value will also be applied to the negative end of the fold change axis, meaning a value of 1.5 really means +/- 1.5)", required=True)
-    # ArgGroup.add_argument("-p", "--adjpvalthreshold", type=float, help="Threshold to use for the adjusted p-value", required=True)    
-    # ArgGroup.add_argument("-t", "--topvalstoplot", type=int, help="Number of top values to label", required=True)   
-    # ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to directory to output file to", required=True) 
-    
-    
+
     # Create output directory if one does not already exist
     os.makedirs(outdir, exist_ok=True)
     
@@ -104,9 +94,6 @@ def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: s
             dn_subset = down.sort_values(adjpcol, ascending=True).head(len(up))
             
         dntexts = create_label_list(statsfile=dn_subset, difference_column=diffcol, adjp_column=adjpcol)
-        # print(dntexts)
-        # sys.exit(0)
-
 
     # Add labels to plot
     adjust_text(uptexts,arrowprops=dict(arrowstyle="-", color='black', lw=0.5))        
@@ -134,4 +121,6 @@ def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: s
     plt.savefig(outname)
         
     print(f"File saved: {outname}")     
+    
+    return(outname)
     

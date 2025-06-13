@@ -35,21 +35,9 @@ def extract_tfs_genes(pickle: str, datatype: str, sampnames: str, symbols: str, 
     
     Returns:
     -----------
-        - Nothing
+        - string of the output file path
     '''
-    
-    
-    # os.chdir(userdir)
-    
-    # parser = argparse.ArgumentParser(description="Example command: python extract_TFs_genes.py -p lioness_output.pickle -t gene -n genes.txt -o ./output/")
-    # requiredArgGroup = parser.add_argument_group('Required arguments')  
-    # requiredArgGroup.add_argument("-p", "--picklefile", type=str, help="Path to lioness output in pickle format", required=True) 
-    # requiredArgGroup.add_argument("-t", "--datatype", type=str, choices = ["tf", "gene"], help="Do you want to subset for TFs (tf) or genes (target)?", required=True)     
-    # requiredArgGroup.add_argument("-n", "--namefile", type=str, help="Single column text file, no header, containing the name of genes or TFs (must be consistent with --type) to subset for", required=True)     
-    # requiredArgGroup.add_argument("-o", "--outdir", type=str, help="Path to output directory", required=True)    
-    
-    # args = parser.parse_args()
-    
+
     # Create output dir if one does not already exist
     os.makedirs(outdir, exist_ok=True)
     
@@ -111,4 +99,6 @@ def extract_tfs_genes(pickle: str, datatype: str, sampnames: str, symbols: str, 
         lion_subset.to_csv(save_file_path, index = False)
 
     print(f"\nFile created: {save_file_path}\n")  
+    
+    return(save_file_path)
 

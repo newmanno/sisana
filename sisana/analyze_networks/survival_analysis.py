@@ -32,21 +32,9 @@ def survival_analysis(metadata, filetype: str, sampgroup_colname: str, alivestat
         
     Returns:
     -----------
-        - Nothing
+        - string of the output file path
     """
-
-    # parser = argparse.ArgumentParser(description="Example command: python survival_analysis.py -m map.csv -t txt -c subtypes -g group1 group2 -o ./output")
-    # ArgGroup = parser.add_argument_group('Required arguments') 
-    # ArgGroup.add_argument("-m", "--metadata", type=str, help="Path to mapping file (csv) that maps samples to groups", required=True) 
-    # ArgGroup.add_argument("-t", "--filetype", choices = ["csv", "txt"], help="Type of delimiter used for --datafile", required=True)    
-    # ArgGroup.add_argument("-c", "--colname", type=str, help="Name of column containing sample group names", required=True) 
-    # ArgGroup.add_argument("-a", "--alivestatus", type=str, help="Name of column that contains the status of the individual. Must contain True/False values only, where True = dead (event occurred) and False = alive.", required=True) 
-    # ArgGroup.add_argument("-d", "--days", type=str, help="Name of column containing either the number of days an individual survived or the number of days to the last follow up.", required=True) 
-    # ArgGroup.add_argument("-g", "--compgroups", type=str, nargs=2, help="Name of groups in mapping file to compare", required=True) 
-    # ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to directory to output file to", required=True) 
     
-    # args = parser.parse_args()
-
     # Create output directory if one does not already exist
     os.makedirs(outdir, exist_ok=True)
 
@@ -97,15 +85,18 @@ def survival_analysis(metadata, filetype: str, sampgroup_colname: str, alivestat
     print(surv[3])
 
     outdir_path = Path(outdir)
-    
+        
     if appendname != "":
-        plt.savefig(f"{outdir_path}/{groups[0]}_v_{groups[1]}_survival_plot_{appendname}.png")
-        print(f"\nFile saved: {outdir_path}/{groups[0]}_v_{groups[1]}_survival_plot_{appendname}.png")     
+        outfile_name = f"{outdir_path}/{groups[0]}_v_{groups[1]}_survival_plot_{appendname}.png"   
     else:
-        plt.savefig(f"{outdir_path}/{groups[0]}_v_{groups[1]}_survival_plot.png")
-        print(f"\nFile saved: {outdir_path}/{groups[0]}_v_{groups[1]}_survival_plot.png")
+        outfile_name = f"{outdir_path}/{groups[0]}_v_{groups[1]}_survival_plot.png"
+        
+    plt.savefig(outfile_name)
+    print(f"\nFile saved: {outfile_name}")
             
     plt.close()
+    
+    return(outfile_name)
   
 
 

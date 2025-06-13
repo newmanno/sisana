@@ -8,17 +8,31 @@ from pathlib import Path
 import yaml
 
 def preprocess_data(exp: str, number: int, outdir: str):
-
-    # parser = argparse.ArgumentParser(description="Example command: python preprocess.py -e <expression_file.tsv> -m <motif_file.txt> -p <ppi_file.txt> -n 10 -o ./output/")
-    # requiredArgGroup = parser.add_argument_group('Required arguments')        
-    # requiredArgGroup.add_argument("-e", "--exp", type=str, help="Path to file containing the gene expression data. Row names must be genes, the expression file does not have a header, and the cells are separated by a tab", required=True)
-    # requiredArgGroup.add_argument("-m", "--motif", type=str, help="Path to motif file, which gets filtered to only contain genes that pass the minimum number of samples threshold", required=True)
-    # requiredArgGroup.add_argument("-p", "--ppi", type=str, help="Path to ppi file, which gets filtered to only contain genes that pass the minimum number of samples threshold", required=True)   
-    # requiredArgGroup.add_argument("-n", "--number", type=int, help="Minimum number of samples a gene must be expressed in; expression data will be filtered for only genes that pass", required=True)
-    # requiredArgGroup.add_argument("-o", "--outdir", type=str, help="Path to output directory", required=True)    
+    """
+    Description:
+        This code performs a survival analysis between two user-defined groups and outputs
+        both the survival plot and the statistics for the comparison(s)
+        
+    Parameters:
+    -----------\
+        - statsfile: str, Path to tab delimited file containing the fold change, p-value, FDR, and mean 
+          degree/statsression for each gene. This is reported with the compare_groups.py script
+        - fccol: str, The name of the column containing the difference in medians or means
+        - adjpcol: str, The name of the column containing the adj. p-value
+        - adjpvalthreshold: str, Threshold to use for the adjusted p-value
+        - genelist: str, Path to a .txt file containing a list of genes to plot. Alternatively, the top {numlabels} genes can be plotted instead if top=True.
+        - outdir: str, Path to directory to output file to
+        - difftype: str, The type of difference to use for the x-axis. "mean" will be difference in means and "median"
+          refers to difference in medians
+        - top: Flag for whether to automatically label the top 10 values. Does not use the genelist in this case, but rather finds the top genes
+          based on FDR and fold change.
+        - numlabels: int, Number of top values to label. Can only be used if top=True.
+        
+    Returns:
+    -----------
+        - str of the output file location 
+    """
     
-    # args = parser.parse_args()
-
     # Create output file prefix by removing the .txt suffix
     expoutfile = Path(exp).stem
     
@@ -31,17 +45,13 @@ def preprocess_data(exp: str, number: int, outdir: str):
         for col in expdf.columns:
             f.write(col + "\n")
       
-    num_originalgenes = len(expdf)
+    # num_originalgenes = len(expdf)
     nsamps = len(expdf.columns)
-    # header_samps = ["sample_"+str(i) for i in list(range(1,nsamps + 1))] # Create the headers for samples
-    
-    # expdf["stdev"] = expdf.std(axis=1) # Calculate the standard deviation for each gene
 
     num_nonzeros = np.count_nonzero(expdf.iloc[:,0:nsamps], axis=1) # Count the number of non zeros for each gene in the df
     expdf["num_samps_expressed"] = num_nonzeros # add the count to a new col in the df
     
     # Subset df for only genes that appear in at least k samples (user-specified)
-    #print(expdf.iloc[:,[len(expdf.columns)-1]] < args.number)
     samples_removed = len(expdf[expdf["num_samps_expressed"] < number])
     
     cutdf = expdf[expdf["num_samps_expressed"] >= number]
@@ -54,7 +64,6 @@ def preprocess_data(exp: str, number: int, outdir: str):
     dist = dist.rename_axis('Number of samples with expression').reset_index(name='Number of instances')
     dist = dist.sort_values(by='Number of samples with expression', ascending=False)
     dist['Removed?'] = dist['Number of samples with expression'].apply(lambda x: 'yes' if x < number else 'no')
-    #dist.index.name = None
     print(dist.to_string(index=False))
     sum_removed = dist[dist['Removed?'] == 'yes']['Number of instances'].sum()
     print(f"Number of genes removed in total: {sum_removed}")
@@ -65,7 +74,7 @@ def preprocess_data(exp: str, number: int, outdir: str):
     cutdf.to_csv(file_outloc, sep = "\t")    
     print(f"\nFile saved: {file_outloc}")
     
-    
+    return(file_outloc)
     
     
     

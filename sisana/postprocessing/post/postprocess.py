@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
-import pickle
+import pickle 
 
 def files_to_dfs(fname_panda, fname_lion, ftype):
     '''
@@ -51,7 +51,6 @@ def extract_edges(df):
         splitedge = edge.split("<==>")
         edges_for_nx.append(splitedge)
         
-    #print(edges_for_nx)
     tupled_edges = [tuple(l) for l in edges_for_nx]
     
     return(tupled_edges)

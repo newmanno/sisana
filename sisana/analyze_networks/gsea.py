@@ -1,4 +1,3 @@
-import argparse
 import os
 import pandas as pd
 import pickle
@@ -27,17 +26,8 @@ def perform_gsea(genefile: str, gmtfile: str, geneset: str, outdir: str):
         
     Returns:
     -----------
-        - Nothing
+        - list of the output file paths
     """
-
-    # parser = argparse.ArgumentParser(description="Example command: python gsea.py -f file.rnk -g genesets.gmt -s Hallmarks -o ./output")
-    # ArgGroup = parser.add_argument_group('Required arguments') 
-    # ArgGroup.add_argument("-f", "--genefile", type=str, help="Path to file (.rnk format, which is two column, tab delimited, no header) containing the genes and test statistics to do enrichment on", required=True) 
-    # ArgGroup.add_argument("-g", "--gmtfile", type=str, help="Path to the gene set file in gmt format", required=True)     
-    # ArgGroup.add_argument("-s", "--geneset", type=str, help="The gene set type you input into --gmtfile", required=True)            
-    # ArgGroup.add_argument("-o", "--outdir", type=str, help="Path to directory to output file to", required=True) 
-    
-    # args = parser.parse_args()
     
     # Create output directory if one does not already exist
     os.makedirs(outdir, exist_ok=True)
@@ -61,16 +51,6 @@ def perform_gsea(genefile: str, gmtfile: str, geneset: str, outdir: str):
                      seed=6,
                      verbose=True, # see what's going on behind the scenes
                     )
-  
-    # Perform enrichment       
-    # print("Performing enrichment...")
-    # enr = gp.enrichr(gene_list = genes, 
-    #                 gene_sets = gset,
-    #                 organism = 'human',
-    #                 outdir = outdir,
-    #                 )
-    
-    # print(pre_res.res2d)
     
     pre_res_df = pd.DataFrame(pre_res.res2d)
     pre_res_df = pre_res_df.sort_values('NOM p-val', ascending = True)
@@ -109,3 +89,5 @@ def perform_gsea(genefile: str, gmtfile: str, geneset: str, outdir: str):
     print("\nDone!")
     
     print(f"Files created:\n{res_file_name}\n{gsea_plot_name}\n{dotplot_name}\n")
+
+    return([res_file_name, gsea_plot_name, dotplot_name])
