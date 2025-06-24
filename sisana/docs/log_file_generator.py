@@ -21,6 +21,11 @@ def create_log_file(subcommand: str, params_dict: dict, filenames: list):
     basename = f"{subcommand}_log.txt"
     file_outloc = os.path.join("./log_files/", basename)
     
+    # Remove the "./" prefix to file names if found. This is for sake of 
+    # clarity, since otherwise some file names had them and some did not,
+    # just depending on how the user defined them in params file
+    fixed_names = [n[2:] if n[:2] == "./" else n for n in filenames]
+    
     with open(file_outloc, "w") as file:
         file.write("Directory analysis was performed in:\n")
         file.write(f"   - {os.getcwd()}\n")
@@ -30,7 +35,7 @@ def create_log_file(subcommand: str, params_dict: dict, filenames: list):
             file.write(f"   - {k}: {v}\n")
         
         file.write("\nFile(s) generated:\n")
-        for i in filenames:
+        for i in fixed_names: 
             file.write("   - " + i + "\n")
 
             
