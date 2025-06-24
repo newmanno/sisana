@@ -242,8 +242,7 @@ def cli():
                                         rankby_col=compare_means_params["rankby"],
                                         outdir=compare_means_params["outdir"])
             
-            create_log_file(compare_means_params["outdir"],
-                "compare_means", 
+            create_log_file("compare_means", 
                 compare_means_params, 
                 outfiles)
         
@@ -268,8 +267,7 @@ def cli():
                                 groups=compare_survival_params["groups"],
                                 outdir=compare_survival_params["outdir"])
                 
-            create_log_file(compare_survival_params["outdir"],
-                "compare_survival", 
+            create_log_file("compare_survival", 
                 compare_survival_params, 
                 [outfiles])
 
@@ -285,8 +283,7 @@ def cli():
                         geneset=gsea_params["geneset"], 
                         outdir=gsea_params["outdir"])
         
-        create_log_file(gsea_params["outdir"],
-            "gsea", 
+        create_log_file("gsea", 
             gsea_params, 
             outfiles)
     
@@ -309,8 +306,7 @@ def cli():
                          outdir=volcano_params["outdir"],
                          top=False)      
             
-            create_log_file(volcano_params["outdir"],
-                "volcano_plot", 
+            create_log_file("volcano_plot", 
                 volcano_params, 
                 [outfiles])
     
@@ -345,8 +341,7 @@ def cli():
                             numgenes=quantity_params["numgenes"],
                             top=True)   
                 
-            create_log_file(quantity_params["outdir"],
-                "quantity_plot", 
+            create_log_file("quantity_plot", 
                 quantity_params, 
                 [outfiles])               
                 
@@ -381,8 +376,7 @@ def cli():
                         category_column_colors=heatmap_params["category_column_colors"],                       
                         top=False)   
             
-            create_log_file(heatmap_params["outdir"],
-                "heatmap", 
+            create_log_file("heatmap", 
                 heatmap_params, 
                 outfiles)  
             
