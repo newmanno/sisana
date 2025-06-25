@@ -1,3 +1,7 @@
+### 1.XX
+- Changed the listed files in the log output files to all not have "./" at the beginning of their paths, just for consistency's sake 
+- Added this changelog file
+
 ### 1.4.0
 This new version of SiSaNA now generates log files as well, allowing the ability to find and reference the parameters you used for each analysis performed. The log files are automatically generated from the root project directory into a folder titled log_files. An example of the log file is given below.
 
@@ -17,7 +21,6 @@ Many features are now available in the new version. These include the following:
 5. Extraction of specific TFs/genes, which is useful for analyses such as limma (see Ritchie et al., 2015). An option to perform analyses with limma is not available as part of this software.
 6. Comparison of groups identified in dimension reduction techniques such as UMAP or tSNE. These include comparisons of TFs/genes between two groups, survival analysis between groups, and gene set enrichment analysis (GSEA)
 7. Visualization of these results via volcano plots, box plots, violin plots, and heatmaps is also possible.
-
 
 ### 1.0.0
 Initial release. SiSaNA can reconstruct networks using PANDA/LIONESS as well as calculate in- and out-degree and compare degrees between groups.
