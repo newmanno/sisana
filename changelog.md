@@ -1,5 +1,6 @@
 ### 1.XX
-- Changed the listed files in the log output files to all not have "./" at the beginning of their paths, just for consistency's sake 
+- Changed the listed files in the log output files to all not have "./" at the beginning of their paths, just for consistency's sake
+- Added more descriptive descriptions of each parameter in the params.yml file
 - Added this changelog file
 
 ### 1.4.0
