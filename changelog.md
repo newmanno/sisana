@@ -2,6 +2,8 @@
 - Changed the listed files in the log output files to all not have "./" at the beginning of their paths, just for consistency's sake
 - Added more descriptive descriptions of each parameter in the params.yml file
 - Added this changelog file
+- Removed some hard-coded values in volcano plot, so now all user-defined values should work properly
+- Changed the labels on the volcano plot to make it more clear which groups were which
 
 ### 1.4.0
 This new version of SiSaNA now generates log files as well, allowing the ability to find and reference the parameters you used for each analysis performed. The log files are automatically generated from the root project directory into a folder titled log_files. An example of the log file is given below.
