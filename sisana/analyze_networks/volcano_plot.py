@@ -1,5 +1,4 @@
 import pandas as pd
-import argparse
 import sys
 from pathlib import Path
 import matplotlib.pyplot as plt
@@ -17,10 +16,10 @@ def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: s
         both the survival plot and the statistics for the comparison(s)
         
     Parameters:
-    -----------\
+    -----------
         - statsfile: str, Path to tab delimited file containing the fold change, p-value, FDR, and mean 
           degree/statsression for each gene. This is reported with the compare_groups.py script
-        - fccol: str, The name of the column containing the difference in medians or means
+        - diffcol: str, The name of the column containing the difference in medians or means
         - adjpcol: str, The name of the column containing the adj. p-value
         - adjpvalthreshold: str, Threshold to use for the adjusted p-value
         - genelist: str, Path to a .txt file containing a list of genes to plot. Alternatively, the top {numlabels} genes can be plotted instead if top=True.
@@ -54,9 +53,11 @@ def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: s
     if len(down) + len(up) == 0:
         raise Exception("Error: No significant values found to plot.")
 
-    plt.scatter(x=down[diffcol], y=down[adjpcol].apply(lambda x:-np.log10(x)), s=3, label="Down-regulated",color="blue")
-    plt.scatter(x=up[diffcol], y=up[adjpcol].apply(lambda x:-np.log10(x)), s=3, label="Up-regulated",color="orange")
-    plt.scatter(x=notsig[diffcol], y=notsig[adjpcol].apply(lambda x:-np.log10(x)), s=3, label="Not significant",color="gainsboro")
+    group_names = diffcol.split("(")[1].strip(")").split("-")
+
+    plt.scatter(x=down[diffcol], y=down[adjpcol].apply(lambda x:-np.log10(x)), s=3, label=f"Up in {group_names[1]}", color="blue")
+    plt.scatter(x=up[diffcol], y=up[adjpcol].apply(lambda x:-np.log10(x)), s=3, label=f"Up in {group_names[0]}", color="orange")
+    plt.scatter(x=notsig[diffcol], y=notsig[adjpcol].apply(lambda x:-np.log10(x)), s=3, label="Not significant", color="gainsboro")
     plt.scatter(x=not_down_or_up[diffcol], y=not_down_or_up[adjpcol].apply(lambda x:-np.log10(x)), s=3, color="darkgrey")
 
     # Label the user-defined genes if given, otherwise plot just the top genes
@@ -99,7 +100,6 @@ def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: s
     adjust_text(uptexts,arrowprops=dict(arrowstyle="-", color='black', lw=0.5))        
     adjust_text(dntexts,arrowprops=dict(arrowstyle="-", color='black', lw=0.5))
     
-    difftype= "median"
     if difftype == "mean":
         plt.xlabel("Difference in mean degree")
     elif difftype == "median":
@@ -107,9 +107,8 @@ def plot_volcano(statsfile: str, diffcol: str, adjpcol: str, adjpvalthreshold: s
 
     plt.ylabel("-log10(FDR)")
 
-    fcthreshold = 50
-    plt.axvline(-1 * fcthreshold, color="grey", linestyle="--")
-    plt.axvline(fcthreshold, color="grey", linestyle="--")
+    plt.axvline(-1 * xaxisthreshold, color="grey", linestyle="--")
+    plt.axvline(xaxisthreshold, color="grey", linestyle="--")
 
     plt.axhline(-np.log10(adjpvalthreshold), color="grey", linestyle="--")
     plt.legend()
