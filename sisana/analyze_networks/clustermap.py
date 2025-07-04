@@ -148,7 +148,7 @@ def plot_clustermap(datafile: str, filetype: str, metadata: str, genelist: str, 
             # category, so we need this counter
             if column_cat_level == 0:
                 data_df = data_df.T
-                data_df['color'] = data_df.index.map(metadata_df.set_index('name').col_colors.squeeze())
+                data_df['color'] = data_df.index.map(metadata_df.set_index(metadata_df.columns[0]).col_colors.squeeze())
                 sorted_data_df = data_df.sort_values(by=['color'])
                 assigned_colors[category] = sorted_data_df.pop("color")
             else:
