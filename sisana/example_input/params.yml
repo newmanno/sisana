@@ -24,7 +24,7 @@ reconstruct:
   compute: cpu # (Optional, Default: cpu) Whether to use "gpu" or "cpu" for computing networks
 
   # The following commands are used if you specified "lioness" for the "method" arg
-  ncores: 20 # (Optional, Default: 2) Number of cores to use for calculating LIONESS networks. Must be less than or equal to the number of samples.
+  ncores: 2 # (Optional, Default: 2) Number of cores to use for calculating LIONESS networks. Must be less than or equal to the number of samples.
   lionessfilepath: ./output/network/lioness_networks.npy # (Optional, Default: ./output/network/lioness_networks.npy) Path to the lioness output file to be created. Must have a .npy extension.
   start: # (Optional, Default: None, [meaning no parameter set in yaml]) An integer. To start from nth sample. The background is always what is used for PANDA and stays the same. If this value and the end value are not specified, then all samples will be used.
   end: # (Optional, Default: None, [meaning no parameter set in yaml]) An integer. To end at nth sample. Must be used when a value for "start" is specified. The background is always what is used for PANDA and stays the same
