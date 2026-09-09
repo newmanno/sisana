@@ -1,3 +1,9 @@
+### 1.8.1
+- Removed a file that was not used in the pipeline and was meant for testing purposes originally
+
+### 1.8.0
+- Fixed issue where the text for the quantity plot in the summarize file did not show the correct number of genes plotted
+
 ### 1.7.3
 - Fixed issue where the header validation did not catch files without headers when using a metadata file in the format for a paired comparison
 - Changed gsea color bar formatting so the title does not overlap the dot plot
